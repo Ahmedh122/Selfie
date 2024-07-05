@@ -9,7 +9,7 @@ function App() {
 
   const queryClient = new QueryClient();
 
-  const Layout = () => {
+ /* const Layout = () => {
     return (
       <QueryClientProvider client={queryClient}>
 
@@ -25,7 +25,7 @@ function App() {
       element: (
         <Layout />
       ),
-      children: [
+      children: [/*
         {
           path: "/",
           element: <Home />,
@@ -54,9 +54,9 @@ function App() {
     <div>
       <RouterProvider router={router} />
     </div>
-  );
+  );*/
 }
 
-/*ciao*/
+
 
 export default App;
