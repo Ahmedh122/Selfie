@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+/*import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import axios from 'axios';
 import { useContext } from 'react';
@@ -63,4 +63,14 @@ const Register = () => {
   )
 }
 
-export default Register;
+export default Register;*/
+
+import React from 'react'
+
+function Register() {
+  return (
+    <div>Register</div>
+  )
+}
+
+export default Register

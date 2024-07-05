@@ -3,8 +3,9 @@ import { QueryClient, QueryClientProvider } from "react-query";
 import { createBrowserRouter, RouterProvider, Navigate, Outlet } from "react-router-dom";
 import { AuthContext } from "./context/authcontext";
 import { useContext } from "react";
-import Login from "./views/login/Login";
-import Register from "./views/login/Register";
+import Login from "./views/auth/Login";
+import Register from "./views/auth/Register";
+import Navbar from "./components/Navbar";
 
 
 function App() {
@@ -15,7 +16,9 @@ function App() {
   const Layout = () => {
     return (  
       <QueryClientProvider client={queryClient}>
-
+        <div>
+          <Navbar/>
+        </div>
       </QueryClientProvider>
     );
   };
