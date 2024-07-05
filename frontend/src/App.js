@@ -1,23 +1,18 @@
-import React from 'react'
-
-function App() {
-  return (
-   <h1 class="text-blue-500">hello world</h1>
-  )
-}
-
-export default App
-/*import React from "react";
-/*import { QueryClient, QueryClientProvider } from "react-query";
-import { createBrowserRouter, RouterProvider, Navigate, Outlet } from "found";
+import React from "react";
+import { QueryClient, QueryClientProvider } from "react-query";
+import { createBrowserRouter, RouterProvider, Navigate, Outlet } from "react-router-dom";
 import { AuthContext } from "./context/authcontext";
+import { useContext } from "react";
+import Login from "./views/login/Login";
+import Register from "./views/login/Register";
+
 
 function App() {
   <h1>hello world</h1>
 
-  /*const queryClient = new QueryClient();*/
+  const queryClient = new QueryClient();
 
- /* const Layout = () => {
+  const Layout = () => {
     return (  
       <QueryClientProvider client={queryClient}>
 
@@ -33,8 +28,8 @@ function App() {
       element: (
         <Layout />
       ),
-      children: [/*
-        {
+      children: [
+        /*{
           path: "/",
           element: <Home />,
         },
@@ -45,7 +40,7 @@ function App() {
         {
           path: "/notes/:id",
           element: <Notes />,
-        },
+        },*/
       ],
     },
     {
@@ -67,4 +62,4 @@ function App() {
 
 
 
-export default App;*/
+export default App;
