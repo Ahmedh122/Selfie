@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import User from "../models/user.js"; 
+import User from "../models/users.js"; 
 import mongoose from "mongoose";// Assuming you have a User model for MongoDB
 
 export const getUser = async (req, res) => {

@@ -9,7 +9,7 @@ import Navbar from "./components/Navbar";
 
 
 function App() {
-  <h1>hello world</h1>
+ 
 
   const queryClient = new QueryClient();
 

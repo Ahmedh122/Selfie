@@ -1,12 +1,12 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import User from "../models/user.js";
+import User from "../models/users.js";
 import Quota from "../models/quota.js";
 
 export const register = async (req, res) => {
   try {
     // Check if user already exists
-    const existingUser = await User.findOne({ username: req.body.username });
+    const existingUser = await User.findOne({ email: req.body.email });
     if (existingUser) {
       return res.status(409).json("User already exists!");
     }
@@ -16,11 +16,12 @@ export const register = async (req, res) => {
     const hashedPassword = bcrypt.hashSync(req.body.password, salt);
 
     // Create a new user
-    const newUser = new User({
-      username: req.body.username,
+    const newUser = new User({ 
+      name: req.body.name,
+      surname: req.body.surname,
       email: req.body.email,
       password: hashedPassword,
-      name: req.body.name,
+     
     });
 
     await newUser.save();
@@ -46,7 +47,7 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
   try {
     // Find the user by username
-    const user = await User.findOne({ username: req.body.username });
+    const user = await User.findOne({ email: req.body.email });
     if (!user) {
       return res.status(404).json("Invalid username or password");
     }

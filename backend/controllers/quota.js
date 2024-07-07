@@ -1,6 +1,6 @@
 
 import Quota from "../models/quota.js";
-import User from "../models/user.js";
+import User from "../models/users.js";
 import Post from "../models/post.js";
 
 import cron from "node-cron";

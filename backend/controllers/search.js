@@ -1,5 +1,5 @@
  import Channel from "../models/channel.js";
-import User from "../models/user.js";
+import User from "../models/users.js";
 
 
 export const searchUsers = async (req, res) => {
