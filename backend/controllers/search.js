@@ -1,4 +1,4 @@
- import Channel from "../models/channel.js";
+import Channel from "../models/channel.js";
 import User from "../models/users.js";
 
 

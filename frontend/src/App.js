@@ -6,6 +6,11 @@ import { useContext } from "react";
 import Login from "./views/auth/Login";
 import Register from "./views/auth/Register";
 import Navbar from "./components/Navbar";
+import Home from "./views/Home";
+import Calendar from "./views/Calendar";
+import Notes from "./views/Notes";
+import Search from "./views/Search";
+import Profile from "./views/Profile";
 
 
 function App() {
@@ -14,10 +19,10 @@ function App() {
   const queryClient = new QueryClient();
 
   const Layout = () => {
-    return (  
+    return (
       <QueryClientProvider client={queryClient}>
-        <div>
-          <Navbar/>
+        <div className="bg-[#313338]">
+          <Navbar />
         </div>
       </QueryClientProvider>
     );
@@ -32,7 +37,7 @@ function App() {
         <Layout />
       ),
       children: [
-        /*{
+        {
           path: "/",
           element: <Home />,
         },
@@ -43,7 +48,15 @@ function App() {
         {
           path: "/notes/:id",
           element: <Notes />,
-        },*/
+        },
+        {
+          path:"/search/:id",
+          element:<Search/>,
+        },
+         {
+          path:"/profile/:id",
+          element:<Profile/>,
+        }
       ],
     },
     {

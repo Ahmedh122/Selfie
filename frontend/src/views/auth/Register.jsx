@@ -323,15 +323,14 @@ function Register() {
         </svg>
       </div>
 
-      <div className="card bg-[#232428] absolute flex rounded-[16px] shadow-2xl max-w-3xl p-[16px] items-center">
-        <div className="md:w-1/2 px-8 md:px-16">
+      <div className="card bg-[#232428] absolute flex rounded-[19px] backdrop-blur-xl bg-gradient-to-br from-[#202024] to-[#25272b] shadow-[22px_22px_44px_#121214,-22px_-22px_44px_#34363c] max-w-3xl p-[16px] z-50 items-center">
+        <div className="md: px-8 md:px-16">
           <h2 className="font-bold text-2xl text-white text-center">SELFIE</h2>
-          <p className="text-xs mt-4 text-slate-500">
-            If you are already a member, easily log in
+          <p className="text-xs mt-4 text-slate-500 text-center">
+            welcome to Selfie
           </p>
 
-          <form action="" className="flex flex-col gap-4">
-            
+          <form action="" className="flex flex-col gap-4 mt-5">
             <input
               className="p-2  rounded-xl border"
               type="text"
@@ -375,7 +374,7 @@ function Register() {
               </svg>
             </div>
             <button
-              className="bg-violet-800 rounded-xl text-white py-2 hover:scale-105 duration-300 "
+              className="bg-violet-800 rounded-xl text-white py-2 hover:scale-105 duration-300 hover:shadow-neon-violet "
               onClick={handleSubmit}
             >
               Register
@@ -425,13 +424,13 @@ function Register() {
           </div>
         </div>
 
-        <div className="  md:block hidden w-1/2 ">
+        {/*  <div className="  md:block hidden w-1/2 ">
           <img
             className=" h-full rounded-2xl  "
             src="https://cdn.vectorstock.com/i/500p/05/83/sloth-taking-a-selfie-cartoon-clip-art-vector-51110583.jpg"
             alt=""
           />
-        </div>
+        </div>*/}
       </div>
     </div>
   );

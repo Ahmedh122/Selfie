@@ -20,7 +20,7 @@
         
         left:40%;
         animation: animate 20s linear infinite;
-        animation-delay: 18s;
+        animation-delay: -18s;
        
     }
 
