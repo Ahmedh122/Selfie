@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import HomeIcon from "../icons/Home_icon";
 import SearchIcon from "../icons/Search_icon";
 import CalendarIcon from "../icons/Calendar_icon";
@@ -6,16 +7,15 @@ import TimerIcon from "../icons/Timer_icon";
 import NotesIcon from "../icons/Notes_icon";
 import ProfileIcon from "../icons/Profile_icon";
 import Teardrop from "./Teardrop"; // Assuming Teardrop is in the same directory
-import { useNavigate } from "react-router-dom";
 
 function Navbar() {
-  const [activeIcon, setActiveIcon] = useState(null);
-  const navigate = useNavigate();
+  const [activeIcon, setActiveIcon] = useState("home"); // Set default active icon to "home"
+  const navigate = useNavigate(); // Initialize navigate
 
-  const handleClick = (icon , path) => {
+  const handleClick = (icon, path) => {
     setActiveIcon(icon);
     console.log(icon);
-    navigate(path);
+    navigate(path); // Use navigate to change the path
   };
 
   return (
