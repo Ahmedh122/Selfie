@@ -11,6 +11,7 @@ import Calendar from "./views/Calendar";
 import Notes from "./views/Notes";
 import Search from "./views/Search";
 import Profile from "./views/Profile";
+import Timer from "./views/Timer";
 
 
 function App() {
@@ -41,9 +42,7 @@ function App() {
   const router = createBrowserRouter([
     {
       path: "/",
-      element: (
-        <Layout />
-      ),
+      element: <Layout />,
       children: [
         {
           path: "/",
@@ -54,17 +53,21 @@ function App() {
           element: <Calendar />,
         },
         {
-          path: "/notes/:id",
+          path: "/notes",
           element: <Notes />,
         },
         {
-          path:"/search/:id",
-          element:<Search/>,
+          path: "/search",
+          element: <Search />,
         },
-         {
-          path:"/profile/:id",
-          element:<Profile/>,
-        }
+        {
+          path: "/profile",
+          element: <Profile />,
+        },
+        {
+          path: "/timer",
+          element: <Timer />,
+        },
       ],
     },
     {
@@ -74,7 +77,7 @@ function App() {
     {
       path: "/register",
       element: <Register />,
-    }
+    },
   ]);
 
   return (
