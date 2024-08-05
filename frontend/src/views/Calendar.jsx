@@ -163,6 +163,13 @@ function Calendar() {
           .glow-on-hover-red:hover {
             filter: drop-shadow(0 0 15px rgba(255, 0, 0, 1));
           }
+          .svg-glow {
+           transition: filter 0.3s ease;
+          }
+
+          button:hover .svg-glow {
+          filter: drop-shadow(0 0 20px rgba(255, 255, 255, 1));
+          }
         `}
       </style>
       <div className="container flex flex-col md:flex-row p-4 md:p-8 w-[90%] h-[90%] md:w-[60%]  md:h-[70%] rounded-xl backdrop-blur-xl bg-gradient-to-br from-[#202024] to-[#25272b] shadow-[22px_22px_44px_#121214,-22px_-22px_44px_#34363c] overflow-hidden">
@@ -175,7 +182,7 @@ function Calendar() {
               className=" date_container cursor-pointer hover:bg-[#1B1B1F] transition-all p-3 rounded-xl ease-in-out duration-300"
               onClick={returnToSelection}
               style={{
-                transform: "translateX(-7%)"
+                transform: "translateX(-7%)",
               }}
             >
               <h2 className="text-violet-500 text-xl md:text-2xl font-bold">
@@ -186,8 +193,17 @@ function Calendar() {
                   {(selectedDate || currentDate).getDate()}
                 </h2>
                 <span className="text-slate-200">
-                   /{(selectedDate ? (selectedDate.getMonth() + 1 ):(currentDate.getMonth() + 1)).toString().padStart(2, "0")}
-                  /{selectedDate ? selectedDate.getFullYear() : currentDate.getFullYear()}
+                  /
+                  {(selectedDate
+                    ? selectedDate.getMonth() + 1
+                    : currentDate.getMonth() + 1
+                  )
+                    .toString()
+                    .padStart(2, "0")}
+                  /
+                  {selectedDate
+                    ? selectedDate.getFullYear()
+                    : currentDate.getFullYear()}
                 </span>
               </div>
             </div>
@@ -288,14 +304,14 @@ function Calendar() {
                   selectedDate.getDate() === date &&
                   selectedDate.getMonth() === displayMonth &&
                   selectedDate.getFullYear() === displayYear;
-                 const isCurrentDay = isToday(date);
+                const isCurrentDay = isToday(date);
                 return (
                   <span
                     key={date}
                     onClick={() => handleDateClick(date)}
                     className={`cursor-pointer rounded-full w-7 h-7 md:w-8 md:h-8 flex items-center justify-center ${
-                        isSelectedDate
-                          ? "bg-violet-500 text-white" 
+                      isSelectedDate
+                        ? "bg-violet-500 text-white"
                         : isCurrentDay
                         ? "bg-red-500 text-white"
                         : "hover:bg-gray-700"
@@ -321,7 +337,7 @@ function Calendar() {
                 Date
               </span>
               <button
-                className="absolute w-10 h-10 flex justify-center items-center hover:w-16 left-4 text-white text-3xl rounded-full bg-slate-700 transition-all duration-250 ease-in-out"
+                className="absolute w-10 h-10 flex justify-center items-center  hover:justify-end hover:w-16 left-4 text-white text-3xl rounded-full bg-slate-700 transition-all duration-250 ease-in-out"
                 onClick={togglePopup}
               >
                 <svg
@@ -330,7 +346,7 @@ function Calendar() {
                   viewBox="0 0 24 24"
                   strokeWidth={1.5}
                   stroke="currentColor"
-                  className="w-3 h-3 md:w-8 md:h-8 glow-on-hover-white hover:right-2 md:hover:w-9 transition-all duration-250 ease-in-out"
+                  className="w-3 h-3 md:w-8 md:h-8 svg-glow hover:right-2 md:hover:w-9 transition-all duration-250 ease-in-out"
                 >
                   <path
                     strokeLinecap="round"
