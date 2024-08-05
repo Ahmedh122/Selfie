@@ -1,18 +1,29 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import HomeIconglow from "../icons/Home_iconglow";
 import SearchIconglow from "../icons/Search_iconglow";
 import CalendarIconglow from "../icons/Calendar_iconglow";
 import TimerIconglow from "../icons/Timer_iconglow";
 import NotesIconglow from "../icons/Notes_iconglow";
 import ProfileIconglow from "../icons/Profile_iconglow";
+import waveimgver from "../assets/wavevertical.png";
+import waveimgvhor from "../assets/wavehorizontal.png";
 
-const iconPositions = {
-  home: { top: "13%" },
-  search: { top: "27%" },
-  calendar: { top: "42%" },
+const iconPositionsVer = {
+  home: { top: "11.5%" },
+  search: { top: "26%" },
+  calendar: { top: "40%" },
   timer: { top: "55%" },
-  notes: { top: "70%" },
-  profile: { top: "85%" },
+  notes: { top: "69%" },
+  profile: { top: "84%" },
+};
+
+const iconPositionsHor = {
+  home: { left: "-2%" },
+  search: { left: "15%" },
+  calendar: { left: "31%" },
+  timer: { left: "48%" },
+  notes: { left: "64%" },
+  profile: { left: "81%" },
 };
 
 const iconComponents = {
@@ -25,38 +36,48 @@ const iconComponents = {
 };
 
 function Teardrop({ activeIcon }) {
-  const position = iconPositions[activeIcon] || { top: "0" };
-  const baseTop = parseFloat(position.top); // Convert to a number for calculation
-  const IconComponent = iconComponents[activeIcon]; // Get the active icon component
+  const [isLargeScreen, setIsLargeScreen] = useState(window.innerWidth >= 1024);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsLargeScreen(window.innerWidth >= 1024);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  const IconComponent = iconComponents[activeIcon];
+  const position = isLargeScreen
+    ? iconPositionsVer[activeIcon] || { top: "0" }
+    : iconPositionsHor[activeIcon] || { left: "0" };
+
+  const positionValue = isLargeScreen
+    ? { top: `${parseFloat(position.top) - 3.5}%` }
+    : { left: `${parseFloat(position.left) -4.5}%` };
 
   return (
-    <div className="fixed top-0 l-0 w-1/12 h-full flex pointer-events-none">
+    <div className="absolute flex flex-row w-screen h-full  lg:h-screen lg:flex-col lg:w-full pointer-events-none overflow-hidden select-none">
       <div
-        className="absolute w-[113px] h-[114px] right-0 bg-[#313338] transition-all duration-1000 ease-in-out"
-        style={{
-          top: `${baseTop}%`,
-          borderRadius: "50% 50% 50% 50% / 0% 0% 100% 100%",
-          transform: "rotate(90deg)",
-        }}
-      ></div>
+        className="absolute w-[30%] h-[90%]  lg:w-[80%] lg:h-[25%] lg:right-0 lg:left-auto lg:rotate-0 duration-1000 ease-in-out   "
+        style={positionValue}
+      >
+        <img
+          className="absolute h-full w-full lg:top-auto lg:left-auto"
+          src={isLargeScreen ? waveimgver : waveimgvhor}
+          alt=""
+        />
+      </div>
+
       <div
-        className="absolute right-0 w-[90px] h-[150px] transition-all duration-1000 ease-in-out shadow-teardrop-shadow"
-        style={{
-          top: `${baseTop - 18.4}%`,
-          borderRadius: "100% 0% 100% 0% / 0% 50% 50% 100% ",
-        }}
-      ></div>
-      <div
-        className="absolute right-0 w-[90px] h-[150px] transition-all duration-1000 ease-in-out shadow-teardrop-shadow"
-        style={{
-          top: `${baseTop + 13}%`,
-          borderRadius: "100% 0% 100% 0% / 0% 50% 50% 100% ",
-          transform: "rotateX(180deg)", // Corrected typo in rotation
-        }}
-      ></div>
-      <div
-        className="absolute ransition-all duration-1000 ease-in-out right-[50px] "
-        style={{ top: `${baseTop + 6 }%` }}
+        className="absolute duration-1000 ease-in-out top-[30%] lg:right-[36%]"
+        style={
+          isLargeScreen
+            ? { top: `${parseFloat(position.top) + 7}%` }
+            : { left: `${parseFloat(position.left) + 7}%` }
+        }
       >
         {IconComponent && <IconComponent />}
       </div>

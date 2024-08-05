@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import HomeIcon from "../icons/Home_icon";
 import SearchIcon from "../icons/Search_icon";
@@ -6,37 +6,75 @@ import CalendarIcon from "../icons/Calendar_icon";
 import TimerIcon from "../icons/Timer_icon";
 import NotesIcon from "../icons/Notes_icon";
 import ProfileIcon from "../icons/Profile_icon";
-import Teardrop from "./Teardrop"; // Assuming Teardrop is in the same directory
+import Teardrop from "./Teardrop"; 
 
 function Navbar() {
-  const [activeIcon, setActiveIcon] = useState("home"); // Set default active icon to "home"
-  const navigate = useNavigate(); // Initialize navigate
+  const [activeIcon, setActiveIcon] = useState("home"); 
+  const navigate = useNavigate(); 
+
+  useEffect(() => {
+    
+    const savedIcon = localStorage.getItem("activeIcon");
+    if (savedIcon) {
+      setActiveIcon(savedIcon);
+    }
+  }, []);
 
   const handleClick = (icon, path) => {
     setActiveIcon(icon);
-    console.log(icon);
-    navigate(path); // Use navigate to change the path
+    localStorage.setItem("activeIcon", icon); 
+    navigate(path); 
   };
 
   return (
-    <div className="relative h-screen bg-violet-700 flex flex-col justify-around items-center w-1/12">
-      <p className="text-white font-bold text-2xl">SELFIE</p>
-      <div onClick={() => handleClick("home", "/")}>
+    <div className="relative bottom-0 left-0 w-full h-full bg-violet-700 flex flex-row justify-around items-center lg:relative lg:h-screen lg:flex-col  lg:bottom-auto lg:left-auto">
+      <p className="text-white font-bold text-2xl lg:block hidden">SELFIE</p>
+      <div
+        onClick={() => handleClick("home", "/home")}
+        className={`p-2 cursor-pointer ${
+          activeIcon === "home" ? "active" : ""
+        }`}
+      >
         <HomeIcon />
       </div>
-      <div onClick={() => handleClick("search", "/search")}>
+      <div
+        onClick={() => handleClick("search", "/search")}
+        className={`p-2 cursor-pointer ${
+          activeIcon === "search" ? "active" : ""
+        }`}
+      >
         <SearchIcon />
       </div>
-      <div onClick={() => handleClick("calendar", "/calendar")}>
+      <div
+        onClick={() => handleClick("calendar", "/calendar")}
+        className={`p-2 cursor-pointer ${
+          activeIcon === "calendar" ? "active" : ""
+        }`}
+      >
         <CalendarIcon />
       </div>
-      <div onClick={() => handleClick("timer", "/timer")}>
+      <div
+        onClick={() => handleClick("timer", "/timer")}
+        className={`p-2 cursor-pointer ${
+          activeIcon === "timer" ? "active" : ""
+        }`}
+      >
         <TimerIcon />
       </div>
-      <div onClick={() => handleClick("notes", "/notes")}>
+      <div
+        onClick={() => handleClick("notes", "/notes")}
+        className={`p-2 cursor-pointer ${
+          activeIcon === "notes" ? "active" : ""
+        }`}
+      >
         <NotesIcon />
       </div>
-      <div onClick={() => handleClick("profile", "/profile")}>
+      <div
+        onClick={() => handleClick("profile", "/profile")}
+        className={`p-2 cursor-pointer ${
+          activeIcon === "profile" ? "active" : ""
+        }`}
+      >
         <ProfileIcon />
       </div>
       {activeIcon && <Teardrop activeIcon={activeIcon} />}
