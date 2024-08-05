@@ -46,6 +46,8 @@ function Calendar() {
   const [selectedDate, setSelectedDate] = useState(null);
   const [isPopupOpen, setPopupOpen] = useState(false);
   const [isPopupVisible, setPopupVisible] = useState(false);
+  const [isPopupEventOpen, setPopupEventOpen]= useState(false);
+  const [isPopupEventvisible, setPopupEventVisible] = useState(false);
 
   const daysInMonth = new Date(displayYear, displayMonth + 1, 0).getDate();
   const firstDayOfMonth = new Date(displayYear, displayMonth, 1).getDay();
@@ -84,6 +86,10 @@ function Calendar() {
     setPopupOpen(!isPopupOpen);
   };
 
+  const togglePopupEvent = () => {
+    setPopupEventOpen(!isPopupEventOpen);
+  };
+
   useEffect(() => {
     if (isPopupOpen) {
       setPopupVisible(true);
@@ -92,6 +98,15 @@ function Calendar() {
       return () => clearTimeout(timer);
     }
   }, [isPopupOpen]);
+
+  useEffect(() => {
+    if (isPopupEventOpen) {
+      setPopupEventVisible(true);
+    } else {
+      const timer = setTimeout(() => setPopupEventVisible(false), 400);
+      return () => clearTimeout(timer);
+    }
+  }, [isPopupEventOpen]);
 
   const displayDay = selectedDate
     ? daysOfWeekFull[selectedDate.getDay()]
@@ -102,11 +117,21 @@ function Calendar() {
   const [yearInput, setYearInput] = useState(currentDate.getFullYear());
 
   const SubmitDate = (day, month, year) => {
-    const newDate = new Date(year, month, day);
+      const validDay = parseInt(day, 10);
+      const validMonth = parseInt(month, 10);
+      const validYear = parseInt(year, 10);
+
+    const newDate = new Date(validYear, validMonth, validDay);
     setSelectedDate(newDate);
-    setDisplayMonth(month);
-    setDisplayYear(year);
+    setDisplayMonth(validMonth);
+    setDisplayYear(validYear);
     setPopupOpen(false);
+   
+  };
+
+  const SubmitEvent = () => {
+    /*post event to backend */
+
   };
 
   const returnToSelection = () => {
@@ -117,7 +142,13 @@ function Calendar() {
     setDisplayMonth(currentDate.getMonth());
     setDisplayYear(currentDate.getFullYear());
   }
-  }
+  };
+
+  useEffect(() => {
+    console.log("Display Month:", displayMonth);
+    console.log("Display Year:", displayYear);
+    console.log("Selected Date:", selectedDate);
+  }, [displayMonth, displayYear, selectedDate]);
 
   return (
     <div className="calendar-app h-full w-full flex justify-center items-center relative">
@@ -257,17 +288,16 @@ function Calendar() {
                   selectedDate.getDate() === date &&
                   selectedDate.getMonth() === displayMonth &&
                   selectedDate.getFullYear() === displayYear;
+                 const isCurrentDay = isToday(date);
                 return (
                   <span
                     key={date}
                     onClick={() => handleDateClick(date)}
                     className={`cursor-pointer rounded-full w-7 h-7 md:w-8 md:h-8 flex items-center justify-center ${
-                      isToday(date)
-                        ? isSelectedDate
-                          ? "bg-violet-500 text-white"
-                          : "bg-red-500 text-white"
-                        : isSelectedDate
-                        ? "bg-violet-500 text-white"
+                        isSelectedDate
+                          ? "bg-violet-500 text-white" 
+                        : isCurrentDay
+                        ? "bg-red-500 text-white"
                         : "hover:bg-gray-700"
                     }`}
                   >
