@@ -130,7 +130,7 @@ function Calendar() {
   };
 
   const SubmitEvent = () => {
-    /*post event to backend */
+    /*post event to backend; */
 
   };
 
