@@ -240,7 +240,7 @@ function Calendar() {
               fill="none"
               viewBox="0 0 24 24"
               strokeWidth="1.5"
-              className="size-6 stroke-slate-300 glow-on-hover-white hover:stroke-white hover:size-7 transition-all duration-300 ease-in-out"
+              className="size-6 stroke-slate-300 glow-on-hover-white hover:stroke-white hover:size-7 hover:rotate-90 transition-all duration-300 ease-in-out"
             >
               <path
                 strokeLinecap="round"
