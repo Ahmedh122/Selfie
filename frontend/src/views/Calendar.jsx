@@ -139,6 +139,7 @@ function Calendar() {
     } else {
       setDisplayMonth(currentDate.getMonth());
       setDisplayYear(currentDate.getFullYear());
+      setSelectedDate(currentDate);
     }
   };
 
@@ -170,7 +171,7 @@ function Calendar() {
           }
         `}
       </style>
-      <div className="container flex flex-col md:flex-row p-4 md:p-8 w-[90%] h-[90%] md:w-[60%]  md:h-[70%] rounded-xl backdrop-blur-xl md:bg-gradient-to-br from-[#202024] to-[#25272b] md:shadow-[22px_22px_44px_#121214,-22px_-22px_44px_#34363c] overflow-hidden">
+      <div className="container flex flex-col md:flex-row p-4 md:p-8 w-[90%] h-[90%] md:w-[70%]  md:h-[85%] rounded-xl backdrop-blur-xl md:bg-gradient-to-br from-[#202024] to-[#25272b] md:shadow-[22px_22px_44px_#121214,-22px_-22px_44px_#34363c] overflow-hidden">
         <button
           className="absolute rounded-full w-11 h-11 bg-[#141517]  flex justify-center items-center right-[2%] text-red-500 bottom-4  "
           onClick={togglePopupEvent}
@@ -344,7 +345,7 @@ function Calendar() {
         {isPopupVisible && (
           <div className="fixed inset-0 flex flex-col bg-black/60 backdrop-blur-[4px] rounded-xl transition-transform duration-300 ease-in-out">
             <div
-              className={`absolute flex justify-center right-0 top-[15%] w-[60%] h-[40%] bg-orange-600 rounded-l-2xl ${
+              className={`absolute flex justify-center right-0 top-[15%] w-[60%] h-[40%] bg-[#2C2C2E] rounded-l-2xl ${
                 isPopupVisible && isPopupOpen
                   ? "animate-popup-enter"
                   : "animate-popup-exit"
@@ -437,7 +438,7 @@ function Calendar() {
         {isPopupEventvisible && (
           <div className="fixed inset-0 flex flex-col bg-black/60 backdrop-blur-[4px] rounded-xl transition-transform duration-300 ease-in-out items-center">
             <div
-              className={`absolute flex justify-center items-center bottom-0 w-[40%] h-[90%] bg-[#2C2C2E] rounded-t-2xl ${
+              className={`absolute flex justify-center items-center bottom-0 w-[40%] h-[95%] bg-[#2C2C2E] rounded-t-2xl ${
                 isPopupEventvisible && isPopupEventOpen
                   ? "animate-popup-up"
                   : "animate-popup-down"
@@ -447,7 +448,7 @@ function Calendar() {
                 New event
               </span>
               <button
-                className=" absolute w-10 h-10 top-3   flex justify-center items-center  hover:h-16 left-4 text-violet-500 text-3xl rounded-full bg-[#1B1B1F] transition-all duration-250 ease-in-out"
+                className=" absolute w-10 h-10 top-3   flex justify-center items-center  hover:h-16 left-5 text-violet-500 text-3xl rounded-full bg-[#1B1B1F] transition-all duration-250 ease-in-out"
                 onClick={togglePopupEvent}
               >
                 <svg
