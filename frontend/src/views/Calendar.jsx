@@ -46,7 +46,7 @@ function Calendar() {
   const [selectedDate, setSelectedDate] = useState(null);
   const [isPopupOpen, setPopupOpen] = useState(false);
   const [isPopupVisible, setPopupVisible] = useState(false);
-  const [isPopupEventOpen, setPopupEventOpen]= useState(false);
+  const [isPopupEventOpen, setPopupEventOpen] = useState(false);
   const [isPopupEventvisible, setPopupEventVisible] = useState(false);
 
   const daysInMonth = new Date(displayYear, displayMonth + 1, 0).getDate();
@@ -117,31 +117,29 @@ function Calendar() {
   const [yearInput, setYearInput] = useState(currentDate.getFullYear());
 
   const SubmitDate = (day, month, year) => {
-      const validDay = parseInt(day, 10);
-      const validMonth = parseInt(month, 10);
-      const validYear = parseInt(year, 10);
+    const validDay = parseInt(day, 10);
+    const validMonth = parseInt(month, 10);
+    const validYear = parseInt(year, 10);
 
     const newDate = new Date(validYear, validMonth, validDay);
     setSelectedDate(newDate);
     setDisplayMonth(validMonth);
     setDisplayYear(validYear);
     setPopupOpen(false);
-   
   };
 
   const SubmitEvent = () => {
     /*post event to backend; */
-
   };
 
   const returnToSelection = () => {
-    if(selectedDate){
-    setDisplayMonth(selectedDate.getMonth());
-    setDisplayYear(selectedDate.getFullYear());
-  } else{
-    setDisplayMonth(currentDate.getMonth());
-    setDisplayYear(currentDate.getFullYear());
-  }
+    if (selectedDate) {
+      setDisplayMonth(selectedDate.getMonth());
+      setDisplayYear(selectedDate.getFullYear());
+    } else {
+      setDisplayMonth(currentDate.getMonth());
+      setDisplayYear(currentDate.getFullYear());
+    }
   };
 
   useEffect(() => {
@@ -172,7 +170,26 @@ function Calendar() {
           }
         `}
       </style>
-      <div className="container flex flex-col md:flex-row p-4 md:p-8 w-[90%] h-[90%] md:w-[60%]  md:h-[70%] rounded-xl backdrop-blur-xl bg-gradient-to-br from-[#202024] to-[#25272b] shadow-[22px_22px_44px_#121214,-22px_-22px_44px_#34363c] overflow-hidden">
+      <div className="container flex flex-col md:flex-row p-4 md:p-8 w-[90%] h-[90%] md:w-[60%]  md:h-[70%] rounded-xl backdrop-blur-xl md:bg-gradient-to-br from-[#202024] to-[#25272b] md:shadow-[22px_22px_44px_#121214,-22px_-22px_44px_#34363c] overflow-hidden">
+        <button
+          className="absolute rounded-full w-11 h-11 bg-[#141517]  flex justify-center items-center right-[2%] text-red-500 bottom-4  "
+          onClick={togglePopupEvent}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="size-7 glow-on-hover-white md:hover:size-8 transition-all duration-250 ease-in-out"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M12 4.5v15m7.5-7.5h-15"
+            />
+          </svg>
+        </button>
         <div className="lefthalf flex flex-col items-start w-1/2 p-2 md:p-4">
           <span className="title text-3xl md:text-4xl font-bold font-sans text-white mb-2 md:mb-2">
             Calendar
@@ -325,36 +342,38 @@ function Calendar() {
           </div>
         </div>
         {isPopupVisible && (
-          <div className="fixed inset-0 flex flex-col bg-black/40 backdrop-blur-[3px] rounded-xl transition-transform duration-300 ease-in-out">
+          <div className="fixed inset-0 flex flex-col bg-black/60 backdrop-blur-[4px] rounded-xl transition-transform duration-300 ease-in-out">
             <div
-              className={`absolute flex justify-center right-0 top-[15%] w-[60%] h-[40%] bg-slate-900 rounded-l-full ${
+              className={`absolute flex justify-center right-0 top-[15%] w-[60%] h-[40%] bg-orange-600 rounded-l-2xl ${
                 isPopupVisible && isPopupOpen
                   ? "animate-popup-enter"
                   : "animate-popup-exit"
-              }`}
+              } shadow-[inset_-4px_0px_6px_rgba(0,0,0,0.3)]`}
             >
               <span className="absolute right-5 top-1 mt-3 text-2xl font-bold font-sans text-slate-200">
                 Date
               </span>
-              <button
-                className="absolute w-10 h-10 flex justify-center items-center  hover:justify-end hover:w-16 left-4 text-white text-3xl rounded-full bg-slate-700 transition-all duration-250 ease-in-out"
-                onClick={togglePopup}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="w-3 h-3 md:w-8 md:h-8 svg-glow hover:right-2 md:hover:w-9 transition-all duration-250 ease-in-out"
+              <div className="w-[15%] h-full flex left-0 top-0 absolute  ">
+                <button
+                  className=" absolute w-10 h-10 top-4   flex justify-center items-center hover:justify-end hover:w-16 left-3 text-violet-500 text-3xl rounded-full bg-[#1B1B1F] transition-all duration-250 ease-in-out"
+                  onClick={togglePopup}
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="m8.25 4.5 7.5 7.5-7.5 7.5"
-                  />
-                </svg>
-              </button>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="w-3 h-3 md:w-8 md:h-8 svg-glow hover:right-2 md:hover:w-9 transition-all duration-250 ease-in-out"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="m8.25 4.5 7.5 7.5-7.5 7.5"
+                    />
+                  </svg>
+                </button>
+              </div>
               <form
                 className="absolute h-full w-[80%] flex flex-row items-center justify-center"
                 onSubmit={(e) => {
@@ -363,7 +382,7 @@ function Calendar() {
                 }}
               >
                 <input
-                  className="rounded-xl w-[20%] bg-transparent text-center text-slate-400 focus:outline-none"
+                  className="rounded-xl w-[20%] bg-transparent text-center text-white font-semibold text-2xl focus:outline-none"
                   type="number"
                   value={dayInput}
                   onChange={(e) => setDayInput(e.target.value)}
@@ -373,7 +392,7 @@ function Calendar() {
                 />
                 <span className="text-slate-300">/</span>
                 <select
-                  className="rounded-xl w-[20%] bg-transparent text-center text-slate-400 focus:outline-none"
+                  className="rounded-xl w-[20%] bg-transparent text-center text-white font-semibold text-2xl focus:outline-none"
                   value={monthInput}
                   onChange={(e) => setMonthInput(parseInt(e.target.value))}
                 >
@@ -385,7 +404,7 @@ function Calendar() {
                 </select>
                 <span className="text-slate-300">/</span>
                 <input
-                  className="rounded-xl w-[20%] bg-transparent text-center text-slate-400 focus:outline-none"
+                  className="rounded-xl w-[20%] bg-transparent text-center text-white font-semibold text-2xl focus:outline-none"
                   type="number"
                   value={yearInput}
                   onChange={(e) => setYearInput(e.target.value)}
@@ -408,6 +427,41 @@ function Calendar() {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     d="m4.5 12.75 6 6 9-13.5"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {isPopupEventvisible && (
+          <div className="fixed inset-0 flex flex-col bg-black/60 backdrop-blur-[4px] rounded-xl transition-transform duration-300 ease-in-out items-center">
+            <div
+              className={`absolute flex justify-center items-center bottom-0 w-[40%] h-[90%] bg-[#2C2C2E] rounded-t-2xl ${
+                isPopupEventvisible && isPopupEventOpen
+                  ? "animate-popup-up"
+                  : "animate-popup-down"
+              } shadow-[inset_0px_-4px_0px_rgba(0,0,0,0.3)]`}
+            >
+              <span className=" absolute top-3  mt-3 text-xl font-bold font-sans text-slate-200">
+                New event
+              </span>
+              <button
+                className=" absolute w-10 h-10 top-3   flex justify-center items-center  hover:h-16 left-4 text-violet-500 text-3xl rounded-full bg-[#1B1B1F] transition-all duration-250 ease-in-out"
+                onClick={togglePopupEvent}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="currentColor"
+                  class="absolute w-2 h-3 md:w-8 md:h-8 svg-glow bottom-1  transition-all duration-250 ease-in-out"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="m19.5 8.25-7.5 7.5-7.5-7.5"
                   />
                 </svg>
               </button>

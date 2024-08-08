@@ -21,12 +21,20 @@ module.exports = {
           "0%": { transform: "translateX(0)", opacity: "1" },
           "100%": { transform: "translateX(100%)", opacity: "1" },
         },
-        
+        slideDown: {
+          "0%": { transform: "translateY(0%)", opacity: "1" },
+          "100%": { transform: "translateY(100%)", opacity: "1" },
+        },
+        slideUp: {
+          "0%": { transform: "translateY(100%)", opacity: "1" },
+          "100%": { transform: "translateY(0%)", opacity: "1" },
+        },
       },
       animation: {
         "popup-enter": "slideIn 0.4s ease-out forwards",
         "popup-exit": "slideOut 0.4s ease-in forwards",
-       
+        "popup-down": "slideDown 0.4s ease-in forwards",
+        "popup-up": "slideUp 0.4s ease-in forwards",
       },
     },
   },
