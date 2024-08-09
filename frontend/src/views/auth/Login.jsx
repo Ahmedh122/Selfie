@@ -1,12 +1,12 @@
 
 import { Link, useNavigate } from "react-router-dom";
 import './animation.css';
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../context/authcontext";
 
 const Login = () => {
 
- const { login } = useContext(AuthContext);
+ const { currentUser ,login } = useContext(AuthContext);
 
  const [inputs, setInputs] = useState({
    email: "",
@@ -25,11 +25,18 @@ const Login = () => {
    e.preventDefault();
    try {
      await login(inputs);
-     navigate("/");
+    
+   
+     console.log("hazebbi");
    } catch (err) {
-     setErr(err.response.data);
+     setErr(err.response.data );
    }
  };
+ useEffect(() => {
+   if (currentUser) {
+     navigate(`/home/${currentUser._id}`);
+   }
+ }, [currentUser, navigate]);
 
   return (
     <div className="background overflow-hidden bg-[#313338] h-[100vh] w-screen flex items-center justify-center  ">

@@ -74,7 +74,6 @@ import { AuthContext } from "../../context/authcontext";
 function Register() {
 
      const [inputs, setInputs] = useState({
-       
        name: "",
        surname: "",
        email: "",

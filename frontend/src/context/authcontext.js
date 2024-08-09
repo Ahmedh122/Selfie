@@ -1,7 +1,9 @@
 import { createContext, useEffect, useState } from "react";
 import axios from "axios";
 
+
 export const AuthContext = createContext();
+
 
 export const AuthContextProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(
@@ -17,11 +19,20 @@ export const AuthContextProvider = ({ children }) => {
           withCredentials: true,
         }
       );
+      
       setCurrentUser(res.data);
+     
     } catch (error) {
-      console.error(error);
+      if(error.response.status){
+       throw(error);
+        
+      }
     }
   };
+
+ 
+
+
 const logout = async () => {
   try {
   
@@ -30,6 +41,7 @@ const logout = async () => {
     });
     setCurrentUser(null);
     localStorage.removeItem("user");
+    localStorage.removeItem("activeIcon"); 
   } catch (error) {
     console.error(error);
   }

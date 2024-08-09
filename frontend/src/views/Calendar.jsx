@@ -143,11 +143,7 @@ function Calendar() {
     }
   };
 
-  useEffect(() => {
-    console.log("Display Month:", displayMonth);
-    console.log("Display Year:", displayYear);
-    console.log("Selected Date:", selectedDate);
-  }, [displayMonth, displayYear, selectedDate]);
+ 
 
   return (
     <div className="calendar-app h-full w-full flex justify-center items-center relative">
@@ -171,9 +167,9 @@ function Calendar() {
           }
         `}
       </style>
-      <div className="container flex flex-col md:flex-row p-4 md:p-8 w-[90%] h-[90%] md:w-[70%]  md:h-[85%] rounded-xl backdrop-blur-xl md:bg-gradient-to-br from-[#202024] to-[#25272b] md:shadow-[22px_22px_44px_#121214,-22px_-22px_44px_#34363c] overflow-hidden">
+      <div className="container absolute  flex flex-col md:flex-row p-5 md:p-8 w-full h-full md:w-[70%]  md:h-[85%] rounded-xl md:backdrop-blur-xl md:bg-gradient-to-br from-[#202024] to-[#25272b] md:shadow-[22px_22px_44px_#121214,-22px_-22px_44px_#34363c] overflow-hidden">
         <button
-          className="absolute rounded-full w-11 h-11 bg-[#141517]  flex justify-center items-center right-[2%] text-red-500 bottom-4  "
+          className="absolute rounded-full  w-14 h-14 bg-[#141517]  flex justify-center items-center right-[2%] text-red-500 bottom-4  "
           onClick={togglePopupEvent}
         >
           <svg
@@ -182,7 +178,7 @@ function Calendar() {
             viewBox="0 0 24 24"
             stroke-width="1.5"
             stroke="currentColor"
-            class="size-7 glow-on-hover-white md:hover:size-8 transition-all duration-250 ease-in-out"
+            class="size-8 glow-on-hover-white md:hover:size-10 transition-all duration-250 ease-in-out"
           >
             <path
               stroke-linecap="round"
@@ -191,7 +187,25 @@ function Calendar() {
             />
           </svg>
         </button>
-        <div className="lefthalf flex flex-col items-start w-1/2 p-2 md:p-4">
+        <button
+          className="absolute top-3 right-14 md:top-4 md:right-4 flex justify-center items-center"
+          onClick={resetCalendar}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth="1.5"
+            className="size-7 md:size-6 stroke-slate-300 glow-on-hover-white hover:stroke-white hover:size-7 hover:rotate-90 transition-all duration-300 ease-in-out"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
+            />
+          </svg>
+        </button>
+        <div className="lefthalf flex flex-col items-start md:w-1/2 p-2 md:p-4">
           <span className="title text-3xl md:text-4xl font-bold font-sans text-white mb-2 md:mb-2">
             Calendar
           </span>
@@ -231,25 +245,8 @@ function Calendar() {
           </div>
         </div>
 
-        <div className="righthalf flex justify-center items-center w-1/2">
-          <button
-            className="absolute top-4 right-4 flex justify-center items-center"
-            onClick={resetCalendar}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth="1.5"
-              className="size-6 stroke-slate-300 glow-on-hover-white hover:stroke-white hover:size-7 hover:rotate-90 transition-all duration-300 ease-in-out"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
-              />
-            </svg>
-          </button>
+        <div className="righthalf absolute w-full p-5 left-0 md:p-0 md:left-auto md:static flex justify-center items-center bottom-[20%] md:w-1/2">
+          
           <div className="flex flex-col w-full md:w-[80%] transition-all ease-in-out duration-300">
             <div className="flex justify-between items-center w-full mb-2">
               <div
@@ -263,9 +260,9 @@ function Calendar() {
                   {displayYear}
                 </span>
               </div>
-              <div className="flex justify-between w-[15%] mr-1 md:w-[25%]">
+              <div className="flex justify-between w-[25%] mr-1 md:mr-3.5 ">
                 <button
-                  className="bg-[#141517] flex justify-center items-center text-red-500 rounded-full w-5 h-5 md:w-8 md:h-8"
+                  className="bg-[#141517] flex justify-center items-center text-red-500 rounded-full w-8 h-8 "
                   onClick={() => changeMonth(-1)}
                 >
                   <svg
@@ -274,7 +271,7 @@ function Calendar() {
                     viewBox="0 0 24 24"
                     strokeWidth={1.5}
                     stroke="currentColor"
-                    className="w-3 h-3 md:w-4 md:h-4 glow-on-hover-white md:hover:w-5 md:hover:h-5 transition-all duration-250 ease-in-out "
+                    className=" w-4 h-4 glow-on-hover-white md:hover:w-5 md:hover:h-5 transition-all duration-250 ease-in-out "
                   >
                     <path
                       strokeLinecap="round"
@@ -284,7 +281,7 @@ function Calendar() {
                   </svg>
                 </button>
                 <button
-                  className="bg-[#141517] flex justify-center items-center text-red-500 rounded-full ml-3 w-5 h-5 md:w-8 md:h-8"
+                  className="bg-[#141517] flex justify-center items-center text-red-500 rounded-full ml-3 w-8 h-8 "
                   onClick={() => changeMonth(1)}
                 >
                   <svg
@@ -293,7 +290,7 @@ function Calendar() {
                     viewBox="0 0 24 24"
                     strokeWidth={1.5}
                     stroke="currentColor"
-                    className="w-3 h-3 md:w-4 md:h-4 glow-on-hover-white md:hover:w-5 md:hover:h-5 transition-all duration-250 ease-in-out"
+                    className="w-4 h-4  glow-on-hover-white md:hover:w-5 md:hover:h-5 transition-all duration-250 ease-in-out"
                   >
                     <path
                       strokeLinecap="round"
@@ -304,7 +301,7 @@ function Calendar() {
                 </button>
               </div>
             </div>
-            <div className="week-days cursor-default grid grid-cols-7 gap-1 text-center text-white mb-2">
+            <div className="week-days cursor-default grid grid-cols-7 gap-1 text-center text-white mb-2 -ml-2 mr-2 ">
               {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
                 <div key={day} className="font-bold">
                   {day}
@@ -343,7 +340,7 @@ function Calendar() {
           </div>
         </div>
         {isPopupVisible && (
-          <div className="fixed inset-0 flex flex-col bg-black/60 backdrop-blur-[4px] rounded-xl transition-transform duration-300 ease-in-out">
+          <div className="absolute inset-0 flex flex-col bg-black/60 backdrop-blur-[4px] md:rounded-xl transition-transform duration-300 ease-in-out">
             <div
               className={`absolute flex justify-center right-0 top-[15%] w-[60%] h-[40%] bg-[#2C2C2E] rounded-l-2xl ${
                 isPopupVisible && isPopupOpen
@@ -436,13 +433,13 @@ function Calendar() {
         )}
 
         {isPopupEventvisible && (
-          <div className="fixed inset-0 flex flex-col bg-black/60 backdrop-blur-[4px] rounded-xl transition-transform duration-300 ease-in-out items-center">
+          <div className="backroundpopupblur w-full h-full absolute inset-0 flex flex-col bg-black/60 backdrop-blur-[4px] rounded-none md:rounded-xl transition-transform duration-300 ease-in-out items-center">
             <div
-              className={`absolute flex justify-center items-center bottom-0 w-[40%] h-[95%] bg-[#2C2C2E] rounded-t-2xl ${
+              className={`absolute flex justify-center items-center bottom-0 w-full md:w-[40%] h-[95%] bg-[#2C2C2E] rounded-t-2xl ${
                 isPopupEventvisible && isPopupEventOpen
                   ? "animate-popup-up"
                   : "animate-popup-down"
-              } shadow-[inset_0px_-4px_0px_rgba(0,0,0,0.3)]`}
+              } md:shadow-[inset_0px_-4px_0px_rgba(0,0,0,0.3)]`}
             >
               <span className=" absolute top-3  mt-3 text-xl font-bold font-sans text-slate-200">
                 New event
