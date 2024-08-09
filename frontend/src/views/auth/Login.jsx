@@ -253,8 +253,8 @@ const Login = () => {
         </svg>
       </div>
 
-      <div className="card bg-[#232428] absolute flex rounded-[19px] backdrop-blur-xl bg-gradient-to-br from-[#202024] to-[#25272b] shadow-[22px_22px_44px_#121214,-22px_-22px_44px_#34363c] max-w-3xl p-[16px] z-50 items-center">
-        <div className="md: px-8 md:px-16">
+      <div className="card bg-[#232428] absolute flex rounded-[19px] h-[80%] backdrop-blur-xl bg-gradient-to-br from-[#202024] to-[#25272b] shadow-[22px_22px_44px_#121214,-22px_-22px_44px_#34363c] max-w-3xl p-[16px] z-50 items-center">
+        <div className="  px-16">
           <h2 className="font-bold text-2xl text-white text-center">SELFIE</h2>
           <p className="text-xs mt-4 text-slate-500">
             If you are already a member, easily log in
@@ -288,7 +288,8 @@ const Login = () => {
                 <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z" />
               </svg>
             </div>
-            {err && err}
+            <div className="text-red-500 h-6 flex justify-center" >
+            {err && err}</div>
             <button
               className="bg-violet-800 rounded-xl text-white py-2 hover:scale-105 duration-300  hover:shadow-neon-violet "
               onClick={handleLogin}

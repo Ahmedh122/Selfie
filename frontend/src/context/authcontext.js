@@ -30,7 +30,7 @@ export const AuthContextProvider = ({ children }) => {
     }
   };
 
- 
+
 
 
 const logout = async () => {
