@@ -288,10 +288,22 @@ const Login = () => {
                 <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z" />
               </svg>
             </div>
-            <div className="text-red-500 h-6 flex justify-center" >
-            {err && err}</div>
+            <div className="text-red-500 h-6 flex justify-center">
+              {err && err}
+            </div>
+            <style>
+              {`
+          .text-glow {
+            transition: text-shadow 0.3s ease, transform 0.1s ease;
+          }
+
+          .text-glow:hover {
+            text-shadow: 0 0 14px rgba(255, 255, 255, 0.8);
+          }
+        `}
+            </style>
             <button
-              className="bg-violet-800 rounded-xl text-white py-2 hover:scale-105 duration-300  hover:shadow-neon-violet "
+              className="bg-purple-700 rounded-xl text-white py-2 text-l  font-bold font-sans text-glow hover:scale-[99.5%] active:scale-90 transition-transform duration-150 ease-out backdrop-blur-xl bg-gradient-to-br from-[#51367d] to-[#712fdc] shadow-[22px_22px_44px_#121214,-0px_-0px_0px_#34363c] "
               onClick={handleLogin}
             >
               Login

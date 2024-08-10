@@ -165,6 +165,14 @@ function Calendar() {
           button:hover .svg-glow {
           filter: drop-shadow(0 0 20px rgba(255, 255, 255, 1));
           }
+
+          .text-glow {
+            transition: text-shadow 0.3s ease, transform 0.1s ease;
+          }
+
+          .text-glow:hover {
+            text-shadow: 0 0 14px rgba(255, 255, 255, 0.8);
+          }
         `}
       </style>
       <div className="container absolute  flex flex-col md:flex-row p-5 md:p-8 w-full h-full md:w-[70%]  md:h-[85%] rounded-xl md:backdrop-blur-xl md:bg-gradient-to-br from-[#202024] to-[#25272b] md:shadow-[22px_22px_44px_#121214,-22px_-22px_44px_#34363c] overflow-hidden">
@@ -246,7 +254,6 @@ function Calendar() {
         </div>
 
         <div className="righthalf absolute w-full p-5 left-0 md:p-0 md:left-auto md:static flex justify-center items-center bottom-[20%] md:w-1/2">
-          
           <div className="flex flex-col w-full md:w-[80%] transition-all ease-in-out duration-300">
             <div className="flex justify-between items-center w-full mb-2">
               <div
@@ -362,7 +369,7 @@ function Calendar() {
                     viewBox="0 0 24 24"
                     strokeWidth={1.5}
                     stroke="currentColor"
-                    className="w-3 h-3 md:w-8 md:h-8 svg-glow hover:right-2 md:hover:w-9 transition-all duration-250 ease-in-out"
+                    className="w-3 h-3 md:w-8 md:h-8 glow-on-hover-white hover:right-2 md:hover:w-9 transition-all duration-250 ease-in-out"
                   >
                     <path
                       strokeLinecap="round"
@@ -454,7 +461,7 @@ function Calendar() {
                   viewBox="0 0 24 24"
                   stroke-width="1.5"
                   stroke="currentColor"
-                  class="absolute w-2 h-3 md:w-8 md:h-8 svg-glow bottom-1  transition-all duration-250 ease-in-out"
+                  class="absolute w-2 h-3 md:w-8 md:h-8 glow-on-hover-white bottom-1  transition-all duration-250 ease-in-out"
                 >
                   <path
                     stroke-linecap="round"

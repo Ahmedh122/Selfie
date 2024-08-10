@@ -65,7 +65,7 @@ function General() {
           }
         `}
       </style>
-      <div className="flex  absolute top-0 text-purple-700 font-bold font-sans text-5xl w-screen h-[25%]    bg-[#141517] shadow-[15px_15px_35px_#121214,-15px_-15px_35px_#34363c]">
+      <div className="flex  absolute top-0 text-violet-700 font-bold font-sans text-5xl w-screen h-[25%]    bg-[#141517] shadow-[15px_15px_35px_#121214,-15px_-15px_35px_#34363c]">
         <div className="w-[90%] h-[90%]  flex flex-col justify-end  ml-5">
           <span className="text-white text-[2rem]">welcome to</span>
           <span className="text-purple-600 text-[5rem]">SELFIE.</span>
