@@ -51,6 +51,14 @@ module.exports = {
           textShadow:
             "0 0 5px rgba(139, 92, 246, 0.7), 0 0 10px rgba(139, 92, 246, 0.7), 0 0 15px rgba(139, 92, 246, 0.7)",
         },
+        ".no-scrollbar": {
+          "-ms-overflow-style":
+            "none" ,
+          "scrollbar-width": "none" ,
+        },
+        ".no-scrollbar::-webkit-scrollbar": {
+          display: "none" ,
+        },
       });
     }),
   ],

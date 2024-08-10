@@ -48,6 +48,10 @@ function Calendar() {
   const [isPopupVisible, setPopupVisible] = useState(false);
   const [isPopupEventOpen, setPopupEventOpen] = useState(false);
   const [isPopupEventvisible, setPopupEventVisible] = useState(false);
+  const [isStartEventDateopen, setStartEventDateopen] = useState(false);
+  const [isStartEventTimeopen, setStartEventTimeopen] = useState(false);
+  const [isEndEventDateopen, setEndEventDateopen] = useState(false);
+  const [isndEventTimeopen, setEndEventTimeopen] = useState(false);
 
   const daysInMonth = new Date(displayYear, displayMonth + 1, 0).getDate();
   const firstDayOfMonth = new Date(displayYear, displayMonth, 1).getDay();
@@ -88,6 +92,12 @@ function Calendar() {
 
   const togglePopupEvent = () => {
     setPopupEventOpen(!isPopupEventOpen);
+  };
+
+  const toggleStartEventDate = (e) => {
+    e.preventDefault();
+    setStartEventDateopen(!isStartEventDateopen);
+    console.log(isStartEventDateopen);
   };
 
   useEffect(() => {
@@ -142,8 +152,6 @@ function Calendar() {
       setSelectedDate(currentDate);
     }
   };
-
- 
 
   return (
     <div className="calendar-app h-full w-full flex justify-center items-center relative">
@@ -442,34 +450,182 @@ function Calendar() {
         {isPopupEventvisible && (
           <div className="backroundpopupblur w-full h-full absolute inset-0 flex flex-col bg-black/60 backdrop-blur-[4px] rounded-none md:rounded-xl transition-transform duration-300 ease-in-out items-center">
             <div
-              className={`absolute flex justify-center items-center bottom-0 w-full md:w-[40%] h-[95%] bg-[#2C2C2E] rounded-t-2xl ${
+              className={`absolute flex justify-center  bottom-0 w-full md:w-[40%] h-[90%] bg-[#2C2C2E] rounded-t-2xl overflow-scroll no-scrollbar ${
                 isPopupEventvisible && isPopupEventOpen
                   ? "animate-popup-up"
                   : "animate-popup-down"
               } md:shadow-[inset_0px_-4px_0px_rgba(0,0,0,0.3)]`}
             >
-              <span className=" absolute top-3  mt-3 text-xl font-bold font-sans text-slate-200">
-                New event
-              </span>
-              <button
-                className=" absolute w-10 h-10 top-3   flex justify-center items-center  hover:h-16 left-5 text-violet-500 text-3xl rounded-full bg-[#1B1B1F] transition-all duration-250 ease-in-out"
-                onClick={togglePopupEvent}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width="1.5"
-                  stroke="currentColor"
-                  class="absolute w-2 h-3 md:w-8 md:h-8 glow-on-hover-white bottom-1  transition-all duration-250 ease-in-out"
+              <div className="sticky top-0 flex justify-center items-center bg-violet-700 w-full h-[14%] rounded-t-2xl z-10">
+                <span className="text-xl font-bold font-sans text-slate-200">
+                  New event
+                </span>
+                <button
+                  className="absolute w-10 h-10 top-3 flex justify-center items-center left-5 text-red-500 text-3xl rounded-full bg-[#1B1B1F] transition-all duration-250 ease-in-out"
+                  onClick={togglePopupEvent}
                 >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="m19.5 8.25-7.5 7.5-7.5-7.5"
-                  />
-                </svg>
-              </button>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth="1.5"
+                    stroke="currentColor"
+                    className="absolute w-2 h-3 md:w-8 md:h-8 glow-on-hover-white bottom-1 transition-all duration-250 ease-in-out"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="m19.5 8.25-7.5 7.5-7.5-7.5"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <form className="flex flex-col gap-4 absolute w-full px-8 top-[20%]">
+                <div className=" flex flex-row justify-evenly items-center w-full">
+                  <input
+                    className="p-2 rounded-xl border text-white w-full bg-[#4a484d] text-center border-none focus:outline-none"
+                    type="Title"
+                    name="Title"
+                    placeholder="Title"
+                  ></input>
+                </div>
+                <div className="flex flex-col  w-full rounded-2xl bg-[#1B1B1F] gap-4 p-6">
+                  <div className=" flex flex-row justify-between items-center w-full">
+                    <span className="text-white font-semibold mr-6">start</span>
+                    <button
+                      className="p-2 rounded-md w-[40%] h-[2.5rem] border text-white  bg-[#4a484d] border-none focus:outline-none mr-1"
+                      onClick={toggleStartEventDate}
+                    >startdate</button>
+                    <button
+                      className="p-2 rounded-md w-[40%] h-[2.5rem] border text-white  bg-[#4a484d] border-none focus:outline-none"
+                     
+                    >
+                      starttime
+                    </button>
+                  </div>
+                  {isStartEventDateopen && (
+                    <div className=" eventSelectStart absolute w-full p-6 left-0 md:p-0 md:left-auto md:static flex justify-center items-center bottom-[20%] ">
+                      <div className="flex flex-col w-full md:w-full transition-all ease-in-out duration-300">
+                        <div className="flex justify-between items-center w-full mb-2">
+                          <div
+                            className="flex items-end hover:bg-[#1B1B1F] -ml-[4%] rounded-l-full rounded-r-full p-4 transition-all ease-in-out duration-300"
+                            onClick={togglePopup}
+                          >
+                            <span className="text-violet-500 font-bold text-lg md:text-xl mr-2 mb-1 cursor-pointer">
+                              {monthsOfYear[displayMonth]}
+                            </span>
+                            <span className="text-white font-bold text-2xl md:text-3xl cursor-pointer mb-1">
+                              {displayYear}
+                            </span>
+                          </div>
+                          <div className="flex justify-between w-[25%] mr-1 md:mr-3.5 ">
+                            <button
+                              className="bg-[#141517] flex justify-center items-center text-red-500 rounded-full w-8 h-8 "
+                             
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth={1.5}
+                                stroke="currentColor"
+                                className=" w-4 h-4 glow-on-hover-white md:hover:w-5 md:hover:h-5 transition-all duration-250 ease-in-out "
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M15.75 19.5 8.25 12l7.5-7.5"
+                                />
+                              </svg>
+                            </button>
+                            <button
+                              className="bg-[#141517] flex justify-center items-center text-red-500 rounded-full ml-3 w-8 h-8 "
+                           
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth={1.5}
+                                stroke="currentColor"
+                                className="w-4 h-4  glow-on-hover-white md:hover:w-5 md:hover:h-5 transition-all duration-250 ease-in-out"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="m8.25 4.5 7.5 7.5-7.5 7.5"
+                                />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+                        <div className="week-days cursor-default grid grid-cols-7 gap-3 text-center text-white mb-2 -ml-2 mr-2 ">
+                          {[
+                            "Sun",
+                            "Mon",
+                            "Tue",
+                            "Wed",
+                            "Thu",
+                            "Fri",
+                            "Sat",
+                          ].map((day) => (
+                            <div key={day} className="font-bold">
+                              {day}
+                            </div>
+                          ))}
+                        </div>
+                        <div className="days grid grid-cols-7 gap-1 text-center text-white">
+                          {[...Array(firstDayOfMonth).keys()].map(
+                            (_, index) => (
+                              <span key={`empty-${index}`} />
+                            )
+                          )}
+                          {[...Array(daysInMonth).keys()].map((day) => {
+                            const date = day + 1;
+                            const isSelectedDate =
+                              selectedDate &&
+                              selectedDate.getDate() === date &&
+                              selectedDate.getMonth() === displayMonth &&
+                              selectedDate.getFullYear() === displayYear;
+                            const isCurrentDay = isToday(date);
+                            return (
+                              <span
+                                key={date}
+                                onClick={() => handleDateClick(date)}
+                                className={`cursor-pointer rounded-full w-7 h-7 md:w-8 md:h-8 flex items-center justify-center ${
+                                  isSelectedDate
+                                    ? "bg-violet-500 text-white"
+                                    : isCurrentDay
+                                    ? "bg-red-500 text-white"
+                                    : "hover:bg-gray-700"
+                                }`}
+                              >
+                                {date}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  <div className=" flex flex-row justify-between items-center w-full">
+                    <span className="text-white font-semibold mr-7">end</span>
+                    <input
+                      className="p-2 rounded-md w-[40%] border text-white  bg-[#4a484d] border-none focus:outline-none mr-1"
+                      type="Title"
+                      name="Title"
+                      placeholder="Title"
+                    ></input>
+
+                    <input
+                      className="p-2 rounded-md w-[40%] border text-white  bg-[#4a484d] border-none focus:outline-none"
+                      type="Title"
+                      name="Title"
+                      placeholder="Title"
+                    ></input>
+                  </div>
+                </div>
+              </form>
             </div>
           </div>
         )}
