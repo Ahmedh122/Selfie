@@ -1,13 +1,22 @@
 import React, { useState, useEffect } from "react";
 
 function Timer() {
-  const [minutes, setMinutes] = useState("00");
-  const [secs, setSecs] = useState("00");
-  const [intervalId, setIntervalId] = useState(null);
-  let seconds = 0;
-  const [memseconds, setMemseconds] = useState(0);
 
-  const [numberpomodoro, setNumberpomodoro] = useState(0); //number of pomodoro done
+  let work = 10; //25 minutes = 1500 seconds
+  let shortBreak = 5; //5 minutes = 300 seconds
+  let longBreak = 7; //15 minutes = 900 seconds
+  let longBreakInterval = 4; //4 pomodoro = 4*25 minutes = 100 minutes = 6000 seconds
+
+  const [minutes, setMinutes] = useState(Math.floor((work % 3600) / 60).toString().padStart(2, '0'));
+  const [secs, setSecs] = useState((work % 60).toString().padStart(2, '0'));
+  const [intervalId, setIntervalId] = useState(null);
+
+  
+  let seconds = work;
+  const [memseconds, setMemseconds] = useState(work);
+
+  const [numberpomodoro, setNumberpomodoro] = useState(1); //number of pomodoro done
+  const [mode, setMode] = useState(1); //1=work, 2=short break, 3=long break
 
   useEffect(() => {
     return () => {
@@ -20,7 +29,7 @@ function Timer() {
   function update() {
     setMinutes(Math.floor((seconds % 3600) / 60).toString().padStart(2, '0'));
     setSecs((seconds % 60).toString().padStart(2, '0'));
-    if (seconds === 5) { //25 minutes = 1500 seconds
+    if (seconds === 0) { //25 minutes = 1500 seconds
       setIntervalId(null);
       reset();
     }
@@ -32,9 +41,11 @@ function Timer() {
       setIntervalId(null);
       return;
     }
-    seconds = memseconds;
+    if (mode == 1) {seconds = work;}
+    if (mode == 2) {seconds = shortBreak;}
+    if (mode == 3) {seconds = longBreak;}
     const id = setInterval(() => {
-      seconds++;
+      seconds--;
       setMemseconds(seconds);
       update();
     }, 1000);
@@ -49,12 +60,25 @@ function Timer() {
   }
 
   function reset() {
+    if (mode < 3) {setMode(mode+1);}
+    else {setMode(1);}
     setNumberpomodoro(numberpomodoro + 1);
-    pause();
-    seconds = 0;
-    setMemseconds(0);
-    update();
+    //if (mode == 1) {seconds = work;}
+    //if (mode == 2) {seconds = shortBreak;}
+    //if (mode == 3) {seconds = longBreak;}
+    //console.log("seconds=",seconds);
+    //setMemseconds(seconds);
+    //update();
   }
+
+  useEffect(() => {
+    pause();
+    if (mode == 1) {seconds = work;}
+    if (mode == 2) {seconds = shortBreak;}
+    if (mode == 3) {seconds = longBreak;}
+    setMemseconds(seconds);
+    update();
+  }, [mode]); 
 
   return (
     <div class="bg-gray-100 flex items-center 
@@ -62,6 +86,9 @@ function Timer() {
       <div class={`rounded-lg shadow-lg p-20 ${intervalId ? 'bg-red-400' : 'bg-white'}`}>
         <h1 class="text-3xl font-bold mb-2 text-center">
           Timer
+        </h1>
+        <h1 class="text-3xl font-bold mb-2 text-center">
+          {mode == 1 ? 'Work' : mode == 2 ? 'Short Break' : 'Long Break'} 
         </h1>
         <div class="flex items-center justify-center 
                     bg-gray-200 rounded-lg p-4 mt-8">
