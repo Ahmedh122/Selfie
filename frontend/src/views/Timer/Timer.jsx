@@ -5,7 +5,7 @@ function Timer() {
   let work = 10; //25 minutes = 1500 seconds
   let shortBreak = 5; //5 minutes = 300 seconds
   let longBreak = 7; //15 minutes = 900 seconds
-  let longBreakInterval = 4; //4 pomodoro = 4*25 minutes = 100 minutes = 6000 seconds
+  let longBreakInterval = 3; //4 pomodoro = 4*25 minutes = 100 minutes = 6000 seconds
 
   const [minutes, setMinutes] = useState(Math.floor((work % 3600) / 60).toString().padStart(2, '0'));
   const [secs, setSecs] = useState((work % 60).toString().padStart(2, '0'));
@@ -13,9 +13,9 @@ function Timer() {
 
   
   let seconds = work;
-  const [memseconds, setMemseconds] = useState(work);
+  const [brek, setBrek] = useState(longBreakInterval);
 
-  const [numberpomodoro, setNumberpomodoro] = useState(1); //number of pomodoro done
+  const [numberpomodoro, setNumberpomodoro] = useState(0); //number of pomodoro done
   const [mode, setMode] = useState(1); //1=work, 2=short break, 3=long break
 
   useEffect(() => {
@@ -46,7 +46,7 @@ function Timer() {
     if (mode == 3) {seconds = longBreak;}
     const id = setInterval(() => {
       seconds--;
-      setMemseconds(seconds);
+      //setMemseconds(seconds);
       update();
     }, 1000);
     setIntervalId(id);
@@ -60,9 +60,28 @@ function Timer() {
   }
 
   function reset() {
-    if (mode < 3) {setMode(mode+1);}
-    else {setMode(1);}
-    setNumberpomodoro(numberpomodoro + 1);
+
+    switch (mode) {
+      case 1:
+        setNumberpomodoro(numberpomodoro + 1);
+        if (brek > 0) {
+          setMode(mode + 1);
+          setBrek(brek - 1)
+        }
+        else{
+          setMode(3);
+        }
+        break;
+      case 2:
+        setMode(1);
+        break;
+      case 3:
+        setMode(1);
+        setBrek(longBreakInterval)
+        break;
+      default:
+        setMode(1);
+    }
     //if (mode == 1) {seconds = work;}
     //if (mode == 2) {seconds = shortBreak;}
     //if (mode == 3) {seconds = longBreak;}
@@ -76,7 +95,7 @@ function Timer() {
     if (mode == 1) {seconds = work;}
     if (mode == 2) {seconds = shortBreak;}
     if (mode == 3) {seconds = longBreak;}
-    setMemseconds(seconds);
+    //setMemseconds(seconds);
     update();
   }, [mode]); 
 
