@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from "react";
+import settingico from "../../assets/icon-settings.svg";
 
 function Timer() {
 
-  let work = 10; //25 minutes = 1500 seconds
-  let shortBreak = 5; //5 minutes = 300 seconds
-  let longBreak = 7; //15 minutes = 900 seconds
-  let longBreakInterval = 3; //4 pomodoro = 4*25 minutes = 100 minutes = 6000 seconds
-
-  const [minutes, setMinutes] = useState(Math.floor((work % 3600) / 60).toString().padStart(2, '0'));
-  const [secs, setSecs] = useState((work % 60).toString().padStart(2, '0'));
+  const [workTime, setWorkTime] = useState(1500); //25 minutes = 1500 seconds
+  const [shortBreakTime, setShortBreakTime] = useState(300); //5 minutes = 300 seconds
+  const [longBreakTime, setLongBreakTime] = useState(900); //15 minutes = 900 seconds
+  const [longBreakInterval, setLongBreakInterval] = useState(3); //4 pomodoro = 1 long break
+  const [minutes, setMinutes] = useState(Math.floor((workTime % 3600) / 60).toString().padStart(2, '0'));
+  const [secs, setSecs] = useState((workTime % 60).toString().padStart(2, '0'));
   const [intervalId, setIntervalId] = useState(null);
+  const [isPopupVisible, setPopupVisible] = useState(false);
 
-  
-  let seconds = work;
+  let seconds = workTime;
   const [brek, setBrek] = useState(longBreakInterval);
 
   const [numberpomodoro, setNumberpomodoro] = useState(0); //number of pomodoro done
@@ -41,9 +41,9 @@ function Timer() {
       setIntervalId(null);
       return;
     }
-    if (mode == 1) {seconds = work;}
-    if (mode == 2) {seconds = shortBreak;}
-    if (mode == 3) {seconds = longBreak;}
+    if (mode == 1) {seconds = workTime;}
+    if (mode == 2) {seconds = shortBreakTime;}
+    if (mode == 3) {seconds = longBreakTime;}
     const id = setInterval(() => {
       seconds--;
       //setMemseconds(seconds);
@@ -92,12 +92,22 @@ function Timer() {
 
   useEffect(() => {
     pause();
-    if (mode == 1) {seconds = work;}
-    if (mode == 2) {seconds = shortBreak;}
-    if (mode == 3) {seconds = longBreak;}
+    if (mode == 1) {seconds = workTime;}
+    if (mode == 2) {seconds = shortBreakTime;}
+    if (mode == 3) {seconds = longBreakTime;}
     //setMemseconds(seconds);
     update();
-  }, [mode]); 
+  }, [mode,workTime, shortBreakTime, longBreakTime, longBreakInterval]); 
+
+  function togglePopup(){
+    setPopupVisible(!isPopupVisible);
+  }
+  
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    togglePopup();
+  };
+
 
   return (
     <div class="bg-gray-100 flex items-center 
@@ -125,10 +135,88 @@ function Timer() {
           </button>
         </div>
         <div class="flex justify-center space-x-4 mt-8">
-          <h6>#{numberpomodoro}</h6>
-
+          <h6>#{numberpomodoro} ## {longBreakInterval}</h6>
+        </div>
+        <div class="flex justify-center space-x-4 mt-8">
+          <h6><button class="bg-black" onClick={togglePopup}><img src={settingico} alt="" /></button></h6>
         </div>
       </div>
+      {isPopupVisible && (
+        <div className="bg-gray-100 flex items-center justify-center h-screen">
+          <div className="rounded-lg shadow-lg p-20 bg-white">
+            <h1 className="text-3xl font-bold mb-2 text-center">Settings</h1>
+            <div className="flex justify-center space-x-4 mt-8">
+              <form onSubmit={handleSubmit}>
+                <div className="flex justify-center space-x-4 mt-8">
+                  <label>
+                    Work time:
+                    <input
+                      className="ml-2"
+                      type="number"
+                      value={workTime}
+                      onChange={(e) => setWorkTime(e.target.value)}
+                      min={0}
+                    />
+                  </label>
+                </div>
+                <div className="flex justify-center space-x-4 mt-8">
+                  <label>
+                    Short break time:
+                    <input
+                      className="ml-2"
+                      type="number"
+                      value={shortBreakTime}
+                      onChange={(e) => setShortBreakTime(e.target.value)}
+                      min={0}
+                    />
+                  </label>
+                </div>
+                <div className="flex justify-center space-x-4 mt-8">
+                  <label>
+                    Long break time:
+                    <input
+                      className="ml-2"
+                      type="number"
+                      value={longBreakTime}
+                      onChange={(e) => setLongBreakTime(e.target.value)}
+                      min={0}
+                    />
+                  </label>
+                </div>
+                <div className="flex justify-center space-x-4 mt-8">
+                  <label>
+                    Long break interval:
+                    <input
+                      className="ml-2"
+                      type="number"
+                      value={longBreakInterval}
+                      onChange={(e) => [setLongBreakInterval(e.target.value), setBrek(e.target.value)]}
+                      min={0}
+                    />
+                  </label>
+                </div>
+                <div className="flex justify-center space-x-4 mt-8">
+                  <label>
+                    Total study time:
+                    <input
+                      className="ml-2"
+                      type="number"
+                      value={workTime*longBreakInterval}
+                      onChange={(e) => setLongBreakInterval(Math.floor(e.target.value/workTime))}
+                      min={0}
+                    />
+                  </label>
+                </div>
+                <div className="flex justify-center space-x-4 mt-8">
+                  <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                    Save
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 } export default Timer;
