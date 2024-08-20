@@ -1,26 +1,29 @@
-import React from "react";
+import { useState } from "react"
+import StickyNote from "./StickyNote"
 
-const Notes = () => {
-  return (
-    <div>
-      <svg width="200" height="200" viewBox="-100 -100 200 200">
-        <g stroke="black" stroke-width="2">
-          <path
-            d="
-        M -60 50
-        L -60 50
-        L 60 50
-        L 60 50
-        Q 50 30 50 0
-        C 50 -40 -50 -40 -50 0
-        Q -50 30 -60 50
-       "
-            fill="black"
-          />
-        </g>
-      </svg>
-    </div>
-  );
-};
+function Notes() {
+    const [notes, setNotes] = useState([])
+    function addNote() {
+        setNotes([
+            ...notes,
+            {
+                id: Date.now(),
+            },
+        ])
+    }
+    function removeNote(noteId) {
+        setNotes(notes.filter((item) => item.id !== noteId))
+    }
+    return (
+        <div>
+            <button class="p-2 bg-blue-500 text-white rounded-lg cursor-pointer border-none hover:bg-blue-400" onClick={addNote}>
+                Create Note +
+            </button>
+            {notes.map((item) => (
+                <StickyNote key={item.id} onClose={() => removeNote(item.id)} />
+            ))}
+        </div>
+    )
+}
 
 export default Notes;

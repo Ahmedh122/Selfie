@@ -94,7 +94,7 @@ function Timer() {
     pause();
     if (mode == 1) {seconds = workTime;}
     if (mode == 2) {seconds = shortBreakTime;}
-    if (mode == 3) {seconds = longBreakTime;}
+    if (mode == 3) {seconds = longBreakTime; alert("hai finito il ciclo");}
     //setMemseconds(seconds);
     update();
   }, [mode,workTime, shortBreakTime, longBreakTime, longBreakInterval]); 
@@ -135,7 +135,7 @@ function Timer() {
           </button>
         </div>
         <div class="flex justify-center space-x-4 mt-8">
-          <h6>#{numberpomodoro} ## {longBreakInterval}</h6>
+          <h6>#{numberpomodoro}</h6>
         </div>
         <div class="flex justify-center space-x-4 mt-8">
           <h6><button class="bg-black" onClick={togglePopup}><img src={settingico} alt="" /></button></h6>
