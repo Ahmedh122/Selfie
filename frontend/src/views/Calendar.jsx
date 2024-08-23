@@ -52,11 +52,21 @@ function Calendar() {
   const [isStartEventTimeopen, setStartEventTimeopen] = useState(false);
   const [isEndEventDateopen, setEndEventDateopen] = useState(false);
   const [isndEventTimeopen, setEndEventTimeopen] = useState(false);
+  const [displayMonthEventStart, setDisplayMonthEventStart] = useState(currentDate.getMonth());
+  const [displayYearEventStart, setDisplayYearEventStart] = useState(currentDate.getFullYear());
+  const [selectedDateEventStart, setSelectedDateEventStart] = useState(null);
 
   const daysInMonth = new Date(displayYear, displayMonth + 1, 0).getDate();
+  const daysInMonthEventDateStart = new Date(displayYearEventStart, displayMonthEventStart + 1, 0).getDate();
   const firstDayOfMonth = new Date(displayYear, displayMonth, 1).getDay();
+  const firstDayOfMonthEventDateStart = new Date(
+    displayYearEventStart,
+    displayMonthEventStart,
+    1
+  ).getDay();
 
-  const changeMonth = (offset) => {
+  const changeMonth = (offset ) => {
+    
     setDisplayMonth((prevMonth) => {
       const newMonth = prevMonth + offset;
       if (newMonth < 0) {
@@ -70,6 +80,26 @@ function Calendar() {
       }
     });
   };
+
+
+
+  const changeMonthStartEvent = (offset, e) => {
+    e.preventDefault();
+    setDisplayMonthEventStart((prevMonth) => {
+      const newMonth = prevMonth + offset;
+      if (newMonth < 0) {
+        setDisplayYearEventStart(displayYearEventStart - 1);
+        return 11;
+      } else if (newMonth > 11) {
+        setDisplayYearEventStart(displayYearEventStart + 1);
+        return 0;
+      } else {
+        return newMonth;
+      }
+    });
+  };
+
+
 
   const resetCalendar = () => {
     setDisplayMonth(currentDate.getMonth());
@@ -93,12 +123,19 @@ function Calendar() {
   const togglePopupEvent = () => {
     setPopupEventOpen(!isPopupEventOpen);
   };
+  
 
   const toggleStartEventDate = (e) => {
     e.preventDefault();
     setStartEventDateopen(!isStartEventDateopen);
-    console.log(isStartEventDateopen);
+   
   };
+
+  const toggleStartEventTime =(e)=>{
+    e.preventDefault();
+    setStartEventTimeopen(!isStartEventTimeopen);
+
+  }
 
   useEffect(() => {
     if (isPopupOpen) {
@@ -495,10 +532,12 @@ function Calendar() {
                     <button
                       className="p-2 rounded-md w-[40%] h-[2.5rem] border text-white  bg-[#4a484d] border-none focus:outline-none mr-1"
                       onClick={toggleStartEventDate}
-                    >startdate</button>
+                    >
+                      startdate
+                    </button>
                     <button
                       className="p-2 rounded-md w-[40%] h-[2.5rem] border text-white  bg-[#4a484d] border-none focus:outline-none"
-                     
+                      onClick={toggleStartEventTime}
                     >
                       starttime
                     </button>
@@ -512,16 +551,16 @@ function Calendar() {
                             onClick={togglePopup}
                           >
                             <span className="text-violet-500 font-bold text-lg md:text-xl mr-2 mb-1 cursor-pointer">
-                              {monthsOfYear[displayMonth]}
+                              {monthsOfYear[displayMonthEventStart]}
                             </span>
                             <span className="text-white font-bold text-2xl md:text-3xl cursor-pointer mb-1">
-                              {displayYear}
+                              {displayYearEventStart}
                             </span>
                           </div>
                           <div className="flex justify-between w-[25%] mr-1 md:mr-3.5 ">
                             <button
                               className="bg-[#141517] flex justify-center items-center text-red-500 rounded-full w-8 h-8 "
-                             
+                              onClick={(e) => changeMonthStartEvent(-1, e)}
                             >
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -540,7 +579,7 @@ function Calendar() {
                             </button>
                             <button
                               className="bg-[#141517] flex justify-center items-center text-red-500 rounded-full ml-3 w-8 h-8 "
-                           
+                              onClick={(e) => changeMonthStartEvent(1, e)}
                             >
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -575,12 +614,12 @@ function Calendar() {
                           ))}
                         </div>
                         <div className="days grid grid-cols-7 gap-1 text-center text-white">
-                          {[...Array(firstDayOfMonth).keys()].map(
+                          {[...Array(firstDayOfMonthEventDateStart).keys()].map(
                             (_, index) => (
                               <span key={`empty-${index}`} />
                             )
                           )}
-                          {[...Array(daysInMonth).keys()].map((day) => {
+                          {[...Array(daysInMonthEventDateStart).keys()].map((day) => {
                             const date = day + 1;
                             const isSelectedDate =
                               selectedDate &&
