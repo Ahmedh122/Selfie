@@ -565,7 +565,13 @@ const resetEventDate = () => {
                       className="p-2 rounded-md w-[40%] h-[2.5rem] border text-white  bg-[#4a484d] border-none focus:outline-none mr-1"
                       onClick={toggleStartEventDate}
                     >
-                      startdate
+                      {selectedDateEventStart
+                        ? `${selectedDateEventStart.getDate()}/${
+                            selectedDateEventStart.getMonth() + 1
+                          }/${selectedDateEventStart.getFullYear()}`
+                        : `${currentDate.getDate()}/${
+                            currentDate.getMonth() + 1
+                          }/${currentDate.getFullYear()}`}
                     </button>
                     <button
                       className="p-2 rounded-md w-[40%] h-[2.5rem] border text-white  bg-[#4a484d] border-none focus:outline-none"
