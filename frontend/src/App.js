@@ -10,11 +10,11 @@ import {
 import General from "./views/General";
 import Navbar from "./components/Navbar";
 import Home from "./views/Home";
-import Calendar from "./views/Calendar";
-import Notes from "./views/Notes";
+import Calendar from "./views/calendar/Calendar";
+import Notes from "./views/notes/Notes";
 import Search from "./views/Search";
 import Profile from "./views/Profile";
-import Timer from "./views/Timer";
+import Timer from "./views/Timer/Timer";
 import Login from "./views/auth/Login";
 import Register from "./views/auth/Register";
 import { AuthContext } from "./context/authcontext";
