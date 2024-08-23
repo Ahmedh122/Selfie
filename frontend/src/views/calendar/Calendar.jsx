@@ -52,12 +52,24 @@ function Calendar() {
   const [isStartEventTimeopen, setStartEventTimeopen] = useState(false);
   const [isEndEventDateopen, setEndEventDateopen] = useState(false);
   const [isndEventTimeopen, setEndEventTimeopen] = useState(false);
-  const [displayMonthEventStart, setDisplayMonthEventStart] = useState(currentDate.getMonth());
-  const [displayYearEventStart, setDisplayYearEventStart] = useState(currentDate.getFullYear());
-  const [selectedDateEventStart, setSelectedDateEventStart] = useState(null);
+  const [displayMonthEventStart, setDisplayMonthEventStart] = useState(
+    currentDate.getMonth()
+  );
+  const [displayYearEventStart, setDisplayYearEventStart] = useState(
+    currentDate.getFullYear()
+  );
+  const [selectedDateEventStart, setSelectedDateEventStart] =
+    useState(null);
+  const [isEventDateStartManuallySet, setIsEventDateStartManuallySet] = useState(false);
+  const [isEventDateEndtManuallySet, setIsEventDateEndManuallySet] =
+    useState(false);
 
   const daysInMonth = new Date(displayYear, displayMonth + 1, 0).getDate();
-  const daysInMonthEventDateStart = new Date(displayYearEventStart, displayMonthEventStart + 1, 0).getDate();
+  const daysInMonthEventDateStart = new Date(
+    displayYearEventStart,
+    displayMonthEventStart + 1,
+    0
+  ).getDate();
   const firstDayOfMonth = new Date(displayYear, displayMonth, 1).getDay();
   const firstDayOfMonthEventDateStart = new Date(
     displayYearEventStart,
@@ -65,8 +77,7 @@ function Calendar() {
     1
   ).getDay();
 
-  const changeMonth = (offset ) => {
-    
+  const changeMonth = (offset) => {
     setDisplayMonth((prevMonth) => {
       const newMonth = prevMonth + offset;
       if (newMonth < 0) {
@@ -80,8 +91,6 @@ function Calendar() {
       }
     });
   };
-
-
 
   const changeMonthStartEvent = (offset, e) => {
     e.preventDefault();
@@ -99,22 +108,47 @@ function Calendar() {
     });
   };
 
-
-
   const resetCalendar = () => {
     setDisplayMonth(currentDate.getMonth());
     setDisplayYear(currentDate.getFullYear());
     setSelectedDate(null);
   };
 
-  const isToday = (day) =>
-    day === currentDate.getDate() &&
-    currentDate.getMonth() === displayMonth &&
-    currentDate.getFullYear() === displayYear;
+  const isToday = (day) => {
+    return (
+      day === currentDate.getDate() &&
+      currentDate.getMonth() === displayMonth &&
+      currentDate.getFullYear() === displayYear
+    );
+  };
 
   const handleDateClick = (day) => {
     setSelectedDate(new Date(displayYear, displayMonth, day));
+    setDisplayMonthEventStart(displayMonth);
+    setDisplayYearEventStart(displayYear);
   };
+
+useEffect(() => {
+  if (!isEventDateStartManuallySet) {
+    if (selectedDate) {
+      setSelectedDateEventStart(selectedDate);
+    } else {
+      setSelectedDateEventStart(currentDate);
+    }
+  }
+}, [selectedDate, currentDate, isEventDateStartManuallySet]);
+
+const handleDateClickEVentStart = (day) => {
+  setSelectedDateEventStart(
+    new Date(displayYearEventStart, displayMonthEventStart, day)
+  );
+  setIsEventDateStartManuallySet(true); 
+};
+
+const resetEventDate = () => {
+  setIsEventDateStartManuallySet(false);
+  setIsEventDateEndManuallySet(false); 
+};
 
   const togglePopup = () => {
     setPopupOpen(!isPopupOpen);
@@ -123,19 +157,16 @@ function Calendar() {
   const togglePopupEvent = () => {
     setPopupEventOpen(!isPopupEventOpen);
   };
-  
 
   const toggleStartEventDate = (e) => {
     e.preventDefault();
     setStartEventDateopen(!isStartEventDateopen);
-   
   };
 
-  const toggleStartEventTime =(e)=>{
+  const toggleStartEventTime = (e) => {
     e.preventDefault();
     setStartEventTimeopen(!isStartEventTimeopen);
-
-  }
+  };
 
   useEffect(() => {
     if (isPopupOpen) {
@@ -619,30 +650,34 @@ function Calendar() {
                               <span key={`empty-${index}`} />
                             )
                           )}
-                          {[...Array(daysInMonthEventDateStart).keys()].map((day) => {
-                            const date = day + 1;
-                            const isSelectedDate =
-                              selectedDate &&
-                              selectedDate.getDate() === date &&
-                              selectedDate.getMonth() === displayMonth &&
-                              selectedDate.getFullYear() === displayYear;
-                            const isCurrentDay = isToday(date);
-                            return (
-                              <span
-                                key={date}
-                                onClick={() => handleDateClick(date)}
-                                className={`cursor-pointer rounded-full w-7 h-7 md:w-8 md:h-8 flex items-center justify-center ${
-                                  isSelectedDate
-                                    ? "bg-violet-500 text-white"
-                                    : isCurrentDay
-                                    ? "bg-red-500 text-white"
-                                    : "hover:bg-gray-700"
-                                }`}
-                              >
-                                {date}
-                              </span>
-                            );
-                          })}
+                          {[...Array(daysInMonthEventDateStart).keys()].map(
+                            (day) => {
+                              const date = day + 1;
+                              const isSelectedDateEventStart =
+                                selectedDateEventStart &&
+                                selectedDateEventStart.getDate() === date &&
+                                selectedDateEventStart.getMonth() ===
+                                  displayMonthEventStart &&
+                                selectedDateEventStart.getFullYear() ===
+                                  displayYearEventStart;
+
+                              return (
+                                <span
+                                  key={date}
+                                  onClick={() =>
+                                    handleDateClickEVentStart(date)
+                                  }
+                                  className={`cursor-pointer rounded-full w-7 h-7 md:w-8 md:h-8 flex items-center justify-center ${
+                                    isSelectedDateEventStart
+                                      ? "bg-violet-500 text-white"
+                                      : "hover:bg-gray-700"
+                                  }`}
+                                >
+                                  {date}
+                                </span>
+                              );
+                            }
+                          )}
                         </div>
                       </div>
                     </div>
