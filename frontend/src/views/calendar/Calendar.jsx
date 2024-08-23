@@ -156,6 +156,7 @@ const resetEventDate = () => {
 
   const togglePopupEvent = () => {
     setPopupEventOpen(!isPopupEventOpen);
+    resetEventDate();
   };
 
   const toggleStartEventDate = (e) => {
