@@ -51,7 +51,7 @@ function Calendar() {
   const [isStartEventDateopen, setStartEventDateopen] = useState(false);
   const [isStartEventTimeopen, setStartEventTimeopen] = useState(false);
   const [isEndEventDateopen, setEndEventDateopen] = useState(false);
-  const [isndEventTimeopen, setEndEventTimeopen] = useState(false);
+  const [isEndEventTimeopen, setEndEventTimeopen] = useState(false);
   const [displayMonthEventStart, setDisplayMonthEventStart] = useState(
     currentDate.getMonth()
   );
@@ -60,8 +60,15 @@ function Calendar() {
   );
   const [selectedDateEventStart, setSelectedDateEventStart] =
     useState(null);
+    const [displayMonthEventEnd, setDisplayMonthEventEnd] = useState(
+      currentDate.getMonth()
+    );
+    const [displayYearEventEnd, setDisplayYearEventEnd] = useState(
+      currentDate.getFullYear()
+    );
+    const [selectedDateEventEnd, setSelectedDateEventEnd] = useState(null);
   const [isEventDateStartManuallySet, setIsEventDateStartManuallySet] = useState(false);
-  const [isEventDateEndtManuallySet, setIsEventDateEndManuallySet] =
+  const [isEventDateEndManuallySet, setIsEventDateEndManuallySet] =
     useState(false);
 
   const daysInMonth = new Date(displayYear, displayMonth + 1, 0).getDate();
@@ -70,12 +77,25 @@ function Calendar() {
     displayMonthEventStart + 1,
     0
   ).getDate();
+
+
+   const daysInMonthEventDateEnd = new Date(
+     displayYearEventEnd,
+     displayMonthEventEnd + 1,
+     0
+   ).getDate();
   const firstDayOfMonth = new Date(displayYear, displayMonth, 1).getDay();
   const firstDayOfMonthEventDateStart = new Date(
     displayYearEventStart,
     displayMonthEventStart,
     1
   ).getDay();
+
+    const firstDayOfMonthEventDateEnd = new Date(
+      displayYearEventEnd,
+      displayMonthEventEnd,
+      1
+    ).getDay();
 
   const changeMonth = (offset) => {
     setDisplayMonth((prevMonth) => {
@@ -108,6 +128,23 @@ function Calendar() {
     });
   };
 
+
+    const changeMonthEndEvent = (offset, e) => {
+      e.preventDefault();
+      setDisplayMonthEventEnd((prevMonth) => {
+        const newMonth = prevMonth + offset;
+        if (newMonth < 0) {
+          setDisplayYearEventEnd(displayYearEventEnd - 1);
+          return 11;
+        } else if (newMonth > 11) {
+          setDisplayYearEventEnd(displayYearEventEnd + 1);
+          return 0;
+        } else {
+          return newMonth;
+        }
+      });
+    };
+
   const resetCalendar = () => {
     setDisplayMonth(currentDate.getMonth());
     setDisplayYear(currentDate.getFullYear());
@@ -138,11 +175,29 @@ useEffect(() => {
   }
 }, [selectedDate, currentDate, isEventDateStartManuallySet]);
 
-const handleDateClickEVentStart = (day) => {
+const handleDateClickEventStart = (day) => {
   setSelectedDateEventStart(
     new Date(displayYearEventStart, displayMonthEventStart, day)
   );
-  setIsEventDateStartManuallySet(true); 
+  setIsEventDateStartManuallySet(true);
+};
+
+
+useEffect(() => {
+  if (!isEventDateEndManuallySet) {
+    if (selectedDate) {
+      setSelectedDateEventEnd(selectedDate);
+    } else {
+      setSelectedDateEventEnd(currentDate);
+    }
+  }
+}, [selectedDate, currentDate, isEventDateEndManuallySet]);
+
+const handleDateClickEventEnd = (day) => {
+  setSelectedDateEventEnd(
+    new Date(displayYearEventEnd, displayMonthEventEnd, day)
+  );
+  setIsEventDateEndManuallySet(true);
 };
 
 const resetEventDate = () => {
@@ -164,10 +219,20 @@ const resetEventDate = () => {
     setStartEventDateopen(!isStartEventDateopen);
   };
 
+  const toggleEndEventDate = (e) => {
+    e.preventDefault();
+    setEndEventDateopen(!isEndEventDateopen);
+  };
+
   const toggleStartEventTime = (e) => {
     e.preventDefault();
     setStartEventTimeopen(!isStartEventTimeopen);
   };
+
+   const toggleEndEventTime = (e) => {
+     e.preventDefault();
+     setEndEventTimeopen(!isEndEventTimeopen);
+   };
 
   useEffect(() => {
     if (isPopupOpen) {
@@ -586,7 +651,7 @@ const resetEventDate = () => {
                         <div className="flex justify-between items-center w-full mb-2">
                           <div
                             className="flex items-end hover:bg-[#1B1B1F] -ml-[4%] rounded-l-full rounded-r-full p-4 transition-all ease-in-out duration-300"
-                            onClick={togglePopup}
+                         
                           >
                             <span className="text-violet-500 font-bold text-lg md:text-xl mr-2 mb-1 cursor-pointer">
                               {monthsOfYear[displayMonthEventStart]}
@@ -672,7 +737,7 @@ const resetEventDate = () => {
                                 <span
                                   key={date}
                                   onClick={() =>
-                                    handleDateClickEVentStart(date)
+                                    handleDateClickEventStart(date)
                                   }
                                   className={`cursor-pointer rounded-full w-7 h-7 md:w-8 md:h-8 flex items-center justify-center ${
                                     isSelectedDateEventStart
@@ -691,20 +756,134 @@ const resetEventDate = () => {
                   )}
                   <div className=" flex flex-row justify-between items-center w-full">
                     <span className="text-white font-semibold mr-7">end</span>
-                    <input
-                      className="p-2 rounded-md w-[40%] border text-white  bg-[#4a484d] border-none focus:outline-none mr-1"
-                      type="Title"
-                      name="Title"
-                      placeholder="Title"
-                    ></input>
-
-                    <input
-                      className="p-2 rounded-md w-[40%] border text-white  bg-[#4a484d] border-none focus:outline-none"
-                      type="Title"
-                      name="Title"
-                      placeholder="Title"
-                    ></input>
+                    <button
+                      className="p-2 rounded-md w-[40%] h-[2.5rem] border text-white  bg-[#4a484d] border-none focus:outline-none mr-1"
+                      onClick={toggleEndEventDate}
+                    >
+                      {selectedDateEventEnd
+                        ? `${selectedDateEventEnd.getDate()}/${
+                            selectedDateEventEnd.getMonth() + 1
+                          }/${selectedDateEventEnd.getFullYear()}`
+                        : `${currentDate.getDate()}/${
+                            currentDate.getMonth() + 1
+                          }/${currentDate.getFullYear()}`}
+                    </button>
+                    <button
+                      className="p-2 rounded-md w-[40%] h-[2.5rem] border text-white  bg-[#4a484d] border-none focus:outline-none"
+                      onClick={toggleEndEventTime}
+                    >
+                      starttime
+                    </button>
                   </div>
+                  {isEndEventDateopen && (
+                    <div className=" eventSelectStart absolute w-full p-6 left-0 md:p-0 md:left-auto md:static flex justify-center items-center bottom-[20%] ">
+                      <div className="flex flex-col w-full md:w-full transition-all ease-in-out duration-300">
+                        <div className="flex justify-between items-center w-full mb-2">
+                          <div
+                            className="flex items-end hover:bg-[#1B1B1F] -ml-[4%] rounded-l-full rounded-r-full p-4 transition-all ease-in-out duration-300"
+                            
+                          >
+                            <span className="text-violet-500 font-bold text-lg md:text-xl mr-2 mb-1 cursor-pointer">
+                              {monthsOfYear[displayMonthEventEnd]}
+                            </span>
+                            <span className="text-white font-bold text-2xl md:text-3xl cursor-pointer mb-1">
+                              {displayYearEventEnd}
+                            </span>
+                          </div>
+                          <div className="flex justify-between w-[25%] mr-1 md:mr-3.5 ">
+                            <button
+                              className="bg-[#141517] flex justify-center items-center text-red-500 rounded-full w-8 h-8 "
+                              onClick={(e) => changeMonthEndEvent(-1, e)}
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth={1.5}
+                                stroke="currentColor"
+                                className=" w-4 h-4 glow-on-hover-white md:hover:w-5 md:hover:h-5 transition-all duration-250 ease-in-out "
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M15.75 19.5 8.25 12l7.5-7.5"
+                                />
+                              </svg>
+                            </button>
+                            <button
+                              className="bg-[#141517] flex justify-center items-center text-red-500 rounded-full ml-3 w-8 h-8 "
+                              onClick={(e) => changeMonthEndEvent(1, e)}
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth={1.5}
+                                stroke="currentColor"
+                                className="w-4 h-4  glow-on-hover-white md:hover:w-5 md:hover:h-5 transition-all duration-250 ease-in-out"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="m8.25 4.5 7.5 7.5-7.5 7.5"
+                                />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+                        <div className="week-days cursor-default grid grid-cols-7 gap-3 text-center text-white mb-2 -ml-2 mr-2 ">
+                          {[
+                            "Sun",
+                            "Mon",
+                            "Tue",
+                            "Wed",
+                            "Thu",
+                            "Fri",
+                            "Sat",
+                          ].map((day) => (
+                            <div key={day} className="font-bold">
+                              {day}
+                            </div>
+                          ))}
+                        </div>
+                        <div className="days grid grid-cols-7 gap-1 text-center text-white">
+                          {[...Array(firstDayOfMonthEventDateEnd).keys()].map(
+                            (_, index) => (
+                              <span key={`empty-${index}`} />
+                            )
+                          )}
+                          {[...Array(daysInMonthEventDateEnd).keys()].map(
+                            (day) => {
+                              const date = day + 1;
+                              const isSelectedDateEventEnd =
+                                selectedDateEventEnd &&
+                                selectedDateEventEnd.getDate() === date &&
+                                selectedDateEventEnd.getMonth() ===
+                                  displayMonthEventEnd &&
+                                selectedDateEventEnd.getFullYear() ===
+                                  displayYearEventEnd;
+
+                              return (
+                                <span
+                                  key={date}
+                                  onClick={() =>
+                                    handleDateClickEventEnd(date)
+                                  }
+                                  className={`cursor-pointer rounded-full w-7 h-7 md:w-8 md:h-8 flex items-center justify-center ${
+                                    isSelectedDateEventEnd
+                                      ? "bg-violet-500 text-white"
+                                      : "hover:bg-gray-700"
+                                  }`}
+                                >
+                                  {date}
+                                </span>
+                              );
+                            }
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </form>
             </div>
