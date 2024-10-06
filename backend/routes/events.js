@@ -1,10 +1,10 @@
 import express from "express";
-import { getPosts, addPost, deletePost, getPublicPosts } from "../controllers/post.js";
+import { getPosts, deletePost, getPublicPosts, addEvent } from "../controllers/event.js";
 
 const router = express.Router();
 
 router.get("/getPosts", getPosts);
-router.post("/", addPost);
+router.post("/", addEvent);
 router.delete("/:id", deletePost);
 router.get("/getPublicPosts",getPublicPosts)
 

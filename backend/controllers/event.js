@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import Post from "../models/post.js";
+import Event from "../models/event.js";
 import Relationship from "../models/relationship.js";
 import Subscription from "../models/subscription.js";
 
@@ -79,7 +79,7 @@ export const getPosts = async (req, res) => {
 };
 
 
-export const addPost = async (req, res) => {
+export const addEvent = async (req, res) => {
  
   const token = req.cookies.accessToken;
   //console.log(req.body);
@@ -90,21 +90,17 @@ export const addPost = async (req, res) => {
 
     const userInfo = jwt.verify(token, "secretkey");
     //console.log(userInfo.id);
-    const position = req.body.position ? { lat: req.body.position.lat, lng: req.body.position.lng } : null;
-    const newPost = new Post({
-      desc: req.body.desc,
-      img: req.body.img,
-      vid: req.body.vid,
+    
+    const newEvent = new Event({
+      title: req.body.title,
       userId: userInfo.id,
-      position: position,
-      islive : req.body.islive || false,
-      Idreciver: req.body.Idreciver || null,
-      channelname: req.body.channelname || "",
+      eventStart: req.body.selectedDateEventStart,
+      eventEnd: req.body.selectedDateEventEnd,
     });
     //console.log(newPost);  
-    const savedPost = await newPost.save();
+    const savedEvent = await newEvent.save();
 
-    return res.status(200).json({ message: "Post has been created.", postId: savedPost._id, islive: savedPost.islive });
+    return res.status(200).json({ message: "event has been created.", eventId: savedEvent._id});
   } catch (error) {
     console.error(error);
     return res.status(500).json(error.message || "Internal Server Error");

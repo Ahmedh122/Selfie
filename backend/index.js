@@ -4,7 +4,7 @@ import multer from "multer";
 import cookieParser from "cookie-parser";
 import connectDB from "./connect.js";
 import userRoutes from "./routes/users.js";
-import postRoutes from "./routes/posts.js";
+import eventRoutes from "./routes/events.js";
 import commentRoutes from "./routes/comments.js";
 import likeRoutes from "./routes/likes.js";
 import relationshipRoutes from "./routes/relationships.js";
@@ -12,8 +12,7 @@ import channelRoutes from "./routes/channels.js"
 import authRoutes from "./routes/auth.js";
 import subscriptionRoutes from "./routes/subscriptions.js";
 import searchRoutes from "./routes/search.js";
-import quotaRoutes from "./routes/quota.js";
-import viewRoutes from "./routes/views.js";
+
 
 
 const app = express();
@@ -48,7 +47,7 @@ app.post("/api/upload", upload.single("file"), (req, res) => {
 });
 
 app.use("/api/users", userRoutes);
-app.use("/api/posts", postRoutes);
+app.use("/api/events", eventRoutes);
 app.use("/api/comments", commentRoutes);
 app.use("/api/likes", likeRoutes);
 app.use("/api/auth", authRoutes);
@@ -56,8 +55,7 @@ app.use("/api/relationships", relationshipRoutes);
 app.use("/api/channels", channelRoutes);
 app.use("/api/subscriptions", subscriptionRoutes);
 app.use("/api/search", searchRoutes); 
-app.use("/api/quota", quotaRoutes);
-app.use("/api/views", viewRoutes);
+
 
 
 const PORT = 8800;

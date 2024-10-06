@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { makeRequest } from "../../axios";
 
 function Calendar() {
   const daysOfWeekFull = [
@@ -59,17 +61,19 @@ function Calendar() {
     currentDate.getFullYear()
   );
   const [selectedDateEventStart, setSelectedDateEventStart] =
-    useState(null);
+    useState(currentDate);
     const [displayMonthEventEnd, setDisplayMonthEventEnd] = useState(
       currentDate.getMonth()
     );
     const [displayYearEventEnd, setDisplayYearEventEnd] = useState(
       currentDate.getFullYear()
     );
-    const [selectedDateEventEnd, setSelectedDateEventEnd] = useState(null);
+    const [selectedDateEventEnd, setSelectedDateEventEnd] = useState(currentDate);
   const [isEventDateStartManuallySet, setIsEventDateStartManuallySet] = useState(false);
   const [isEventDateEndManuallySet, setIsEventDateEndManuallySet] =
     useState(false);
+
+  const [title, setTitle] = useState("");
 
   const daysInMonth = new Date(displayYear, displayMonth + 1, 0).getDate();
   const daysInMonthEventDateStart = new Date(
@@ -149,6 +153,10 @@ function Calendar() {
     setDisplayMonth(currentDate.getMonth());
     setDisplayYear(currentDate.getFullYear());
     setSelectedDate(null);
+    setSelectedDateEventStart(currentDate);
+    setSelectedDateEventEnd(currentDate);
+    setIsEventDateStartManuallySet(false);
+    setIsEventDateEndManuallySet(false);
   };
 
   const isToday = (day) => {
@@ -163,41 +171,67 @@ function Calendar() {
     setSelectedDate(new Date(displayYear, displayMonth, day));
     setDisplayMonthEventStart(displayMonth);
     setDisplayYearEventStart(displayYear);
+    setDisplayMonthEventEnd(displayMonth);
+    setDisplayYearEventEnd(displayYear);
+    setSelectedDateEventStart(selectedDate);
+    setSelectedDateEventEnd(selectedDate);
   };
 
 useEffect(() => {
-  if (!isEventDateStartManuallySet) {
-    if (selectedDate) {
+  if (!isEventDateStartManuallySet && selectedDate !== null) {
+    if (selectedDate && selectedDateEventStart !== selectedDate) {
       setSelectedDateEventStart(selectedDate);
-    } else {
+    } else if (!selectedDate && selectedDateEventStart !== currentDate) {
       setSelectedDateEventStart(currentDate);
     }
   }
-}, [selectedDate, currentDate, isEventDateStartManuallySet]);
+}, [
+  selectedDate,
+  currentDate,
+  isEventDateStartManuallySet,
+  selectedDateEventStart,
+]);
 
 const handleDateClickEventStart = (day) => {
   setSelectedDateEventStart(
     new Date(displayYearEventStart, displayMonthEventStart, day)
   );
+  if (selectedDateEventEnd<selectedDateEventStart){
+    setSelectedDateEventEnd(selectedDateEventStart);
+  }
   setIsEventDateStartManuallySet(true);
+  setIsEventDateEndManuallySet(true);
 };
 
 
 useEffect(() => {
-  if (!isEventDateEndManuallySet) {
-    if (selectedDate) {
+  if (!isEventDateEndManuallySet && selectedDate !== null) {
+    if (selectedDate && selectedDateEventEnd !== selectedDate) {
       setSelectedDateEventEnd(selectedDate);
-    } else {
+    } else if (!selectedDate && selectedDateEventEnd !== currentDate) {
       setSelectedDateEventEnd(currentDate);
     }
   }
-}, [selectedDate, currentDate, isEventDateEndManuallySet]);
+}, [
+  selectedDate,
+  currentDate,
+  isEventDateEndManuallySet,
+  selectedDateEventEnd,
+]);
 
 const handleDateClickEventEnd = (day) => {
-  setSelectedDateEventEnd(
-    new Date(displayYearEventEnd, displayMonthEventEnd, day)
-  );
+  const eventEndDate = new Date(displayYearEventEnd, displayMonthEventEnd, day)
+  if(eventEndDate<selectedDateEventStart){
+    setSelectedDateEventEnd(selectedDateEventStart);
+  }
+  
+  else{
+    setSelectedDateEventEnd(
+      eventEndDate
+    );}
   setIsEventDateEndManuallySet(true);
+  console.log(selectedDateEventEnd);
+  
 };
 
 const resetEventDate = () => {
@@ -272,8 +306,19 @@ const resetEventDate = () => {
     setPopupOpen(false);
   };
 
-  const SubmitEvent = () => {
-    /*post event to backend; */
+  const SubmitEvent = async(e) => {
+    e.preventDefault();
+    try {
+      const res = makeRequest.post("/events", {
+        title,
+        selectedDateEventStart,
+        selectedDateEventEnd,
+      });
+       console.log("Event created successfully:", res.data);
+    }catch (error){
+      console.error(error);
+    };
+    
   };
 
   const returnToSelection = () => {
@@ -614,12 +659,14 @@ const resetEventDate = () => {
                   </svg>
                 </button>
               </div>
-              <form className="flex flex-col gap-4 absolute w-full px-8 top-[20%]">
+              <form className="flex flex-col gap-4 absolute w-full h-full px-8 top-[20%]">
                 <div className=" flex flex-row justify-evenly items-center w-full">
                   <input
                     className="p-2 rounded-xl border text-white w-full bg-[#4a484d] text-center border-none focus:outline-none"
                     type="Title"
                     name="Title"
+                    onChange={(e) => setTitle(e.target.value)}
+                    value={title}
                     placeholder="Title"
                   ></input>
                 </div>
@@ -649,10 +696,7 @@ const resetEventDate = () => {
                     <div className=" eventSelectStart absolute w-full p-6 left-0 md:p-0 md:left-auto md:static flex justify-center items-center bottom-[20%] ">
                       <div className="flex flex-col w-full md:w-full transition-all ease-in-out duration-300">
                         <div className="flex justify-between items-center w-full mb-2">
-                          <div
-                            className="flex items-end hover:bg-[#1B1B1F] -ml-[4%] rounded-l-full rounded-r-full p-4 transition-all ease-in-out duration-300"
-                         
-                          >
+                          <div className="flex items-end hover:bg-[#1B1B1F] -ml-[4%] rounded-l-full rounded-r-full p-4 transition-all ease-in-out duration-300">
                             <span className="text-violet-500 font-bold text-lg md:text-xl mr-2 mb-1 cursor-pointer">
                               {monthsOfYear[displayMonthEventStart]}
                             </span>
@@ -779,10 +823,7 @@ const resetEventDate = () => {
                     <div className=" eventSelectStart absolute w-full p-6 left-0 md:p-0 md:left-auto md:static flex justify-center items-center bottom-[20%] ">
                       <div className="flex flex-col w-full md:w-full transition-all ease-in-out duration-300">
                         <div className="flex justify-between items-center w-full mb-2">
-                          <div
-                            className="flex items-end hover:bg-[#1B1B1F] -ml-[4%] rounded-l-full rounded-r-full p-4 transition-all ease-in-out duration-300"
-                            
-                          >
+                          <div className="flex items-end hover:bg-[#1B1B1F] -ml-[4%] rounded-l-full rounded-r-full p-4 transition-all ease-in-out duration-300">
                             <span className="text-violet-500 font-bold text-lg md:text-xl mr-2 mb-1 cursor-pointer">
                               {monthsOfYear[displayMonthEventEnd]}
                             </span>
@@ -854,7 +895,7 @@ const resetEventDate = () => {
                           )}
                           {[...Array(daysInMonthEventDateEnd).keys()].map(
                             (day) => {
-                              const date = day + 1;
+                              const date = day + 1; 
                               const isSelectedDateEventEnd =
                                 selectedDateEventEnd &&
                                 selectedDateEventEnd.getDate() === date &&
@@ -866,9 +907,7 @@ const resetEventDate = () => {
                               return (
                                 <span
                                   key={date}
-                                  onClick={() =>
-                                    handleDateClickEventEnd(date)
-                                  }
+                                  onClick={() => handleDateClickEventEnd(date)}
                                   className={`cursor-pointer rounded-full w-7 h-7 md:w-8 md:h-8 flex items-center justify-center ${
                                     isSelectedDateEventEnd
                                       ? "bg-violet-500 text-white"
@@ -885,6 +924,12 @@ const resetEventDate = () => {
                     </div>
                   )}
                 </div>
+                <button
+                  onClick={SubmitEvent}
+                  className="absolute top-[50%] right-0 w-10 h-6 bg-violet-500 rounded-full"
+                >
+                  submit event
+                </button>
               </form>
             </div>
           </div>
