@@ -46,23 +46,23 @@ export default function StickyNote({ onClose }) {
 
     return (
         <div
-            class="w-72 border-3 border-gray-800 absolute top-8 left-12"
+            className="w-72 border-3 border-gray-800 absolute top-8 left-12"
             ref={stickyNoteRef}
         >
             <div
-                class="bg-blue-500 text-white p-2 flex justify-between cursor-move"
+                className="bg-blue-500 text-white p-2 flex justify-between cursor-move"
                 onMouseDown={handleMouseDown}
             >
                 <div>Sticky Note</div>
                 <div
-                    class="w-9 h-9 bg-red-500 rounded-full grid place-content-center bp-1 cursor-pointer hover:opacity-80"
+                    className="w-9 h-9 bg-red-500 rounded-full grid place-content-center bp-1 cursor-pointer hover:opacity-80"
                     onClick={onClose}
                 >
                     &times;
                 </div>
             </div>
             <textarea
-                class="outline-none w-full p-2 h-64 resize-none border-none"
+                className="outline-none w-full p-2 h-64 resize-none border-none"
                 name=""
                 id=""
                 cols="30"

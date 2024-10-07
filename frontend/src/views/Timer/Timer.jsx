@@ -110,35 +110,35 @@ function Timer() {
 
 
   return (
-    <div class="bg-gray-100 flex items-center 
+    <div className="bg-gray-100 flex items-center 
              justify-center h-screen">
-      <div class={`rounded-lg shadow-lg p-20 ${intervalId ? 'bg-red-400' : 'bg-white'}`}>
+      <div className={`rounded-lg shadow-lg p-20 ${intervalId ? 'bg-red-400' : 'bg-white'}`}>
         <h1 class="text-3xl font-bold mb-2 text-center">
           Timer
         </h1>
-        <h1 class="text-3xl font-bold mb-2 text-center">
+        <h1 className="text-3xl font-bold mb-2 text-center">
           {mode == 1 ? 'Work' : mode == 2 ? 'Short Break' : 'Long Break'} 
         </h1>
-        <div class="flex items-center justify-center 
+        <div className="flex items-center justify-center 
                     bg-gray-200 rounded-lg p-4 mt-8">
-          <span id="timer" class="text-4xl font-bold">
+          <span id="timer" className="text-4xl font-bold">
           {`${minutes}:${secs}`}
           </span>
         </div>
-        <div class="flex justify-center space-x-4 mt-8">
+        <div className="flex justify-center space-x-4 mt-8">
           <button id="startBtn"
-            class={`px-4 py-2 rounded text-white ${intervalId ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-blue-500 hover:bg-blue-600'}`} onClick={toggleclick}>{intervalId ? 'Pause' : 'Start'}
+            className={`px-4 py-2 rounded text-white ${intervalId ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-blue-500 hover:bg-blue-600'}`} onClick={toggleclick}>{intervalId ? 'Pause' : 'Start'}
           </button>
           <button id="resetBtn"
-            class="px-4 py-2 bg-red-500 text-white 
+            className="px-4 py-2 bg-red-500 text-white 
                            rounded hover:bg-red-600" onClick={reset}>Skip
           </button>
         </div>
-        <div class="flex justify-center space-x-4 mt-8">
+        <div className="flex justify-center space-x-4 mt-8">
           <h6>#{numberpomodoro}</h6>
         </div>
-        <div class="flex justify-center space-x-4 mt-8">
-          <h6><button class="bg-black" onClick={togglePopup}><img src={settingico} alt="" /></button></h6>
+        <div className="flex justify-center space-x-4 mt-8">
+          <h6><button className="bg-black" onClick={togglePopup}><img src={settingico} alt="" /></button></h6>
         </div>
       </div>
       {isPopupVisible && (

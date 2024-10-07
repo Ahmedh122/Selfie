@@ -193,15 +193,18 @@ useEffect(() => {
 ]);
 
 const handleDateClickEventStart = (day) => {
-  setSelectedDateEventStart(
-    new Date(displayYearEventStart, displayMonthEventStart, day)
+  const selectedDateUTC = new Date(
+    Date.UTC(displayYearEventStart, displayMonthEventStart, day)
   );
-  if (selectedDateEventEnd<selectedDateEventStart){
-    setSelectedDateEventEnd(selectedDateEventStart);
-  }
+  setSelectedDateEventStart(selectedDateUTC); // Only update start date here
   setIsEventDateStartManuallySet(true);
-  setIsEventDateEndManuallySet(true);
 };
+
+useEffect(() => {
+  if (selectedDateEventEnd < selectedDateEventStart) {
+    setSelectedDateEventEnd(selectedDateEventStart); // Update the end date if it's before the start date
+  }
+}, [selectedDateEventStart, selectedDateEventEnd]); 
 
 
 useEffect(() => {
@@ -220,18 +223,19 @@ useEffect(() => {
 ]);
 
 const handleDateClickEventEnd = (day) => {
-  const eventEndDate = new Date(displayYearEventEnd, displayMonthEventEnd, day)
-  if(eventEndDate<selectedDateEventStart){
+  // Use Date.UTC to avoid time zone issues
+  const selectedEndDateUTC = new Date(
+    Date.UTC(displayYearEventEnd, displayMonthEventEnd, day)
+  );
+
+  // Ensure the end date is not before the start date
+  if (selectedEndDateUTC < selectedDateEventStart) {
     setSelectedDateEventEnd(selectedDateEventStart);
+  } else {
+    setSelectedDateEventEnd(selectedEndDateUTC);
   }
-  
-  else{
-    setSelectedDateEventEnd(
-      eventEndDate
-    );}
+
   setIsEventDateEndManuallySet(true);
-  console.log(selectedDateEventEnd);
-  
 };
 
 const resetEventDate = () => {
@@ -306,20 +310,23 @@ const resetEventDate = () => {
     setPopupOpen(false);
   };
 
-  const SubmitEvent = async(e) => {
-    e.preventDefault();
-    try {
-      const res = makeRequest.post("/events", {
-        title,
-        selectedDateEventStart,
-        selectedDateEventEnd,
-      });
-       console.log("Event created successfully:", res.data);
-    }catch (error){
-      console.error(error);
-    };
-    
-  };
+ const SubmitEvent = async (e) => {
+   e.preventDefault();
+   try {
+     const formattedStartDate = selectedDateEventStart.toISOString().split("T")[0]; 
+     const formattedEndDate = selectedDateEventEnd.toISOString().split("T")[0];
+
+     const res = await makeRequest.post("/events", {
+       title,
+       selectedDateEventStart: formattedStartDate,
+       selectedDateEventEnd: formattedEndDate,
+     });
+
+     console.log("Event created successfully:", res.data);
+   } catch (error) {
+     console.error(error);
+   }
+ };
 
   const returnToSelection = () => {
     if (selectedDate) {
@@ -371,13 +378,13 @@ const resetEventDate = () => {
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
-            stroke-width="1.5"
+            strokeWidth="1.5"
             stroke="currentColor"
-            class="size-8 glow-on-hover-white md:hover:size-10 transition-all duration-250 ease-in-out"
+            className="size-8 glow-on-hover-white md:hover:size-10 transition-all duration-250 ease-in-out"
           >
             <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
+              strokeLinecap="round"
+              strokeLinejoin="round"
               d="M12 4.5v15m7.5-7.5h-15"
             />
           </svg>

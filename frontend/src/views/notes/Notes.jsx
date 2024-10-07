@@ -16,7 +16,7 @@ function Notes() {
     }
     return (
         <div>
-            <button class="p-2 bg-blue-500 text-white rounded-lg cursor-pointer border-none hover:bg-blue-400" onClick={addNote}>
+            <button className="p-2 bg-blue-500 text-white rounded-lg cursor-pointer border-none hover:bg-blue-400" onClick={addNote}>
                 Create Note +
             </button>
             {notes.map((item) => (
