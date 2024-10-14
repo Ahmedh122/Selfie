@@ -1,8 +1,12 @@
-import { useState, useRef, useEffect } from "react";
+import {useState, useRef, useEffect } from "react";
 
-export default function StickyNote({ onClose }) {
+export default function StickyNote({ onDuplicate,onClose }) {
     const [allowMove, setAllowMove] = useState(false);
     const stickyNoteRef = useRef();
+
+    const [stickyNoteName, setStickyNoteName] = useState("Sticky Note");
+
+    const refTitle = useRef();
 
     const [dx, setDx] = useState(0);
     const [dy, setDy] = useState(0);
@@ -44,6 +48,11 @@ export default function StickyNote({ onClose }) {
         };
     }, [allowMove]);
 
+    function handleNameChange(e) {
+        e.preventDefault();
+        setStickyNoteName(refTitle.current.value);
+    }
+
     return (
         <div
             className="w-72 border-3 border-gray-800 absolute top-8 left-12"
@@ -53,12 +62,26 @@ export default function StickyNote({ onClose }) {
                 className="bg-blue-500 text-white p-2 flex justify-between cursor-move"
                 onMouseDown={handleMouseDown}
             >
-                <div>Sticky Note</div>
+                <div>
+                <input 
+                type="text"  
+                className="bg-blue-500 text-white p-2 flex justify-between cursor-move"
+                defaultValue={stickyNoteName} 
+                ref={refTitle}
+                onChange={handleNameChange}
+                />
+                </div>
                 <div
                     className="w-9 h-9 bg-red-500 rounded-full grid place-content-center bp-1 cursor-pointer hover:opacity-80"
                     onClick={onClose}
                 >
-                    &times;
+                    x
+                </div>
+                <div
+                    className="w-9 h-9 bg-green-500 rounded-full grid place-content-center bp-1 cursor-pointer hover:opacity-80"
+                    onClick={onDuplicate}
+                >
+                    +
                 </div>
             </div>
             <textarea
