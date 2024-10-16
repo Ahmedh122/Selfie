@@ -6,7 +6,7 @@ import connectDB from "./connect.js";
 import userRoutes from "./routes/users.js";
 import eventRoutes from "./routes/events.js";
 import commentRoutes from "./routes/comments.js";
-import likeRoutes from "./routes/likes.js";
+import noteRoutes from "./routes/notes.js";
 import relationshipRoutes from "./routes/relationships.js";
 import channelRoutes from "./routes/channels.js"
 import authRoutes from "./routes/auth.js";
@@ -49,7 +49,7 @@ app.post("/api/upload", upload.single("file"), (req, res) => {
 app.use("/api/users", userRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/comments", commentRoutes);
-app.use("/api/likes", likeRoutes);
+app.use("/api/notes", noteRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/relationships", relationshipRoutes);
 app.use("/api/channels", channelRoutes);
