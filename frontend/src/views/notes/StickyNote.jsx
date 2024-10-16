@@ -1,4 +1,9 @@
 import {useState, useRef, useEffect } from "react";
+import { useQuery, useQueryClient, useMutation } from "react-query";
+import { makeRequest } from "../../axios";
+import { useContext } from "react";
+import { authContext } from "../../context/authcontext";
+
 
 export default function StickyNote({ onDuplicate,onClose }) {
     const [allowMove, setAllowMove] = useState(false);

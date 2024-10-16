@@ -6,11 +6,6 @@ const noteschema = new mongoose.Schema({
     ref: "User", // Assuming you have a User model
     required: true,
   },
-  noteId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Note", // Assuming you have a Post model
-    required: true,
-  },
   creationDate: {
     type: Date,
     default: Date.now,
