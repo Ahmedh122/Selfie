@@ -48,6 +48,10 @@ export const addNote = async (req, res) => {
 };
 
 export const deleteNote = async (req, res) => {
+
+  console.log(req);
+  console.log('ciao');
+
   const token = req.cookies.accessToken;
 
   try {
@@ -63,7 +67,7 @@ export const deleteNote = async (req, res) => {
     if (deletedNote) {
       return res.status(200).json("Note has been deleted.");
     } else {
-      return res.status(403).json("You can delete only your Notes.");
+      return res.status(403).json("You can delete only your note.");
     }
   } catch (error) {
     console.error(error);

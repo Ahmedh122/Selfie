@@ -5,7 +5,7 @@ import { useContext } from "react";
 import { authContext } from "../../context/authcontext";
 
 
-export default function StickyNote({ onDuplicate,onClose }) {
+export default function StickyNote({ note,onClose,onDuplicate }) {
     const [allowMove, setAllowMove] = useState(false);
     const stickyNoteRef = useRef();
 
@@ -58,6 +58,7 @@ export default function StickyNote({ onDuplicate,onClose }) {
         setStickyNoteName(refTitle.current.value);
     }
 
+
     return (
         <div
             className="w-72 border-3 border-gray-800 absolute top-8 left-12"
@@ -71,20 +72,20 @@ export default function StickyNote({ onDuplicate,onClose }) {
                 <input 
                 type="text"  
                 className="bg-blue-500 text-white p-2 flex justify-between cursor-move"
-                defaultValue={stickyNoteName} 
+                defaultValue={stickyNoteName}
                 ref={refTitle}
                 onChange={handleNameChange}
                 />
                 </div>
                 <div
                     className="w-9 h-9 bg-red-500 rounded-full grid place-content-center bp-1 cursor-pointer hover:opacity-80"
-                    onClick={onClose}
+                    onClick={() => onClose(note._id)} 
                 >
                     x
                 </div>
                 <div
                     className="w-9 h-9 bg-green-500 rounded-full grid place-content-center bp-1 cursor-pointer hover:opacity-80"
-                    onClick={onDuplicate}
+                    onClick={() => onDuplicate(note._id)}
                 >
                     +
                 </div>
