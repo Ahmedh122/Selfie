@@ -49,9 +49,6 @@ export const addNote = async (req, res) => {
 
 export const deleteNote = async (req, res) => {
 
-  console.log(req);
-  console.log('ciao');
-
   const token = req.cookies.accessToken;
 
   try {
@@ -79,6 +76,8 @@ export const deleteNote = async (req, res) => {
 export const updateNote = async (req, res) => {
   const token = req.cookies.accessToken;
 
+  console.log(req.body);
+
   try {
     if (!token) return res.status(401).json("Not logged in!");
     const userInfo = jwt.verify(token, "secretkey");
@@ -90,34 +89,37 @@ export const updateNote = async (req, res) => {
       return res.status(404).json({ message: "note not found" });
     }
 
-    if (channel.admin.toHexString() !== userInfo.id) {
-      return res.status(403).json("You can modify only your channel.");
-    }
+    /*if (channel.admin.toHexString() !== userInfo.id) {
+      return res.status(403).json("You can modify only your note.");
+    }*/
 
     const updateFields = {};
 
     updateFields.lastModifiedDate = Date.now();
 
-    if (req.body.newtitle) {
-      updateFields.title = req.body.newtitle;
+    if (req.body.title) {
+      updateFields.title = req.body.title;
     }
 
-    if (req.body.newcontent) {
-      updateFields.content = req.body.newcontent;
+    if (req.body.content) {
+      updateFields.content = req.body.content;
     }
 
-    if (req.body.newcategory) {
-      updateFields.category = req.body.newcategory;
+    if (req.body.category) {
+      updateFields.category = req.body.category;
     }
 
-    if (req.body.newposition) {
+    if (req.body.position) {
       updateFields.position = {
-        x: req.body.newposition.x,
-        y: req.body.newposition.y,
+        x: req.body.position.x,
+        y: req.body.position.y,
       };
     }
 
-    const updatedChannel = await Channel.findOneAndUpdate(
+    console.log('ciao')
+    console.log(updateFields)
+
+    const updatedNote = await Note.findOneAndUpdate(
       { noteId: req.body.noteId },
       { $set: updateFields },
       { new: true }
@@ -125,7 +127,7 @@ export const updateNote = async (req, res) => {
 
     return res.status(200).json({
       message: "Note has been updated.",
-      noteId: updatedChannel.noteId,
+      noteId: updatedNote.noteId,
     });
   } catch (error) {
     console.error(error);

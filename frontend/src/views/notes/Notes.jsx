@@ -33,7 +33,7 @@ function Notes() {
 
     function removeNote(noteId) {
         console.log(noteId)
-        makeRequest.delete(`/notes/deleteNote/${noteId}`)
+        makeRequest.delete('/notes/deleteNote/' + noteId)
         .then((response) => {
             setAddnoteToggle(!addnoteToggle)
         })

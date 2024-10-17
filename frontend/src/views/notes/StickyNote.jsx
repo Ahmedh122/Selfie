@@ -10,8 +10,10 @@ export default function StickyNote({ note,onClose,onDuplicate }) {
     const stickyNoteRef = useRef();
 
     const [stickyNoteName, setStickyNoteName] = useState("Sticky Note");
+    const [stickyNoteContent, setStickyNoteContent] = useState("");
 
     const refTitle = useRef();
+    const refContent = useRef();
 
     const [dx, setDx] = useState(0);
     const [dy, setDy] = useState(0);
@@ -58,6 +60,25 @@ export default function StickyNote({ note,onClose,onDuplicate }) {
         setStickyNoteName(refTitle.current.value);
     }
 
+    function handleContentChange(e) {
+        e.preventDefault();
+        setStickyNoteContent(refContent.current.value);
+    }
+
+    useEffect(() => {
+        updateNote();
+    }, [stickyNoteName, stickyNoteContent, dx, dy]);
+
+    function updateNote() {
+        makeRequest.put("/notes/updateNote", {
+            title: stickyNoteName,
+            content : stickyNoteContent,
+            position : { x: dx, y: dy},
+        }).then((response) => {
+            console.log(response.data);
+        });
+    }
+
 
     return (
         <div
@@ -92,6 +113,9 @@ export default function StickyNote({ note,onClose,onDuplicate }) {
             </div>
             <textarea
                 className="outline-none w-full p-2 h-64 resize-none border-none"
+                defaultValue={stickyNoteContent}
+                ref={refContent}
+                onChange={handleContentChange}
                 name=""
                 id=""
                 cols="30"
