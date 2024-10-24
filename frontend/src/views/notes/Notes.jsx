@@ -46,6 +46,7 @@ function Notes() {
 
     useEffect(() => {
         getNotes();
+        //console.log("fetching notes")  useeffect runna all infinito fixare
     }, [notes]);
 
 
