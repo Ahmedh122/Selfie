@@ -15,6 +15,7 @@ function Notes() {
     function getNotes() {
         makeRequest.get("/notes/getNotes").then((response) => {
             setNotes(response.data)
+            //console.log(response.data)
         })
     }
 

@@ -9,14 +9,14 @@ export default function StickyNote({ note,onClose,onDuplicate }) {
     const [allowMove, setAllowMove] = useState(false);
     const stickyNoteRef = useRef();
 
-    const [stickyNoteName, setStickyNoteName] = useState("Sticky Note");
-    const [stickyNoteContent, setStickyNoteContent] = useState("");
+    const [stickyNoteName, setStickyNoteName] = useState(note.title);
+    const [stickyNoteContent, setStickyNoteContent] = useState(note.content);
 
     const refTitle = useRef();
     const refContent = useRef();
 
-    const [dx, setDx] = useState(0);
-    const [dy, setDy] = useState(0);
+    const [dx, setDx] = useState(note.position.x);
+    const [dy, setDy] = useState(note.position.y);
 
     function handleMouseDown(e) {
         setAllowMove(true);
@@ -70,7 +70,7 @@ export default function StickyNote({ note,onClose,onDuplicate }) {
     }, [stickyNoteName, stickyNoteContent, dx, dy]);
 
     function updateNote() {
-        makeRequest.put("/notes/updateNote", {
+        makeRequest.put("/notes/updateNote/" + note._id, {
             title: stickyNoteName,
             content : stickyNoteContent,
             position : { x: dx, y: dy},

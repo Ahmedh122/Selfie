@@ -75,16 +75,18 @@ export const deleteNote = async (req, res) => {
 
 export const updateNote = async (req, res) => {
   const token = req.cookies.accessToken;
-
+  console.log('loool')
   console.log(req.body);
+  console.log(req.params);
 
   try {
     if (!token) return res.status(401).json("Not logged in!");
     const userInfo = jwt.verify(token, "secretkey");
 
     const note = await Note.findOne({
-      noteId: req.body.noteId,
+      _id : req.params.id,
     });
+    console.log(note);
     if (!note) {
       return res.status(404).json({ message: "note not found" });
     }
@@ -116,11 +118,8 @@ export const updateNote = async (req, res) => {
       };
     }
 
-    console.log('ciao')
-    console.log(updateFields)
-
     const updatedNote = await Note.findOneAndUpdate(
-      { noteId: req.body.noteId },
+      { _id: req.params.id },
       { $set: updateFields },
       { new: true }
     );
