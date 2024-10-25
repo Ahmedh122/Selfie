@@ -25,11 +25,14 @@ const noteschema = new mongoose.Schema({
     required: true,
   },
   position: {
-    type: {
-      x: Number,
-      y: Number,
+    x : {
+      type: Number,
+      required: true,
     },
-    required: true,
+    y : {
+      type: Number,
+      required: true,
+    },
   },
   category: {
     type: String,

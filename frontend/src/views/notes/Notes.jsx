@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react"
 import StickyNote from "./StickyNote"
-import { useQuery } from "react-query";
 import { makeRequest } from "../../axios";
-import { useContext } from "react";
-import { authContext } from "../../context/authcontext";
+
 
 
 function Notes() {
@@ -14,8 +12,8 @@ function Notes() {
 
     function getNotes() {
         makeRequest.get("/notes/getNotes").then((response) => {
+            console.log(response.data)
             setNotes(response.data)
-            //console.log(response.data)
         })
     }
 
@@ -44,10 +42,14 @@ function Notes() {
        console.log("suca")    
     }
 
+    function getnotesafterupdate() {
+        console.log("worka?")
+        setAddnoteToggle(!addnoteToggle)
+    }
+
     useEffect(() => {
-        getNotes();
-        //console.log("fetching notes")  useeffect runna all infinito fixare
-    }, [notes]);
+        getNotes(); 
+    }, [addnoteToggle]);
 
 
     return (
@@ -57,9 +59,11 @@ function Notes() {
             </button>
             {notes.map((note) => (
                 <StickyNote
+                    key={note._id}  //aggiungendo sta cosa la cancellazione delle note funziona bene anche da subito ma perche???????? non ha senso 
                     note={note}
                     onClose={removeNote}
                     onDuplicate={duplicateNote}
+                    onUpdate={getnotesafterupdate}
                 />
             ))}
         </div>

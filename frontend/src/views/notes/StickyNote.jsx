@@ -3,9 +3,10 @@ import { useQuery, useQueryClient, useMutation } from "react-query";
 import { makeRequest } from "../../axios";
 import { useContext } from "react";
 import { authContext } from "../../context/authcontext";
+import { on } from "events";
 
 
-export default function StickyNote({ note,onClose,onDuplicate }) {
+export default function StickyNote({ note,onClose,onDuplicate,onUpdate }) {
     const [allowMove, setAllowMove] = useState(false);
     const stickyNoteRef = useRef();
 
@@ -75,6 +76,7 @@ export default function StickyNote({ note,onClose,onDuplicate }) {
             content : stickyNoteContent,
             position : { x: dx, y: dy},
         }).then((response) => {
+            onUpdate();
             console.log(response.data);
         });
     }
