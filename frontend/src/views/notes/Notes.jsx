@@ -12,7 +12,7 @@ function Notes() {
 
     function getNotes() {
         makeRequest.get("/notes/getNotes").then((response) => {
-            console.log(response.data)
+            //console.log(response.data)
             setNotes(response.data)
         })
     }
@@ -31,19 +31,20 @@ function Notes() {
     }
 
     function removeNote(noteId) {
-        console.log(noteId)
         makeRequest.delete('/notes/deleteNote/' + noteId)
         .then((response) => {
             setAddnoteToggle(!addnoteToggle)
         })
     }
 
-    function duplicateNote(noteId) {
-       console.log("suca")    
+    function duplicateNote(noteId) { 
+        makeRequest.post('/notes/duplicateNote/' + noteId)
+        .then((response) => {
+            setAddnoteToggle(!addnoteToggle)
+        })
     }
 
     function getnotesafterupdate() {
-        console.log("worka?")
         setAddnoteToggle(!addnoteToggle)
     }
 

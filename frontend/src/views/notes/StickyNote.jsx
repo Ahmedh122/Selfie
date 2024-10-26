@@ -22,7 +22,7 @@ export default function StickyNote({ note,onClose,onDuplicate,onUpdate }) {
     function handleMouseDown(e) {
         setAllowMove(true);
         const dimensions = stickyNoteRef.current.getBoundingClientRect();
-        console.log(e.clientX);
+        //console.log(e.clientX);
         setDx(e.clientX - dimensions.x);
         setDy(e.clientY - dimensions.y);
     }
@@ -77,7 +77,7 @@ export default function StickyNote({ note,onClose,onDuplicate,onUpdate }) {
             position : { x: dx, y: dy},
         }).then((response) => {
             onUpdate();
-            console.log(response.data);
+           // console.log(response.data);
         });
     }
 

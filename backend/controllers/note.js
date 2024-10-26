@@ -74,26 +74,19 @@ export const deleteNote = async (req, res) => {
 
 
 export const updateNote = async (req, res) => {
+
   const token = req.cookies.accessToken;
-  console.log('loool')
-  console.log(req.body);
-  console.log(req.params);
 
   try {
     if (!token) return res.status(401).json("Not logged in!");
-    const userInfo = jwt.verify(token, "secretkey");
 
     const note = await Note.findOne({
       _id : req.params.id,
     });
-    console.log(note);
+
     if (!note) {
       return res.status(404).json({ message: "note not found" });
     }
-
-    /*if (channel.admin.toHexString() !== userInfo.id) {
-      return res.status(403).json("You can modify only your note.");
-    }*/
 
     const updateFields = {};
 
@@ -123,10 +116,12 @@ export const updateNote = async (req, res) => {
       { $set: updateFields },
       { new: true }
     );
+    console.log("updatedNote");
+    console.log(updatedNote);
 
     return res.status(200).json({
       message: "Note has been updated.",
-      noteId: updatedNote.noteId,
+      noteId: updatedNote._id,
     });
   } catch (error) {
     console.error(error);
@@ -141,10 +136,10 @@ export const duplicateNote = async (req, res) => {
   try {
     if (!token) return res.status(401).json("Not logged in!");
 
-    const userInfo = jwt.verify(token, "secretkey");
+    const userInfo = jwt.verify(token, "secretkey");  // non serve perche posso prendere l'id direttamente dalla nota
 
     const note = await Note.findOne({
-      noteId: req.body.noteId,
+      _id: req.params.id,
     });
     if (!note) {
       return res.status(404).json({ message: "note not found" });
