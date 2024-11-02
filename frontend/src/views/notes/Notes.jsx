@@ -12,7 +12,7 @@ function Notes() {
 
     function getNotes() {
         makeRequest.get("/notes/getNotes").then((response) => {
-            //console.log(response.data)
+            console.log(response.data)
             setNotes(response.data)
         })
     }
@@ -22,7 +22,7 @@ function Notes() {
             title: "New Note", 
             content: "Write your content here", 
             category: "General", 
-            position: {x: 0, y: 0} 
+            position: {x: 0, y: 50} 
         })
         .then((response) => {
             setAddnoteToggle(!addnoteToggle)
