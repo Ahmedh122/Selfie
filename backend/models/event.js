@@ -17,23 +17,23 @@ const eventSchema = new mongoose.Schema({
     ref: "User", // Assuming you have a User model
   },
 
- 
- eventStart: {
-  type: Date,
- },
+  eventStart: {
+    type: Date,
+  },
 
- eventEnd:{
-  type: Date,
- },
+  eventEnd: {
+    type: Date,
+  },
+
+  description:{
+    type: String, 
+   },
+
 
   public: {
     type: Boolean,
     default: false,
-  }, 
-  
- 
-
-
+  },
 });
 
 const Event = mongoose.model("Post", eventSchema);
