@@ -7,6 +7,7 @@ export default function StickyNote({ note,onClose,onDuplicate,onUpdate }) {
 
     const [stickyNoteName, setStickyNoteName] = useState(note.title);
     const [stickyNoteContent, setStickyNoteContent] = useState(note.content);
+    const [Dropdown, setDropdown] = useState(false);
 
     const refTitle = useRef();
     const refContent = useRef();
@@ -54,44 +55,11 @@ export default function StickyNote({ note,onClose,onDuplicate,onUpdate }) {
         if (py > window.innerHeight - stickyNoteRef.current.offsetHeight) {
             py = window.innerHeight - stickyNoteRef.current.offsetHeight;
         }
-
         //3 - Update ntoe top and left position.
         setPositon({
             x: px,
             y: py,
-        });const mouseMove = (e) => {
-            //1 - Calculate move direction
-            let mouseMoveDir = {
-                x: mouseStartPos.x - e.clientX,
-                y: mouseStartPos.y - e.clientY,
-            };
-            //2 - Update start position for next move.
-            mouseStartPos.x = e.clientX;
-            mouseStartPos.y = e.clientY;
-            let px = stickyNoteRef.current.offsetLeft - mouseMoveDir.x
-            let py = stickyNoteRef.current.offsetTop - mouseMoveDir.y
-    
-            // controllo che non sia out of bounds
-            if (px < 0) {
-                px = 0;
-            }
-            if (py < 0) {
-                py = 0;
-            }
-            const dimensions = stickyNoteRef.current.getBoundingClientRect();
-            if (px > window.innerWidth - dimensions.width) {
-                px = window.innerWidth - dimensions.width;
-            }
-            if (py > window.innerHeight - dimensions.height) {
-                py = window.innerHeight - dimensions.height;
-            }
-    
-            //3 - Update ntoe top and left position.
-            setPositon({
-                x: px,
-                y: py,
-            });
-        };
+        });
     };
 
     useEffect(() => {
@@ -121,6 +89,10 @@ export default function StickyNote({ note,onClose,onDuplicate,onUpdate }) {
         }).then((response) => {
             onUpdate();
         });
+    }
+
+    function toggleDropdown() {
+        setDropdown(!Dropdown);
     }
 
 
@@ -165,6 +137,16 @@ export default function StickyNote({ note,onClose,onDuplicate,onUpdate }) {
                 cols="30"
                 rows="10"
             ></textarea>
+              <div className="bg-blue-500 text-white p-2 flex justify-between">
+                <span>Category: <button onClick={toggleDropdown}>{note.category}</button></span>
+                {Dropdown && (
+                    <div>
+                        {
+                            // array of categories then map through them
+                        }
+                    </div>
+                    )}
+            </div>
         </div>
     );
 }
