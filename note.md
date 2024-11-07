@@ -21,7 +21,7 @@ data XX/XX/XXXX))
 
 - controllare se a posto
 - mettere animazione
-
+- lato server pomodoro
 
 
 
