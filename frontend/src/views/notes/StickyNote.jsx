@@ -1,59 +1,103 @@
 import {useState, useRef, useEffect } from "react";
-import { useQuery, useQueryClient, useMutation } from "react-query";
 import { makeRequest } from "../../axios";
-import { useContext } from "react";
-import { authContext } from "../../context/authcontext";
 
 
-export default function StickyNote({ note,onClose,onDuplicate }) {
-    const [allowMove, setAllowMove] = useState(false);
-    const stickyNoteRef = useRef();
 
-    const [stickyNoteName, setStickyNoteName] = useState("Sticky Note");
-    const [stickyNoteContent, setStickyNoteContent] = useState("");
+export default function StickyNote({ note,onClose,onDuplicate,onUpdate }) {
+
+    const [stickyNoteName, setStickyNoteName] = useState(note.title);
+    const [stickyNoteContent, setStickyNoteContent] = useState(note.content);
 
     const refTitle = useRef();
     const refContent = useRef();
 
-    const [dx, setDx] = useState(0);
-    const [dy, setDy] = useState(0);
+    //change position
+    const [position, setPositon] = useState(note.position);
+    let mouseStartPos = { x: 0, y: 0 };
+    const stickyNoteRef = useRef();
 
-    function handleMouseDown(e) {
-        setAllowMove(true);
-        const dimensions = stickyNoteRef.current.getBoundingClientRect();
-        console.log(e.clientX);
-        setDx(e.clientX - dimensions.x);
-        setDy(e.clientY - dimensions.y);
-    }
+    const mouseDown = (e) => {
+        mouseStartPos.x = e.clientX;
+        mouseStartPos.y = e.clientY;
+        console.log(mouseStartPos);
+        document.addEventListener("mousemove", mouseMove);
+        document.addEventListener("mouseup", mouseUp);
+    };
 
-    function handleMouseMove(e) {
-        if (allowMove) {
-            // move the sticky note
-            const x = e.clientX - dx;
-            const y = e.clientY - dy;
-            stickyNoteRef.current.style.left = x + "px";
-            stickyNoteRef.current.style.top = y + "px";
+    const mouseUp = () => {
+        document.removeEventListener("mousemove", mouseMove);
+        document.removeEventListener("mouseup", mouseUp);
+    };
+
+    const mouseMove = (e) => {
+        //1 - Calculate move direction
+        let mouseMoveDir = {
+            x: mouseStartPos.x - e.clientX,
+            y: mouseStartPos.y - e.clientY,
+        };
+        //2 - Update start position for next move.
+        mouseStartPos.x = e.clientX;
+        mouseStartPos.y = e.clientY;
+        let px = stickyNoteRef.current.offsetLeft - mouseMoveDir.x
+        let py = stickyNoteRef.current.offsetTop - mouseMoveDir.y
+
+        // controllo che non sia out of bounds
+        if (px < 0) {
+            px = 0;
         }
-    }
+        if (py < 0) {
+            py = 0;
+        }
+        if (px > window.innerWidth - stickyNoteRef.current.offsetWidth) {
+            px = window.innerWidth - stickyNoteRef.current.offsetWidth;
+        }
+        if (py > window.innerHeight - stickyNoteRef.current.offsetHeight) {
+            py = window.innerHeight - stickyNoteRef.current.offsetHeight;
+        }
 
-    function handleMouseUp() {
-        setAllowMove(false);
-    }
+        //3 - Update ntoe top and left position.
+        setPositon({
+            x: px,
+            y: py,
+        });const mouseMove = (e) => {
+            //1 - Calculate move direction
+            let mouseMoveDir = {
+                x: mouseStartPos.x - e.clientX,
+                y: mouseStartPos.y - e.clientY,
+            };
+            //2 - Update start position for next move.
+            mouseStartPos.x = e.clientX;
+            mouseStartPos.y = e.clientY;
+            let px = stickyNoteRef.current.offsetLeft - mouseMoveDir.x
+            let py = stickyNoteRef.current.offsetTop - mouseMoveDir.y
+    
+            // controllo che non sia out of bounds
+            if (px < 0) {
+                px = 0;
+            }
+            if (py < 0) {
+                py = 0;
+            }
+            const dimensions = stickyNoteRef.current.getBoundingClientRect();
+            if (px > window.innerWidth - dimensions.width) {
+                px = window.innerWidth - dimensions.width;
+            }
+            if (py > window.innerHeight - dimensions.height) {
+                py = window.innerHeight - dimensions.height;
+            }
+    
+            //3 - Update ntoe top and left position.
+            setPositon({
+                x: px,
+                y: py,
+            });
+        };
+    };
 
     useEffect(() => {
-        if (allowMove) {
-            document.addEventListener("mousemove", handleMouseMove);
-            document.addEventListener("mouseup", handleMouseUp);
-        } else {
-            document.removeEventListener("mousemove", handleMouseMove);
-            document.removeEventListener("mouseup", handleMouseUp);
-        }
-
-        return () => {
-            document.removeEventListener("mousemove", handleMouseMove);
-            document.removeEventListener("mouseup", handleMouseUp);
-        };
-    }, [allowMove]);
+        stickyNoteRef.current.style.left = position.x + "px";
+        stickyNoteRef.current.style.top = position.y + "px";
+    }, [position]);
 
     function handleNameChange(e) {
         e.preventDefault();
@@ -67,15 +111,15 @@ export default function StickyNote({ note,onClose,onDuplicate }) {
 
     useEffect(() => {
         updateNote();
-    }, [stickyNoteName, stickyNoteContent, dx, dy]);
+    }, [stickyNoteName, stickyNoteContent,position]);
 
     function updateNote() {
-        makeRequest.put("/notes/updateNote", {
+        makeRequest.put("/notes/updateNote/" + note._id, {
             title: stickyNoteName,
             content : stickyNoteContent,
-            position : { x: dx, y: dy},
+            position : { x: position.x, y: position.y },
         }).then((response) => {
-            console.log(response.data);
+            onUpdate();
         });
     }
 
@@ -87,7 +131,7 @@ export default function StickyNote({ note,onClose,onDuplicate }) {
         >
             <div
                 className="bg-blue-500 text-white p-2 flex justify-between cursor-move"
-                onMouseDown={handleMouseDown}
+                onMouseDown={mouseDown}
             >
                 <div>
                 <input 

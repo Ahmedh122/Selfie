@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react"
 import StickyNote from "./StickyNote"
-import { useQuery } from "react-query";
 import { makeRequest } from "../../axios";
-import { useContext } from "react";
-import { authContext } from "../../context/authcontext";
+
 
 
 function Notes() {
@@ -14,6 +12,7 @@ function Notes() {
 
     function getNotes() {
         makeRequest.get("/notes/getNotes").then((response) => {
+            console.log(response.data)
             setNotes(response.data)
         })
     }
@@ -23,7 +22,7 @@ function Notes() {
             title: "New Note", 
             content: "Write your content here", 
             category: "General", 
-            position: {x: 0, y: 0} 
+            position: {x: 0, y: 50} 
         })
         .then((response) => {
             setAddnoteToggle(!addnoteToggle)
@@ -32,20 +31,26 @@ function Notes() {
     }
 
     function removeNote(noteId) {
-        console.log(noteId)
         makeRequest.delete('/notes/deleteNote/' + noteId)
         .then((response) => {
             setAddnoteToggle(!addnoteToggle)
         })
     }
 
-    function duplicateNote(noteId) {
-       console.log("suca")    
+    function duplicateNote(noteId) { 
+        makeRequest.post('/notes/duplicateNote/' + noteId)
+        .then((response) => {
+            setAddnoteToggle(!addnoteToggle)
+        })
+    }
+
+    function getnotesafterupdate() {
+        setAddnoteToggle(!addnoteToggle)
     }
 
     useEffect(() => {
-        getNotes();
-    }, [notes]);
+        getNotes(); 
+    }, [addnoteToggle]);
 
 
     return (
@@ -55,9 +60,11 @@ function Notes() {
             </button>
             {notes.map((note) => (
                 <StickyNote
+                    key={note._id}  //aggiungendo sta cosa la cancellazione delle note funziona bene anche da subito ma perche???????? non ha senso 
                     note={note}
                     onClose={removeNote}
                     onDuplicate={duplicateNote}
+                    onUpdate={getnotesafterupdate}
                 />
             ))}
         </div>
