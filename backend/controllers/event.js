@@ -5,73 +5,50 @@ import Subscription from "../models/subscription.js";
 
 
 
-export const getPosts = async (req, res) => {
-  const { userId, channelname, currentuser } = req.query;
-
+export const getEvents = async (req, res) => {
+  const { date } = req.query;
   const token = req.cookies.accessToken;
 
+  if (!token) return res.status(401).json("Not logged in!");
+
   try {
-    if (!token) return res.status(401).json("Not logged in!");
-
     const userInfo = jwt.verify(token, "secretkey");
+    const userId = userInfo.id;
 
-    let query;
+        const queryDate = new Date(date);
 
-    if (userId !== "undefined") {
-      // If userId is defined, fetch posts for a specific user
-      query = {
-        $or: [
-          { userId: userId }, // i post che ha fatto lui
-          {
-            $and: [
-              { userId: currentuser }, // i post che ha fatto il currentuser
-              { Idreciver: userId }, // i post che ha ricevuto dal currentuser
-            ],
-          },
-        ],
-      };
-    } else if (channelname !=="undefined") {
-      // If channelname is defined, fetch posts for a specific channel
-      query = {
-        channelname: channelname,
-      };
-    } else {
-      // If userId and channelname are not defined, fetch posts from followed users and channels
-      const userRelationships = await Relationship.find({
-        followerUserId: userInfo.id,
-      });
+        const events = await Event.find({
+          userId: userId,
+          $and: [
+            { eventStart: { $lte: queryDate } },
+            { eventEnd: { $gte: queryDate } },
+          ],
+        }).sort({ createdAt: -1 });
+        
+    return res.status(200).json(events);
+    
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json(error.message || "Internal Server Error");
+  }
+};
 
-      const followedUserIds = userRelationships.map(
-        (relationship) => relationship.followedUserId
-      );
 
-      const channelSubscriptions = await Subscription.find({
-        subscriberId: userInfo.id,
-      });
+export const getAllEvents = async (req, res) => {
+ 
+  const token = req.cookies.accessToken;
 
-      const followedChannelNames = channelSubscriptions.map(
-        (subscription) => subscription.channelname
-      );
+  if (!token) return res.status(401).json("Not logged in!");
 
-      // Include the user's own ID and channel subscriptions in the list
-      followedUserIds.push(userInfo.id);
-      followedChannelNames.push(userInfo.id);
+  try {
+    const userInfo = jwt.verify(token, "secretkey");
+    const userId = userInfo.id;
 
-      query = {
-        $or: [
-          { userId: { $in: followedUserIds } },
-          { channelname: { $in: followedChannelNames } },
-        ],
-      };
-    }
+    const queryDate = new Date(date);
 
-    const posts = await Post.find(query).sort({ createdAt: -1 }).populate({
-      path: "userId",
-      model: "User",
-      select: "username profilePic",
-    });
+    const events = await Event.find().sort({ createdAt: -1 });
 
-    return res.status(200).json(posts);
+    return res.status(200).json(events);
   } catch (error) {
     console.error(error);
     return res.status(500).json(error.message || "Internal Server Error");
@@ -96,6 +73,7 @@ export const addEvent = async (req, res) => {
       userId: userInfo.id,
       eventStart: req.body.selectedDateEventStart,
       eventEnd: req.body.selectedDateEventEnd,
+      description: req.body.description, 
     });
     //console.log(newPost);  
     const savedEvent = await newEvent.save();
@@ -107,7 +85,7 @@ export const addEvent = async (req, res) => {
   }
 };
 
-export const deletePost = async (req, res) => {
+export const deleteEvent = async (req, res) => {
   const token = req.cookies.accessToken;
 
   try {

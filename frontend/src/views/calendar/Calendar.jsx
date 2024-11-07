@@ -1,7 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { makeRequest } from "../../axios";
+import Events from "./events";
+import { useQueryClient } from "react-query";
+import { AuthContext } from "../../context/authcontext";
 
 function Calendar() {
+  const queryClient = useQueryClient();
   const daysOfWeekFull = [
     "Sunday",
     "Monday",
@@ -73,6 +77,42 @@ function Calendar() {
     useState(false);
 
   const [title, setTitle] = useState("");
+  const [hoursStart, setHoursStart] = useState(0);
+  const [minutesStart, setMinutesStart] = useState(0);
+  const [hoursEnd, setHoursEnd] = useState(0);
+  const [minutesEnd, setMinutesEnd] = useState(0);
+  const [description, setDescription] = useState("");
+
+
+      const handleIncrementTime = (type, e) => {
+        e.preventDefault();
+        if (type === "hoursStart") {
+          setHoursStart((prev) => (prev + 1 + 24) % 24);
+        } else if (type === "minutesStart") {
+          setMinutesStart((prev) => (prev + 1 + 60) % 60);
+        } else if (type === "hoursEnd") {
+          setHoursEnd((prev) => (prev + 1 + 24) % 24);
+        } else if (type === "minutesEnd") {
+          setMinutesEnd((prev) => (prev + 1 + 60) % 60);
+        }
+      };
+
+    const handleDecrementTime = (type, e) => {
+      e.preventDefault()
+      if (type === "hoursStart") {
+        setHoursStart((prev) => (prev - 1 + 24) % 24);
+      } else if (type === "minutesStart") {
+        setMinutesStart((prev) => (prev - 1 + 60) % 60);
+      } else if (type === "hoursEnd"){
+        setHoursEnd((prev)=> (prev - 1 + 24) % 24 );
+      }
+      else if (type === "minutesEnd") {
+        setMinutesEnd((prev) => (prev -1 + 60) % 60);
+      }
+    };
+
+
+   
 
   const daysInMonth = new Date(displayYear, displayMonth + 1, 0).getDate();
   const daysInMonthEventDateStart = new Date(
@@ -167,13 +207,14 @@ function Calendar() {
   };
 
   const handleDateClick = (day) => {
-    setSelectedDate(new Date(displayYear, displayMonth, day));
+    const selectedDateUTC = new Date(Date.UTC(displayYear, displayMonth, day));
+    setSelectedDate(selectedDateUTC);
     setDisplayMonthEventStart(displayMonth);
     setDisplayYearEventStart(displayYear);
     setDisplayMonthEventEnd(displayMonth);
     setDisplayYearEventEnd(displayYear);
-    setSelectedDateEventStart(selectedDate);
-    setSelectedDateEventEnd(selectedDate);
+    setSelectedDateEventStart(selectedDateUTC);
+    setSelectedDateEventEnd(selectedDateUTC);
   };
 
 useEffect(() => {
@@ -195,20 +236,25 @@ const handleDateClickEventStart = (day) => {
   const selectedDateUTC = new Date(
     Date.UTC(displayYearEventStart, displayMonthEventStart, day)
   );
-  setSelectedDateEventStart(selectedDateUTC); // Only update start date here
+  setSelectedDateEventStart(selectedDateUTC); 
   setIsEventDateStartManuallySet(true);
 };
 
 useEffect(() => {
   if (selectedDateEventEnd < selectedDateEventStart) {
-    setSelectedDateEventEnd(selectedDateEventStart); // Update the end date if it's before the start date
+    setSelectedDateEventEnd(selectedDateEventStart); 
   }
 }, [selectedDateEventStart, selectedDateEventEnd]); 
 
 
 useEffect(() => {
-  if (!isEventDateEndManuallySet && selectedDate !== null) {
-    if (selectedDate && selectedDateEventEnd !== selectedDate) {
+  if (isEventDateStartManuallySet && !isEventDateEndManuallySet && selectedDate !== null) {
+    if (selectedDateEventEnd < selectedDateEventStart){};
+    if (
+      selectedDateEventEnd > selectedDateEventStart &&
+      selectedDate &&
+      selectedDateEventEnd !== currentDate
+    ) {
       setSelectedDateEventEnd(selectedDate);
     } else if (!selectedDate && selectedDateEventEnd !== currentDate) {
       setSelectedDateEventEnd(currentDate);
@@ -219,15 +265,17 @@ useEffect(() => {
   currentDate,
   isEventDateEndManuallySet,
   selectedDateEventEnd,
+  selectedDateEventStart,
+  isEventDateStartManuallySet,
 ]);
 
 const handleDateClickEventEnd = (day) => {
-  // Use Date.UTC to avoid time zone issues
+ 
   const selectedEndDateUTC = new Date(
     Date.UTC(displayYearEventEnd, displayMonthEventEnd, day)
   );
 
-  // Ensure the end date is not before the start date
+ 
   if (selectedEndDateUTC < selectedDateEventStart) {
     setSelectedDateEventEnd(selectedDateEventStart);
   } else {
@@ -254,22 +302,29 @@ const resetEventDate = () => {
   const toggleStartEventDate = (e) => {
     e.preventDefault();
     setStartEventDateopen(!isStartEventDateopen);
+    setStartEventTimeopen(false);
   };
 
   const toggleEndEventDate = (e) => {
     e.preventDefault();
     setEndEventDateopen(!isEndEventDateopen);
+    setEndEventTimeopen(false);
   };
 
   const toggleStartEventTime = (e) => {
     e.preventDefault();
     setStartEventTimeopen(!isStartEventTimeopen);
+    setStartEventDateopen(false);
   };
 
    const toggleEndEventTime = (e) => {
      e.preventDefault();
      setEndEventTimeopen(!isEndEventTimeopen);
+     setEndEventDateopen(false);
    };
+
+
+  
 
   useEffect(() => {
     if (isPopupOpen) {
@@ -309,23 +364,48 @@ const resetEventDate = () => {
     setPopupOpen(false);
   };
 
- const SubmitEvent = async (e) => {
-   e.preventDefault();
-   try {
-     const formattedStartDate = selectedDateEventStart.toISOString().split("T")[0]; 
-     const formattedEndDate = selectedDateEventEnd.toISOString().split("T")[0];
+const SubmitEvent = async (e) => {
+  e.preventDefault();
+  try {
+    const formattedStartDate = new Date(selectedDateEventStart);
+    const formattedEndDate = new Date(selectedDateEventEnd);
+    formattedStartDate.setUTCHours(hoursStart);
+    formattedStartDate.setUTCMinutes(minutesStart);
+    formattedEndDate.setUTCHours(hoursEnd);
+    formattedEndDate.setUTCMinutes(minutesEnd);
 
-     const res = await makeRequest.post("/events", {
-       title,
-       selectedDateEventStart: formattedStartDate,
-       selectedDateEventEnd: formattedEndDate,
-     });
+    
+    const startISO = formattedStartDate.toISOString();
+    const endISO = formattedEndDate.toISOString();
 
-     console.log("Event created successfully:", res.data);
-   } catch (error) {
-     console.error(error);
-   }
- };
+    const res = await makeRequest.post("/events", {
+      title,
+      selectedDateEventStart: startISO,
+      selectedDateEventEnd: endISO,
+      description,
+      
+    });
+    queryClient.invalidateQueries(["events"])
+    console.log("Event created successfully:", res.data); // da togliere
+    setEndEventDateopen(false);
+    setStartEventDateopen(false);
+    setEndEventTimeopen(false);
+    setStartEventTimeopen(false);
+    setHoursStart(0);
+    setHoursEnd(0);
+    setMinutesStart(0);
+    setMinutesEnd(0);
+    setPopupEventOpen(false);
+    const resetDate = selectedDate || currentDate;
+    setSelectedDateEventStart(resetDate);
+    setSelectedDateEventEnd(resetDate);
+    setTitle("");
+    setDescription("");
+    
+  } catch (error) {
+    console.error(error);
+  }
+};
 
   const returnToSelection = () => {
     if (selectedDate) {
@@ -440,10 +520,12 @@ const resetEventDate = () => {
                 </span>
               </div>
             </div>
-            <h2 className="text-gray-400 text-lg md:text-xl mt-3">
-              No events today
-            </h2>
-          </div>
+           
+           
+          </div> 
+          <div className="eventList flex w-full h-full overflow-scroll no-scrollbar ">
+              <Events selectedDate={selectedDate} currentDate={currentDate}/>
+            </div>
         </div>
 
         <div className="righthalf absolute w-full p-5 left-0 md:p-0 md:left-auto md:static flex justify-center items-center bottom-[20%] md:w-1/2">
@@ -695,7 +777,8 @@ const resetEventDate = () => {
                       className="p-2 rounded-md w-[40%] h-[2.5rem] border text-white  bg-[#4a484d] border-none focus:outline-none"
                       onClick={toggleStartEventTime}
                     >
-                      starttime
+                      {String(hoursStart).padStart(2, "0")}:
+                      {String(minutesStart).padStart(2, "0")}
                     </button>
                   </div>
                   {isStartEventDateopen && (
@@ -804,6 +887,55 @@ const resetEventDate = () => {
                       </div>
                     </div>
                   )}
+                  {isStartEventTimeopen && (
+                    <div className=" TimeStart absolute w-full  p-6 left-0 md:p-0 md:left-auto md:static flex justify-center items-center bottom-[20%]">
+                      <div className="hours flex flex-col relative  mr-2  h-full">
+                        <button
+                          className="flex w-7 h-full l-0 bg-violet-600  text-white justify-center items-center rounded-xl mb-2"
+                          onClick={(e) => handleDecrementTime("hoursStart", e)}
+                        >
+                          -
+                        </button>
+                        <input
+                          className=" bg-[#4a484d] text-center w-7 text-white  border-none focus:outline-none rounded-lg "
+                          type=""
+                          value={String(hoursStart).padStart(2, "0")}
+                          readOnly
+                        />
+                        <button
+                          className="flex w-7 h-full l-0 bg-violet-600  text-white justify-center items-center rounded-xl mt-2"
+                          onClick={(e) => handleIncrementTime("hoursStart", e)}
+                        >
+                          +
+                        </button>
+                      </div>
+                      <span className="text-xl font-bold text-white">:</span>
+                      <div className="minutes flex flex-col relative  ml-2  h-full ">
+                        <button
+                          className="flex w-7 h-full l-0 bg-violet-600  text-white justify-center items-center rounded-xl mb-2"
+                          onClick={(e) =>
+                            handleDecrementTime("minutesStart", e)
+                          }
+                        >
+                          -
+                        </button>
+                        <input
+                          className=" bg-[#4a484d] text-center w-7 text-white  border-none focus:outline-none rounded-lg "
+                          type=""
+                          value={String(minutesStart).padStart(2, "0")}
+                          readOnly
+                        />
+                        <button
+                          className="flex w-7 h-full l-0 bg-violet-600  text-white justify-center items-center rounded-xl mt-2"
+                          onClick={(e) =>
+                            handleIncrementTime("minutesStart", e)
+                          }
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                  )}
                   <div className=" flex flex-row justify-between items-center w-full">
                     <span className="text-white font-semibold mr-7">end</span>
                     <button
@@ -822,11 +954,12 @@ const resetEventDate = () => {
                       className="p-2 rounded-md w-[40%] h-[2.5rem] border text-white  bg-[#4a484d] border-none focus:outline-none"
                       onClick={toggleEndEventTime}
                     >
-                      starttime
+                      {String(hoursEnd).padStart(2, "0")}:
+                      {String(minutesEnd).padStart(2, "0")}
                     </button>
                   </div>
                   {isEndEventDateopen && (
-                    <div className=" eventSelectStart absolute w-full p-6 left-0 md:p-0 md:left-auto md:static flex justify-center items-center bottom-[20%] ">
+                    <div className=" eventSelectEnd absolute w-full p-6 left-0 md:p-0 md:left-auto md:static flex justify-center items-center bottom-[20%] ">
                       <div className="flex flex-col w-full md:w-full transition-all ease-in-out duration-300">
                         <div className="flex justify-between items-center w-full mb-2">
                           <div className="flex items-end hover:bg-[#1B1B1F] -ml-[4%] rounded-l-full rounded-r-full p-4 transition-all ease-in-out duration-300">
@@ -901,7 +1034,7 @@ const resetEventDate = () => {
                           )}
                           {[...Array(daysInMonthEventDateEnd).keys()].map(
                             (day) => {
-                              const date = day + 1; 
+                              const date = day + 1;
                               const isSelectedDateEventEnd =
                                 selectedDateEventEnd &&
                                 selectedDateEventEnd.getDate() === date &&
@@ -929,10 +1062,61 @@ const resetEventDate = () => {
                       </div>
                     </div>
                   )}
+                  {isEndEventTimeopen && (
+                    <div className=" TimeEnd absolute w-full  p-6 left-0 md:p-0 md:left-auto md:static flex justify-center items-center bottom-[20%]">
+                      <div className="hours flex flex-col relative  mr-2  h-full ">
+                        <button
+                          className="flex  h-full l-0 bg-violet-600  text-white justify-center items-center rounded-xl mb-2"
+                          onClick={(e) => handleIncrementTime("hoursEnd", e)}
+                        >
+                          +
+                        </button>
+                        <input
+                          className=" r-0  bg-[#4a484d] text-center w-7 text-white  border-none focus:outline-none rounded-lg"
+                          type=""
+                          value={String(hoursEnd).padStart(2, "0")}
+                          readOnly
+                        />
+                        <button
+                          className="flex  h-full l-0 bg-violet-600  text-white justify-center items-center rounded-xl mt-2"
+                          onClick={(e) => handleDecrementTime("hoursEnd", e)}
+                        >
+                          -
+                        </button>
+                      </div>
+                      <span className="text-xl font-bold text-white">:</span>
+                      <div className="minutes flex flex-col relative  ml-2  h-full ">
+                        <button
+                          className="flex w-7  h-full l-0 bg-violet-600  text-white justify-center items-center rounded-xl mb-2"
+                          onClick={(e) => handleIncrementTime("minutesEnd", e)}
+                        >
+                          +
+                        </button>
+                        <input
+                          className=" bg-[#4a484d] text-center w-7 text-white  border-none focus:outline-none rounded-lg "
+                          type=""
+                          value={String(minutesEnd).padStart(2, "0")}
+                          readOnly
+                        />
+                        <button
+                          className="flex w-7 h-full l-0 bg-violet-600  text-white justify-center items-center rounded-xl mt-2"
+                          onClick={(e) => handleDecrementTime("minutesEnd", e)}
+                        >
+                          -
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
+                <textarea
+                  onChange={(e)=>setDescription(e.target.value)}
+                  value={description}
+                  className=" p-2 rounded-xl border text-white w-full h-[30%] bg-[#4a484d]  border-none focus:outline-none resize-none"
+                  placeholder="Description"
+                />
                 <button
                   onClick={SubmitEvent}
-                  className="absolute top-[50%] right-0 w-10 h-6 bg-violet-500 rounded-full"
+                  className=" top-[50%] right-0 w-10 h-6  bg-violet-500 rounded-full"
                 >
                   submit event
                 </button>
