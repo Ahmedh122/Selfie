@@ -7,6 +7,7 @@ function Timer() {
   const [shortBreakTime, setShortBreakTime] = useState(300); //5 minutes = 300 seconds
   const [longBreakTime, setLongBreakTime] = useState(900); //15 minutes = 900 seconds
   const [longBreakInterval, setLongBreakInterval] = useState(3); //4 pomodoro = 1 long break
+  const [TotalStudyTime, setTotalStudyTime] = useState(1500*3); // total time to study
   const [minutes, setMinutes] = useState(Math.floor((workTime % 3600) / 60).toString().padStart(2, '0'));
   const [secs, setSecs] = useState((workTime % 60).toString().padStart(2, '0'));
   const [intervalId, setIntervalId] = useState(null);
@@ -97,7 +98,7 @@ function Timer() {
     if (mode == 3) {seconds = longBreakTime; alert("hai finito il ciclo");}
     //setMemseconds(seconds);
     update();
-  }, [mode,workTime, shortBreakTime, longBreakTime, longBreakInterval]); 
+  }, [mode,workTime, shortBreakTime, longBreakTime, longBreakInterval, TotalStudyTime]); 
 
   function togglePopup(){
     setPopupVisible(!isPopupVisible);
@@ -108,7 +109,37 @@ function Timer() {
     togglePopup();
   };
 
+  const worktimehandler = (e) => {
+    const worktime = e.target.value * 60;
+    setWorkTime(worktime);
+    setTotalStudyTime(worktime * longBreakInterval);
+  };
 
+  const shorttimehandler = (e) => {
+    const shorttime = e.target.value * 60;
+    setShortBreakTime(shorttime);
+  };
+
+  const longtimehandler = (e) => {
+    const longtime = e.target.value * 60;
+    setLongBreakTime(longtime);
+  };
+
+  const TotalStudyTimeHandler = (e) => {
+    const tottime = e.target.value * 60;
+    const newLongBreakInterval = Math.floor(tottime / workTime);
+    setTotalStudyTime(tottime);
+    setLongBreakInterval(newLongBreakInterval);
+    setBrek(newLongBreakInterval);
+  };
+
+  const longbreakintervalhandler = (e) => {
+    const longbreakinterval = e.target.value;
+    setLongBreakInterval(longbreakinterval);
+    setTotalStudyTime(workTime * longbreakinterval);
+    setBrek(longbreakinterval);
+  };
+  
   return (
     <div className="bg-gray-100 flex items-center 
              justify-center h-screen">
@@ -153,8 +184,8 @@ function Timer() {
                     <input
                       className="ml-2"
                       type="number"
-                      value={workTime}
-                      onChange={(e) => setWorkTime(e.target.value)}
+                      value={workTime/60}
+                      onChange={worktimehandler}
                       min={0}
                     />
                   </label>
@@ -165,8 +196,8 @@ function Timer() {
                     <input
                       className="ml-2"
                       type="number"
-                      value={shortBreakTime}
-                      onChange={(e) => setShortBreakTime(e.target.value)}
+                      value={shortBreakTime/60}
+                      onChange={shorttimehandler}
                       min={0}
                     />
                   </label>
@@ -177,8 +208,8 @@ function Timer() {
                     <input
                       className="ml-2"
                       type="number"
-                      value={longBreakTime}
-                      onChange={(e) => setLongBreakTime(e.target.value)}
+                      value={longBreakTime/60}
+                      onChange={longtimehandler}
                       min={0}
                     />
                   </label>
@@ -190,7 +221,7 @@ function Timer() {
                       className="ml-2"
                       type="number"
                       value={longBreakInterval}
-                      onChange={(e) => [setLongBreakInterval(e.target.value), setBrek(e.target.value)]}
+                      onChange={longbreakintervalhandler}
                       min={0}
                     />
                   </label>
@@ -201,9 +232,10 @@ function Timer() {
                     <input
                       className="ml-2"
                       type="number"
-                      value={workTime*longBreakInterval}
-                      onChange={(e) => setLongBreakInterval(Math.floor(e.target.value/workTime))}
+                      value={TotalStudyTime/60}
+                      onChange={TotalStudyTimeHandler}
                       min={0}
+                      step={workTime/60}
                     />
                   </label>
                 </div>
