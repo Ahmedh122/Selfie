@@ -3,14 +3,16 @@ import { makeRequest } from "../../axios";
 
 
 
-export default function StickyNote({ note,onClose,onDuplicate,onUpdate }) {
+export default function StickyNote({ note,onClose,onDuplicate,onUpdate,categories }) {
 
     const [stickyNoteName, setStickyNoteName] = useState(note.title);
     const [stickyNoteContent, setStickyNoteContent] = useState(note.content);
+    const [stickyNoteCategory, setStickyNoteCategory] = useState(note.category);
     const [Dropdown, setDropdown] = useState(false);
 
     const refTitle = useRef();
     const refContent = useRef();
+    const refCategory = useRef();
 
     //change position
     const [position, setPositon] = useState(note.position);
@@ -79,13 +81,14 @@ export default function StickyNote({ note,onClose,onDuplicate,onUpdate }) {
 
     useEffect(() => {
         updateNote();
-    }, [stickyNoteName, stickyNoteContent,position]);
+    }, [stickyNoteName, stickyNoteContent,position,stickyNoteCategory]);
 
     function updateNote() {
         makeRequest.put("/notes/updateNote/" + note._id, {
             title: stickyNoteName,
             content : stickyNoteContent,
             position : { x: position.x, y: position.y },
+            category: stickyNoteCategory
         }).then((response) => {
             onUpdate();
         });
@@ -93,6 +96,11 @@ export default function StickyNote({ note,onClose,onDuplicate,onUpdate }) {
 
     function toggleDropdown() {
         setDropdown(!Dropdown);
+    }
+
+    function handleCategoryChange(e) {
+        e.preventDefault();
+        setStickyNoteCategory(refCategory.current.value);
     }
 
 
@@ -142,8 +150,23 @@ export default function StickyNote({ note,onClose,onDuplicate,onUpdate }) {
                 {Dropdown && (
                     <div>
                         {
-                            // array of categories then map through them
+                            categories.map((category) => (
+                                <button 
+                                    className="bg-blue-500 text-white p-2 flex justify-between cursor-move"
+                                    onClick={() => setStickyNoteCategory(category)}
+                                >
+                                    {category}
+                                </button>
+                            ))
                         }
+                        <input 
+                        type="text"  
+                        className="bg-blue-400 text-white p-2 flex justify-between cursor-move"
+                        defaultValue={note.category}
+                        ref={refCategory}
+                        onChange={handleCategoryChange}
+                />
+
                     </div>
                     )}
             </div>

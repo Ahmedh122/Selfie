@@ -7,17 +7,35 @@ export const getNotes = async (req, res) => {
   const token = req.cookies.accessToken;
   const userInfo = jwt.verify(token, "secretkey");
   const userId = userInfo.id;
+  const category = req.params.category;
+  console.log('category: ',category);
 
-  try{
-    if (!token) return res.status(401).json({ message: "Not logged in" });
-
-    const notes = await Note.find({ userId: userId });
-    res.status(200).json(notes);
-
+  if (category == null || category == "General") {
+    try{
+      if (!token) return res.status(401).json({ message: "Not logged in" });
+  
+      const notes = await Note.find({ userId: userId });
+      res.status(200).json(notes);
+  
+    }
+    catch (error) {
+    res.status(404).json({ message: error.message });
   }
-  catch (error) {
-  res.status(404).json({ message: error.message });
-}
+  }
+  else {
+    try{
+      if (!token) return res.status(401).json({ message: "Not logged in" });
+  
+      const notes = await Note.find({ userId: userId, category: category });
+      res.status(200).json(notes);
+  
+    }
+    catch (error) {
+    res.status(404).json({ message: error.message });
+  }
+  }
+
+  
 }
 
 export const addNote = async (req, res) => {

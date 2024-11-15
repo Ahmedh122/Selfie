@@ -9,11 +9,13 @@ function Notes() {
     const [addnoteToggle, setAddnoteToggle] = useState(false);  // to trigger useEffect to fetch notes when a new note is added
 
     const [notes, setNotes] = useState([]);
+    const [categories, setCategories] = useState([]);
 
     function getNotes() {
-        makeRequest.get("/notes/getNotes").then((response) => {
+        makeRequest.get("/notes/getNotes/General").then((response) => {
             console.log(response.data)
             setNotes(response.data)
+            setCategories([...new Set(response.data.map((note) => note.category))]) // extract unique categories from notes using Set
         })
     }
 
@@ -50,7 +52,20 @@ function Notes() {
 
     useEffect(() => {
         getNotes(); 
+        console.log("useEffect")
     }, [addnoteToggle]);
+
+    function Categoryfilter(e) {
+        console.log(e.target.value)
+        const category = e.target.value;
+        if (category === "General") {  // prevedere una categoria all o usare general(??)
+            getNotes();
+        } else {
+            makeRequest.get("/notes/getNotes/" + category).then((response) => {
+                setNotes(response.data)
+            })
+        }
+    }
 
 
     return (
@@ -58,6 +73,11 @@ function Notes() {
             <button className="p-2 bg-blue-500 text-white rounded-lg cursor-pointer border-none hover:bg-blue-400" onClick={addNote}>
                 Create Note +
             </button>
+            <select onChange={Categoryfilter}>
+                {categories.map((category) => (
+                    <option key={category} value={category}>{category}</option>
+                ))}
+            </select>
             {notes.map((note) => (
                 <StickyNote
                     key={note._id}  //aggiungendo sta cosa la cancellazione delle note funziona bene anche da subito ma perche???????? non ha senso 
@@ -65,6 +85,7 @@ function Notes() {
                     onClose={removeNote}
                     onDuplicate={duplicateNote}
                     onUpdate={getnotesafterupdate}
+                    categories={categories}
                 />
             ))}
         </div>
