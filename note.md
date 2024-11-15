@@ -15,13 +15,10 @@ data XX/XX/XXXX))
 # note
 
 - implementare categorie 
-- far vedere data di creazione e ultima modifica
 
 # pomodoro
 
-- controllare se a posto
-- mettere animazione
-- lato server pomodoro
+- unire a evento (con task?)
 
 
 

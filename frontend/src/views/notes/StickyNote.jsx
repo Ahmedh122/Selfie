@@ -147,6 +147,10 @@ export default function StickyNote({ note,onClose,onDuplicate,onUpdate }) {
                     </div>
                     )}
             </div>
+            <div className="bg-blue-500 text-white p-2 flex justify-between">
+                    <p>Created: {note.creationDate}</p>
+                    <p>Last Modified: {note.lastModifiedDate}</p>
+                </div>
         </div>
     );
 }
