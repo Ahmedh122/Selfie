@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import settingico from "../../assets/icon-settings.svg";
+import { makeRequest } from "../../axios";
 
 function Timer() {
 
@@ -12,12 +13,19 @@ function Timer() {
   const [secs, setSecs] = useState((workTime % 60).toString().padStart(2, '0'));
   const [intervalId, setIntervalId] = useState(null);
   const [isPopupVisible, setPopupVisible] = useState(false);
-
-  let seconds = workTime;
+  const [isloading, setIsLoading] = useState(true);
+  const [remainingtime, setRemainingTime] = useState(workTime);
   const [brek, setBrek] = useState(longBreakInterval);
-
   const [numberpomodoro, setNumberpomodoro] = useState(0); //number of pomodoro done
   const [mode, setMode] = useState(1); //1=work, 2=short break, 3=long break
+
+  const [dummy, setDummy] = useState(false); 
+
+
+  useEffect(() => {
+    getTimer();
+    console.log("getTimer");
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -28,12 +36,16 @@ function Timer() {
   }, [intervalId]);
 
   function update() {
-    setMinutes(Math.floor((seconds % 3600) / 60).toString().padStart(2, '0'));
-    setSecs((seconds % 60).toString().padStart(2, '0'));
-    if (seconds === 0) { //25 minutes = 1500 seconds
+    setMinutes(Math.floor((remainingtime % 3600) / 60).toString().padStart(2, '0'));
+    setSecs((remainingtime % 60).toString().padStart(2, '0'));
+    if (remainingtime === 0) { //25 minutes = 1500 remainingtime
       setIntervalId(null);
       reset();
     }
+    if(dummy){
+      addTimer();
+    }
+    console.log(remainingtime);
   }
 
   function toggleclick() {
@@ -42,16 +54,17 @@ function Timer() {
       setIntervalId(null);
       return;
     }
-    if (mode == 1) {seconds = workTime;}
-    if (mode == 2) {seconds = shortBreakTime;}
-    if (mode == 3) {seconds = longBreakTime;}
+    console.log("toggleclick");
+  
     const id = setInterval(() => {
-      seconds--;
-      //setMemseconds(seconds);
-      update();
+      setRemainingTime(prevRemainingTime => prevRemainingTime - 1);
     }, 1000);
     setIntervalId(id);
   }
+
+  useEffect(() => {
+      update(); 
+  }, [remainingtime]);
 
   function pause() {
     if (intervalId) {
@@ -61,46 +74,52 @@ function Timer() {
   }
 
   function reset() {
-
+    setDummy(true);
     switch (mode) {
-      case 1:
+      case 1: //work
         setNumberpomodoro(numberpomodoro + 1);
         if (brek > 0) {
           setMode(mode + 1);
-          setBrek(brek - 1)
+          setBrek(brek - 1);
+          setWorkTime(shortBreakTime);
+          setRemainingTime(shortBreakTime);
         }
         else{
           setMode(3);
+          setWorkTime(longBreakTime);
+          setRemainingTime(longBreakTime);
         }
         break;
-      case 2:
+      case 2: //short break
         setMode(1);
+        setWorkTime(workTime);
+        setRemainingTime(workTime);
         break;
-      case 3:
+      case 3: //long break
         setMode(1);
         setBrek(longBreakInterval)
+        setWorkTime(workTime);
+        setRemainingTime(workTime);
         break;
       default:
         setMode(1);
+        setWorkTime(workTime);
+        setRemainingTime(workTime);
     }
-    //if (mode == 1) {seconds = work;}
-    //if (mode == 2) {seconds = shortBreak;}
-    //if (mode == 3) {seconds = longBreak;}
-    //console.log("seconds=",seconds);
-    //setMemseconds(seconds);
-    //update();
+    addTimer();
   }
 
   useEffect(() => {
+    console.log("useEffect strano");
     pause();
-    if (mode == 1) {seconds = workTime;}
-    if (mode == 2) {seconds = shortBreakTime;}
-    if (mode == 3) {seconds = longBreakTime; alert("hai finito il ciclo");}
-    //setMemseconds(seconds);
+    /*if (mode == 1) {remainingtime = workTime;}
+    if (mode == 2) {remainingtime = shortBreakTime;}
+    if (mode == 3) {remainingtime = longBreakTime; alert("hai finito il ciclo");}*/
     update();
   }, [mode,workTime, shortBreakTime, longBreakTime, longBreakInterval, TotalStudyTime]); 
 
   function togglePopup(){
+    setDummy(true);
     setPopupVisible(!isPopupVisible);
   }
   
@@ -113,6 +132,7 @@ function Timer() {
     const worktime = e.target.value * 60;
     setWorkTime(worktime);
     setTotalStudyTime(worktime * longBreakInterval);
+    setRemainingTime(worktime);
   };
 
   const shorttimehandler = (e) => {
@@ -140,7 +160,68 @@ function Timer() {
     setBrek(longbreakinterval);
   };
   
-  return (
+  function getTimer() {	
+    makeRequest.get("/timers/getTimer").then((response) => {
+      console.log(response.data);
+      if (response.data.length > 0) {
+        setWorkTime(response.data[0].workTime);
+        setShortBreakTime(response.data[0].shortBreakTime);
+        setLongBreakTime(response.data[0].longBreakTime);
+        setLongBreakInterval(response.data[0].longBreakInterval);
+        setTotalStudyTime(response.data[0].workTime * response.data[0].longBreakInterval);
+        setNumberpomodoro(response.data[0].donepomo);
+        setMode(response.data[0].mode);
+        if (response.data[0].remainingTime > 0) {
+          setRemainingTime(response.data[0].remainingTime);
+        }
+      }
+
+    });
+    setIsLoading(false);
+  }
+
+  // post timer or put timer if already exists
+  function addTimer() {
+    console.log("addTimer");
+    makeRequest.get("/timers/getTimer").then((response) => {
+      //se non c'è un timer, lo creo
+      if (response.data.length == 0) {
+        makeRequest.post("/timers/addTimer", {
+          donepomo: numberpomodoro,
+          remainingTime: remainingtime,
+          mode: mode,
+          workTime: workTime,
+          shortBreakTime: shortBreakTime,
+          longBreakTime: longBreakTime,
+          longBreakInterval: longBreakInterval,
+        })
+        .then((response) => {
+          console.log('post');
+        })
+      }
+      else{
+        //se c'è un timer, lo aggiorno
+        makeRequest.put("/timers/addTimer/" + response.data[0]._id, {
+          donepomo: numberpomodoro,
+          remainingTime: remainingtime,
+          mode: mode,
+          workTime: workTime,
+          shortBreakTime: shortBreakTime,
+          longBreakTime: longBreakTime,
+          longBreakInterval: longBreakInterval,
+        })
+        .then((response) => {
+          console.log('put');
+        })
+      }
+    });
+  }
+
+  function handleSave() {
+    addTimer();
+  }
+
+  return  isloading ? (<div>Loading...</div>) : (
     <div className="bg-gray-100 flex items-center 
              justify-center h-screen">
       <div className={`rounded-lg shadow-lg p-20 ${intervalId ? 'bg-red-400' : 'bg-white'}`}>
@@ -240,7 +321,8 @@ function Timer() {
                   </label>
                 </div>
                 <div className="flex justify-center space-x-4 mt-8">
-                  <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                  <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                  onClick={handleSave}>
                     Save
                   </button>
                 </div>
