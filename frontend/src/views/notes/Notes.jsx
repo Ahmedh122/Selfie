@@ -10,6 +10,7 @@ function Notes() {
 
     const [notes, setNotes] = useState([]);
     const [categories, setCategories] = useState([]);
+    const [category, setCategory] = useState("General"); // actual category selected
 
     function getNotes() {
         makeRequest.get("/notes/getNotes/General").then((response) => {
@@ -23,7 +24,7 @@ function Notes() {
         makeRequest.post("/notes/addNote", { 
             title: "New Note", 
             content: "Write your content here", 
-            category: "General", 
+            category: category, 
             position: {x: 0, y: 50} 
         })
         .then((response) => {
@@ -51,13 +52,6 @@ function Notes() {
     }
 
     useEffect(() => {
-        getNotes(); 
-        console.log("useEffect")
-    }, [addnoteToggle]);
-
-    function Categoryfilter(e) {
-        console.log(e.target.value)
-        const category = e.target.value;
         if (category === "General") {  // prevedere una categoria all o usare general(??)
             getNotes();
         } else {
@@ -65,6 +59,12 @@ function Notes() {
                 setNotes(response.data)
             })
         }
+    }, [addnoteToggle,category]);
+
+    function Categoryfilter(e) {
+        console.log(e.target.value)
+        setCategory(e.target.value)
+        
     }
 
 

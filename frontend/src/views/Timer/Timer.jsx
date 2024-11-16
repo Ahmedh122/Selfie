@@ -81,29 +81,24 @@ function Timer() {
         if (brek > 0) {
           setMode(mode + 1);
           setBrek(brek - 1);
-          setWorkTime(shortBreakTime);
           setRemainingTime(shortBreakTime);
         }
         else{
           setMode(3);
-          setWorkTime(longBreakTime);
           setRemainingTime(longBreakTime);
         }
         break;
       case 2: //short break
         setMode(1);
-        setWorkTime(workTime);
         setRemainingTime(workTime);
         break;
       case 3: //long break
         setMode(1);
         setBrek(longBreakInterval)
-        setWorkTime(workTime);
         setRemainingTime(workTime);
         break;
       default:
         setMode(1);
-        setWorkTime(workTime);
         setRemainingTime(workTime);
     }
     addTimer();
@@ -116,7 +111,7 @@ function Timer() {
     if (mode == 2) {remainingtime = shortBreakTime;}
     if (mode == 3) {remainingtime = longBreakTime; alert("hai finito il ciclo");}*/
     update();
-  }, [mode,workTime, shortBreakTime, longBreakTime, longBreakInterval, TotalStudyTime]); 
+  }, [mode]); 
 
   function togglePopup(){
     setDummy(true);
@@ -132,17 +127,26 @@ function Timer() {
     const worktime = e.target.value * 60;
     setWorkTime(worktime);
     setTotalStudyTime(worktime * longBreakInterval);
-    setRemainingTime(worktime);
+    if ((intervalId == null) && (mode == 1)) { // se non è in esecuzione il timer aggiorno il tempo rimanente con il nuovo worktime\
+      console.log("worktimehandler");
+      setRemainingTime(worktime);
+    }  
   };
 
   const shorttimehandler = (e) => {
     const shorttime = e.target.value * 60;
     setShortBreakTime(shorttime);
+    if ((intervalId == null) && (mode == 2)) { // se non è in esecuzione il timer aggiorno il tempo rimanente con il nuovo worktime
+      setRemainingTime(shorttime);
+    }
   };
 
   const longtimehandler = (e) => {
     const longtime = e.target.value * 60;
     setLongBreakTime(longtime);
+    if ((intervalId == null) && (mode == 3)) { // se non è in esecuzione il timer aggiorno il tempo rimanente con il nuovo worktime
+      setRemainingTime(longtime);
+    }
   };
 
   const TotalStudyTimeHandler = (e) => {
