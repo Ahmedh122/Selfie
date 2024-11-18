@@ -1,6 +1,6 @@
 import React, { useContext } from 'react'
 import { AuthContext } from '../../context/authcontext';
-import { QueryClient, useMutation, useQueryClient } from 'react-query';
+import { useMutation, useQueryClient } from 'react-query';
 import { makeRequest } from '../../axios';
 
 
@@ -20,16 +20,40 @@ import { makeRequest } from '../../axios';
         },
       }
     ); 
-    
+    const formattedStartDate = new Date(event.eventStart).toLocaleDateString("en-GB");
+    const formattedEndDate = new Date(event.eventEnd).toLocaleDateString(
+      "en-GB"
+    );
+const formatTimeUTC = (dateString) => {
+  const date = new Date(dateString);
+  const hours = date.getUTCHours().toString().padStart(2, "0");
+  const minutes = date.getUTCMinutes().toString().padStart(2, "0");
+  return `${hours}:${minutes}`;
+};
+
+// Usage in your component
+const startTime = formatTimeUTC(event.eventStart);
+const endTime = formatTimeUTC(event.eventEnd);
 
 
   return (
-    <div className='  flex w-[70%] h-[4rem]  event bg-slate-300 mb-2 rounded-xl justify-center items-center'>
-      <div className='flex text-white w-full h-full ml-4  ' >{event.title}</div>
-      <div>{event.eventStart}</div>
-      
+    <div className="  flex flex-col w-[70%] h-min  event bg-gray-600 mb-2 rounded-xl ">
+      <div className="flex text-white font-bold text-lg w-full  h-full ml-5 mt-2 ">{event.title}</div>
+      <div className='start-date flex flex-row '>
+        <div className='ml-5 text-purple-300'>Start:</div>
+        <div className='flex ml-2 text-white'> {formattedStartDate}   </div>
+        <div className='ml-2 text-slate-300'>at</div>
+        <div className='ml-2 text-white'>{startTime} </div>
+
+      </div>
+      <div className='end-date flex flex-row'>
+        <div className=' ml-5 text-red-300 '>End:</div>
+        <div className='ml-3 text-white'>{formattedEndDate}</div>
+        <div className='ml-2 text-slate-300'>at</div>
+      <div className=' ml-2 text-white'>{endTime}</div>
+      </div>
     </div>
-  )
+  );
 }
 
 export default Event

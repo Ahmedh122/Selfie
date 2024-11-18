@@ -19,11 +19,37 @@ export const getEvents = async (req, res) => {
 
         const events = await Event.find({
           userId: userId,
-          $and: [
-            { eventStart: { $lte: queryDate } },
-            { eventEnd: { $gte: queryDate } },
-          ],
-        }).sort({ createdAt: -1 });
+               $expr: {
+        $and: [
+          {
+            $lte: [
+              {
+                $dateFromParts: {
+                  year: { $year: "$eventStart" },
+                  month: { $month: "$eventStart" },
+                  day: { $dayOfMonth: "$eventStart" }
+                }
+              },
+              queryDate
+            ]
+          },
+          {
+            $gte: [
+              {
+                $dateFromParts: {
+                  year: { $year: "$eventEnd" },
+                  month: { $month: "$eventEnd" },
+                  day: { $dayOfMonth: "$eventEnd" }
+                }
+              },
+              queryDate
+            ]
+          }
+        ]
+      }
+    }).sort({ createdAt: -1 });
+        
+        
         
     return res.status(200).json(events);
     
@@ -33,9 +59,20 @@ export const getEvents = async (req, res) => {
   }
 };
 
+function getDatesBetween(startDate, endDate) {
 
+  const dates = [];
+  const currentDate = new Date(startDate);
+
+  while (currentDate.getDate() <= endDate.getDate()) {
+    dates.push(new Date(currentDate)); // Add a copy of the date
+    currentDate.setDate(currentDate.getDate() + 1); // Move to the next day
+  }
+
+  return dates;
+}
 export const getAllEvents = async (req, res) => {
- 
+
   const token = req.cookies.accessToken;
 
   if (!token) return res.status(401).json("Not logged in!");
@@ -44,11 +81,21 @@ export const getAllEvents = async (req, res) => {
     const userInfo = jwt.verify(token, "secretkey");
     const userId = userInfo.id;
 
-    const queryDate = new Date(date);
+    // Fetch all events for the user, sorted by creation date
+    const events = await Event.find({userId : userId});
+    const allEventDays = new Set(); // Using a Set to keep dates unique
 
-    const events = await Event.find().sort({ createdAt: -1 });
+    events.forEach((event) => {
+      const eventDays = getDatesBetween(event.eventStart, event.eventEnd);
+      eventDays.forEach((day) => {
+        // Push only the date part without time for comparison purposes
+        allEventDays.add(day.toISOString().split("T")[0]);
+      });
+    });console.log(Array.from(allEventDays));
 
-    return res.status(200).json(events);
+    // Convert the Set to an array, each date in ISO string format (yyyy-mm-dd)
+    return res.json(Array.from(allEventDays));
+   
   } catch (error) {
     console.error(error);
     return res.status(500).json(error.message || "Internal Server Error");
@@ -67,13 +114,18 @@ export const addEvent = async (req, res) => {
 
     const userInfo = jwt.verify(token, "secretkey");
     //console.log(userInfo.id);
+     const title =
+       req.body.title && req.body.title.trim() !== ""
+         ? req.body.title
+         : "Untitled";
     
     const newEvent = new Event({
-      title: req.body.title,
+      title: title,
       userId: userInfo.id,
       eventStart: req.body.selectedDateEventStart,
       eventEnd: req.body.selectedDateEventEnd,
       description: req.body.description, 
+      type: req.body.eventType,
     });
     //console.log(newPost);  
     const savedEvent = await newEvent.save();

@@ -8,7 +8,7 @@ import { AuthContext } from "../../context/authcontext";
 const  Events = ({selectedDate , currentDate}) =>{
   const currentUser = useContext(AuthContext);
   const queryDate = selectedDate
-    ? new Date(selectedDate)
+    ? new Date(Date.UTC(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()))
     : new Date(Date.UTC(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate()));
  
 

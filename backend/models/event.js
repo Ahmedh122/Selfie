@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const eventSchema = new mongoose.Schema({
   title: {
     type: String,
-    //required: true,
+  
   },
   img: {
     type: String,
@@ -25,15 +25,21 @@ const eventSchema = new mongoose.Schema({
     type: Date,
   },
 
-  description:{
-    type: String, 
-   },
-
+  description: {
+    type: String,
+  },
 
   public: {
     type: Boolean,
     default: false,
   },
+
+  type :{
+    type: String,
+  },
+
+
+  
 });
 
 const Event = mongoose.model("Post", eventSchema);

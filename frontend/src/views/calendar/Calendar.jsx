@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { makeRequest } from "../../axios";
 import Events from "./events";
-import { useQueryClient } from "react-query";
+import { useQuery, useQueryClient } from "react-query";
 import { AuthContext } from "../../context/authcontext";
 
 function Calendar() {
@@ -57,6 +57,14 @@ function Calendar() {
   const [isStartEventTimeopen, setStartEventTimeopen] = useState(false);
   const [isEndEventDateopen, setEndEventDateopen] = useState(false);
   const [isEndEventTimeopen, setEndEventTimeopen] = useState(false);
+  const [eventType, setEventType] = useState("event");
+  const [unSelectedType, setUnselectedType] = useState("activity");
+  const [isTypeSelectOpen, setTypeSelectOpen] = useState(false);
+  const [frequenza, setFrequenza] = useState("Never");
+  const [isFrequenza, setIsfrequenza] = useState(false);
+  const [EndFreqdd, setEndFreqdd] = useState("");
+  const [EndFreqmm, setEndFreqmm] = useState("");
+  const [EndFreqyy, setEndFreqyy] = useState("");
   const [displayMonthEventStart, setDisplayMonthEventStart] = useState(
     currentDate.getMonth()
   );
@@ -65,14 +73,15 @@ function Calendar() {
   );
   const [selectedDateEventStart, setSelectedDateEventStart] =
     useState(currentDate);
-    const [displayMonthEventEnd, setDisplayMonthEventEnd] = useState(
-      currentDate.getMonth()
-    );
-    const [displayYearEventEnd, setDisplayYearEventEnd] = useState(
-      currentDate.getFullYear()
-    );
-    const [selectedDateEventEnd, setSelectedDateEventEnd] = useState(currentDate);
-  const [isEventDateStartManuallySet, setIsEventDateStartManuallySet] = useState(false);
+  const [displayMonthEventEnd, setDisplayMonthEventEnd] = useState(
+    currentDate.getMonth()
+  );
+  const [displayYearEventEnd, setDisplayYearEventEnd] = useState(
+    currentDate.getFullYear()
+  );
+  const [selectedDateEventEnd, setSelectedDateEventEnd] = useState(currentDate);
+  const [isEventDateStartManuallySet, setIsEventDateStartManuallySet] =
+    useState(false);
   const [isEventDateEndManuallySet, setIsEventDateEndManuallySet] =
     useState(false);
 
@@ -83,36 +92,31 @@ function Calendar() {
   const [minutesEnd, setMinutesEnd] = useState(0);
   const [description, setDescription] = useState("");
 
+  const handleIncrementTime = (type, e) => {
+    e.preventDefault();
+    if (type === "hoursStart") {
+      setHoursStart((prev) => (prev + 1 + 24) % 24);
+    } else if (type === "minutesStart") {
+      setMinutesStart((prev) => (prev + 1 + 60) % 60);
+    } else if (type === "hoursEnd") {
+      setHoursEnd((prev) => (prev + 1 + 24) % 24);
+    } else if (type === "minutesEnd") {
+      setMinutesEnd((prev) => (prev + 1 + 60) % 60);
+    }
+  };
 
-      const handleIncrementTime = (type, e) => {
-        e.preventDefault();
-        if (type === "hoursStart") {
-          setHoursStart((prev) => (prev + 1 + 24) % 24);
-        } else if (type === "minutesStart") {
-          setMinutesStart((prev) => (prev + 1 + 60) % 60);
-        } else if (type === "hoursEnd") {
-          setHoursEnd((prev) => (prev + 1 + 24) % 24);
-        } else if (type === "minutesEnd") {
-          setMinutesEnd((prev) => (prev + 1 + 60) % 60);
-        }
-      };
-
-    const handleDecrementTime = (type, e) => {
-      e.preventDefault()
-      if (type === "hoursStart") {
-        setHoursStart((prev) => (prev - 1 + 24) % 24);
-      } else if (type === "minutesStart") {
-        setMinutesStart((prev) => (prev - 1 + 60) % 60);
-      } else if (type === "hoursEnd"){
-        setHoursEnd((prev)=> (prev - 1 + 24) % 24 );
-      }
-      else if (type === "minutesEnd") {
-        setMinutesEnd((prev) => (prev -1 + 60) % 60);
-      }
-    };
-
-
-   
+  const handleDecrementTime = (type, e) => {
+    e.preventDefault();
+    if (type === "hoursStart") {
+      setHoursStart((prev) => (prev - 1 + 24) % 24);
+    } else if (type === "minutesStart") {
+      setMinutesStart((prev) => (prev - 1 + 60) % 60);
+    } else if (type === "hoursEnd") {
+      setHoursEnd((prev) => (prev - 1 + 24) % 24);
+    } else if (type === "minutesEnd") {
+      setMinutesEnd((prev) => (prev - 1 + 60) % 60);
+    }
+  };
 
   const daysInMonth = new Date(displayYear, displayMonth + 1, 0).getDate();
   const daysInMonthEventDateStart = new Date(
@@ -121,12 +125,11 @@ function Calendar() {
     0
   ).getDate();
 
-
-   const daysInMonthEventDateEnd = new Date(
-     displayYearEventEnd,
-     displayMonthEventEnd + 1,
-     0
-   ).getDate();
+  const daysInMonthEventDateEnd = new Date(
+    displayYearEventEnd,
+    displayMonthEventEnd + 1,
+    0
+  ).getDate();
   const firstDayOfMonth = new Date(displayYear, displayMonth, 1).getDay();
   const firstDayOfMonthEventDateStart = new Date(
     displayYearEventStart,
@@ -134,11 +137,11 @@ function Calendar() {
     1
   ).getDay();
 
-    const firstDayOfMonthEventDateEnd = new Date(
-      displayYearEventEnd,
-      displayMonthEventEnd,
-      1
-    ).getDay();
+  const firstDayOfMonthEventDateEnd = new Date(
+    displayYearEventEnd,
+    displayMonthEventEnd,
+    1
+  ).getDay();
 
   const changeMonth = (offset) => {
     setDisplayMonth((prevMonth) => {
@@ -171,22 +174,21 @@ function Calendar() {
     });
   };
 
-
-    const changeMonthEndEvent = (offset, e) => {
-      e.preventDefault();
-      setDisplayMonthEventEnd((prevMonth) => {
-        const newMonth = prevMonth + offset;
-        if (newMonth < 0) {
-          setDisplayYearEventEnd(displayYearEventEnd - 1);
-          return 11;
-        } else if (newMonth > 11) {
-          setDisplayYearEventEnd(displayYearEventEnd + 1);
-          return 0;
-        } else {
-          return newMonth;
-        }
-      });
-    };
+  const changeMonthEndEvent = (offset, e) => {
+    e.preventDefault();
+    setDisplayMonthEventEnd((prevMonth) => {
+      const newMonth = prevMonth + offset;
+      if (newMonth < 0) {
+        setDisplayYearEventEnd(displayYearEventEnd - 1);
+        return 11;
+      } else if (newMonth > 11) {
+        setDisplayYearEventEnd(displayYearEventEnd + 1);
+        return 0;
+      } else {
+        return newMonth;
+      }
+    });
+  };
 
   const resetCalendar = () => {
     setDisplayMonth(currentDate.getMonth());
@@ -217,78 +219,80 @@ function Calendar() {
     setSelectedDateEventEnd(selectedDateUTC);
   };
 
-useEffect(() => {
-  if (!isEventDateStartManuallySet && selectedDate !== null) {
-    if (selectedDate && selectedDateEventStart !== selectedDate) {
-      setSelectedDateEventStart(selectedDate);
-    } else if (!selectedDate && selectedDateEventStart !== currentDate) {
-      setSelectedDateEventStart(currentDate);
+  useEffect(() => {
+    if (!isEventDateStartManuallySet && selectedDate !== null) {
+      if (selectedDate && selectedDateEventStart !== selectedDate) {
+        setSelectedDateEventStart(selectedDate);
+      } else if (!selectedDate && selectedDateEventStart !== currentDate) {
+        setSelectedDateEventStart(currentDate);
+      }
     }
-  }
-}, [
-  selectedDate,
-  currentDate,
-  isEventDateStartManuallySet,
-  selectedDateEventStart,
-]);
+  }, [
+    selectedDate,
+    currentDate,
+    isEventDateStartManuallySet,
+    selectedDateEventStart,
+  ]);
 
-const handleDateClickEventStart = (day) => {
-  const selectedDateUTC = new Date(
-    Date.UTC(displayYearEventStart, displayMonthEventStart, day)
-  );
-  setSelectedDateEventStart(selectedDateUTC); 
-  setIsEventDateStartManuallySet(true);
-};
+  const handleDateClickEventStart = (day) => {
+    const selectedDateUTC = new Date(
+      Date.UTC(displayYearEventStart, displayMonthEventStart, day)
+    );
+    setSelectedDateEventStart(selectedDateUTC);
+    setIsEventDateStartManuallySet(true);
+  };
 
-useEffect(() => {
-  if (selectedDateEventEnd < selectedDateEventStart) {
-    setSelectedDateEventEnd(selectedDateEventStart); 
-  }
-}, [selectedDateEventStart, selectedDateEventEnd]); 
+  useEffect(() => {
+    if (selectedDateEventEnd < selectedDateEventStart) {
+      setSelectedDateEventEnd(selectedDateEventStart);
+    }
+  }, [selectedDateEventStart, selectedDateEventEnd]);
 
-
-useEffect(() => {
-  if (isEventDateStartManuallySet && !isEventDateEndManuallySet && selectedDate !== null) {
-    if (selectedDateEventEnd < selectedDateEventStart){};
+  useEffect(() => {
     if (
-      selectedDateEventEnd > selectedDateEventStart &&
-      selectedDate &&
-      selectedDateEventEnd !== currentDate
+      isEventDateStartManuallySet &&
+      !isEventDateEndManuallySet &&
+      selectedDate !== null
     ) {
-      setSelectedDateEventEnd(selectedDate);
-    } else if (!selectedDate && selectedDateEventEnd !== currentDate) {
-      setSelectedDateEventEnd(currentDate);
+      if (selectedDateEventEnd < selectedDateEventStart) {
+      }
+      if (
+        selectedDateEventEnd > selectedDateEventStart &&
+        selectedDate &&
+        selectedDateEventEnd !== currentDate
+      ) {
+        setSelectedDateEventEnd(selectedDate);
+      } else if (!selectedDate && selectedDateEventEnd !== currentDate) {
+        setSelectedDateEventEnd(currentDate);
+      }
     }
-  }
-}, [
-  selectedDate,
-  currentDate,
-  isEventDateEndManuallySet,
-  selectedDateEventEnd,
-  selectedDateEventStart,
-  isEventDateStartManuallySet,
-]);
+  }, [
+    selectedDate,
+    currentDate,
+    isEventDateEndManuallySet,
+    selectedDateEventEnd,
+    selectedDateEventStart,
+    isEventDateStartManuallySet,
+  ]);
 
-const handleDateClickEventEnd = (day) => {
- 
-  const selectedEndDateUTC = new Date(
-    Date.UTC(displayYearEventEnd, displayMonthEventEnd, day)
-  );
+  const handleDateClickEventEnd = (day) => {
+    const selectedEndDateUTC = new Date(
+      Date.UTC(displayYearEventEnd, displayMonthEventEnd, day)
+    );
 
- 
-  if (selectedEndDateUTC < selectedDateEventStart) {
-    setSelectedDateEventEnd(selectedDateEventStart);
-  } else {
-    setSelectedDateEventEnd(selectedEndDateUTC);
-  }
+    if (selectedEndDateUTC < selectedDateEventStart) {
+      setSelectedDateEventEnd(selectedDateEventStart);
+    } else {
+      setSelectedDateEventEnd(selectedEndDateUTC);
+    }
 
-  setIsEventDateEndManuallySet(true);
-};
+    setIsEventDateEndManuallySet(true);
+  };
 
-const resetEventDate = () => {
-  setIsEventDateStartManuallySet(false);
-  setIsEventDateEndManuallySet(false); 
-};
+  const resetEventDate = () => {
+    setIsEventDateStartManuallySet(false);
+    setIsEventDateEndManuallySet(false);
+  };
 
   const togglePopup = () => {
     setPopupOpen(!isPopupOpen);
@@ -317,14 +321,11 @@ const resetEventDate = () => {
     setStartEventDateopen(false);
   };
 
-   const toggleEndEventTime = (e) => {
-     e.preventDefault();
-     setEndEventTimeopen(!isEndEventTimeopen);
-     setEndEventDateopen(false);
-   };
-
-
-  
+  const toggleEndEventTime = (e) => {
+    e.preventDefault();
+    setEndEventTimeopen(!isEndEventTimeopen);
+    setEndEventDateopen(false);
+  };
 
   useEffect(() => {
     if (isPopupOpen) {
@@ -343,6 +344,19 @@ const resetEventDate = () => {
       return () => clearTimeout(timer);
     }
   }, [isPopupEventOpen]);
+
+
+useEffect(() => {
+  if (EndFreqdd && EndFreqmm && EndFreqyy) {
+    const month = Number(EndFreqmm) - 1; // Convert month to 0-based index
+    const year = Number(EndFreqyy);
+    const numberOfDays = new Date(year, month + 1, 0).getDate();
+
+    if (Number(EndFreqdd) > numberOfDays) {
+      setEndFreqdd(String(numberOfDays)); // Adjust day to the max for the month
+    }
+  }
+}, [EndFreqdd, EndFreqmm, EndFreqyy]);
 
   const displayDay = selectedDate
     ? daysOfWeekFull[selectedDate.getDay()]
@@ -364,48 +378,47 @@ const resetEventDate = () => {
     setPopupOpen(false);
   };
 
-const SubmitEvent = async (e) => {
-  e.preventDefault();
-  try {
-    const formattedStartDate = new Date(selectedDateEventStart);
-    const formattedEndDate = new Date(selectedDateEventEnd);
-    formattedStartDate.setUTCHours(hoursStart);
-    formattedStartDate.setUTCMinutes(minutesStart);
-    formattedEndDate.setUTCHours(hoursEnd);
-    formattedEndDate.setUTCMinutes(minutesEnd);
+  const SubmitEvent = async (e) => {
+    e.preventDefault();
+    try {
+      const formattedStartDate = new Date(selectedDateEventStart);
+      const formattedEndDate = new Date(selectedDateEventEnd);
+      formattedStartDate.setUTCHours(hoursStart);
+      formattedStartDate.setUTCMinutes(minutesStart);
+      formattedEndDate.setUTCHours(hoursEnd);
+      formattedEndDate.setUTCMinutes(minutesEnd);
 
-    
-    const startISO = formattedStartDate.toISOString();
-    const endISO = formattedEndDate.toISOString();
+      const startISO = formattedStartDate.toISOString();
+      const endISO = formattedEndDate.toISOString();
 
-    const res = await makeRequest.post("/events", {
-      title,
-      selectedDateEventStart: startISO,
-      selectedDateEventEnd: endISO,
-      description,
-      
-    });
-    queryClient.invalidateQueries(["events"])
-    console.log("Event created successfully:", res.data); // da togliere
-    setEndEventDateopen(false);
-    setStartEventDateopen(false);
-    setEndEventTimeopen(false);
-    setStartEventTimeopen(false);
-    setHoursStart(0);
-    setHoursEnd(0);
-    setMinutesStart(0);
-    setMinutesEnd(0);
-    setPopupEventOpen(false);
-    const resetDate = selectedDate || currentDate;
-    setSelectedDateEventStart(resetDate);
-    setSelectedDateEventEnd(resetDate);
-    setTitle("");
-    setDescription("");
-    
-  } catch (error) {
-    console.error(error);
-  }
-};
+      const res = await makeRequest.post("/events", {
+        title,
+        selectedDateEventStart: startISO,
+        selectedDateEventEnd: endISO,
+        description,
+        eventType,
+        frequenza,
+      });
+      queryClient.invalidateQueries(["events"]);
+      queryClient.invalidateQueries(["eventDays"]);
+      setEndEventDateopen(false);
+      setStartEventDateopen(false);
+      setEndEventTimeopen(false);
+      setStartEventTimeopen(false);
+      setHoursStart(0);
+      setHoursEnd(0);
+      setMinutesStart(0);
+      setMinutesEnd(0);
+      setPopupEventOpen(false);
+      const resetDate = selectedDate || currentDate;
+      setSelectedDateEventStart(resetDate);
+      setSelectedDateEventEnd(resetDate);
+      setTitle("");
+      setDescription("");
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const returnToSelection = () => {
     if (selectedDate) {
@@ -416,6 +429,30 @@ const SubmitEvent = async (e) => {
       setDisplayYear(currentDate.getFullYear());
       setSelectedDate(currentDate);
     }
+  };
+
+  const { data: eventDayss } = useQuery(["eventDays"], () =>
+    makeRequest.get(`/events/getAllEvents`).then((res) => {
+      console.log("list", res.data);
+      return res.data;
+    })
+  );
+
+  const selectEventType = (e) => {
+    e.preventDefault();
+    setTypeSelectOpen(!isTypeSelectOpen);
+  };
+
+  const changeType = (e) => {
+    e.preventDefault();
+    eventType === "event" ? setEventType("activity") : setEventType("event");
+    unSelectedType === "event"
+      ? setUnselectedType("activity")
+      : setUnselectedType("event");
+  };
+  const toggleFrequenza = (e) => {
+    e.preventDefault();
+    setIsfrequenza(!isFrequenza);
   };
 
   return (
@@ -520,12 +557,10 @@ const SubmitEvent = async (e) => {
                 </span>
               </div>
             </div>
-           
-           
-          </div> 
+          </div>
           <div className="eventList flex w-full h-full overflow-scroll no-scrollbar ">
-              <Events selectedDate={selectedDate} currentDate={currentDate}/>
-            </div>
+            <Events selectedDate={selectedDate} currentDate={currentDate} />
+          </div>
         </div>
 
         <div className="righthalf absolute w-full p-5 left-0 md:p-0 md:left-auto md:static flex justify-center items-center bottom-[20%] md:w-1/2">
@@ -602,17 +637,26 @@ const SubmitEvent = async (e) => {
                   selectedDate.getMonth() === displayMonth &&
                   selectedDate.getFullYear() === displayYear;
                 const isCurrentDay = isToday(date);
+
+                const isEventDay = eventDayss?.some((eventDay) => {
+                  const eventDate = new Date(eventDay);
+                  return (
+                    eventDate.getDate() === date &&
+                    eventDate.getMonth() === displayMonth &&
+                    eventDate.getFullYear() === displayYear
+                  );
+                });
                 return (
                   <span
                     key={date}
                     onClick={() => handleDateClick(date)}
                     className={`cursor-pointer rounded-full w-7 h-7 md:w-8 md:h-8 flex items-center justify-center ${
                       isSelectedDate
-                        ? "bg-violet-500 text-white"
+                        ? "bg-violet-500 text-white "
                         : isCurrentDay
-                        ? "bg-red-500 text-white"
+                        ? "bg-red-500  "
                         : "hover:bg-gray-700"
-                    }`}
+                    }  ${isEventDay && !isSelectedDate ? "text-lime-300" : ""}`}
                   >
                     {date}
                   </span>
@@ -723,7 +767,7 @@ const SubmitEvent = async (e) => {
                   : "animate-popup-down"
               } md:shadow-[inset_0px_-4px_0px_rgba(0,0,0,0.3)]`}
             >
-              <div className="sticky top-0 flex justify-center items-center bg-violet-700 w-full h-[14%] rounded-t-2xl z-10">
+              <div className="sticky top-0 z-50 flex justify-center items-center bg-violet-700 w-full h-[14%] rounded-t-2xl ">
                 <span className="text-xl font-bold font-sans text-slate-200">
                   New event
                 </span>
@@ -748,17 +792,36 @@ const SubmitEvent = async (e) => {
                 </button>
               </div>
               <form className="flex flex-col gap-4 absolute w-full h-full px-8 top-[20%]">
-                <div className=" flex flex-row justify-evenly items-center w-full">
+                <div className=" flex flex-row items-center w-full z-10 ">
                   <input
-                    className="p-2 rounded-xl border text-white w-full bg-[#4a484d] text-center border-none focus:outline-none"
+                    className=" flex l-0 p-2 rounded-xl border text-white w-[65%] bg-[#4a484d] text-center border-none focus:outline-none"
                     type="Title"
                     name="Title"
                     onChange={(e) => setTitle(e.target.value)}
                     value={title}
                     placeholder="Title"
                   ></input>
+
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="stroke-white"
+                    className={`size-6 stroke-white mt-1 ml-5 transition-transform duration-300 ${
+                      isTypeSelectOpen ? "rotate-90" : "rotate-0"
+                    }`}
+                    onClick={selectEventType}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="m8.25 4.5 7.5 7.5-7.5 7.5"
+                    />
+                  </svg>
+                  <span className="eventType text-white ">{eventType}</span>
                 </div>
-                <div className="flex flex-col  w-full rounded-2xl bg-[#1B1B1F] gap-4 p-6">
+                <div className="flex flex-col  w-full rounded-2xl bg-[#1B1B1F] gap-4 p-6 z-1">
                   <div className=" flex flex-row justify-between items-center w-full">
                     <span className="text-white font-semibold mr-6">start</span>
                     <button
@@ -1108,15 +1171,108 @@ const SubmitEvent = async (e) => {
                     </div>
                   )}
                 </div>
+                {isTypeSelectOpen && (
+                  <div className=" absolute items-center right-9 flex flex-col bg-black z-2 rounded-2xl w-[27%] min-h-[17%] ">
+                    <button
+                      className="flex absolute text-white ml-1 bottom-4"
+                      onClick={changeType}
+                    >
+                      {unSelectedType}
+                    </button>
+                  </div>
+                )}
                 <textarea
-                  onChange={(e)=>setDescription(e.target.value)}
+                  onChange={(e) => setDescription(e.target.value)}
                   value={description}
-                  className=" p-2 rounded-xl border text-white w-full h-[30%] bg-[#4a484d]  border-none focus:outline-none resize-none"
+                  className=" p-2 rounded-xl border text-white w-full min-h-[30%] bg-[#4a484d]  border-none focus:outline-none resize-none"
                   placeholder="Description"
                 />
+                <div>
+                  <button
+                    onClick={toggleFrequenza}
+                    className="bg-[#1B1B1F] h-10 rounded-xl w-full p-4 flex justify-between items-center"
+                  >
+                    <div className="text-white">frequency</div>
+                    <div className=" text-slate-400">{frequenza}</div>
+                  </button>
+                  {isFrequenza && (
+                    <div className=" flex flex-col bg-[#4a484d] w-[50%] rounded-xl font-bold text-slate-300 p-4 gap-2 right-2 ml-auto mr-2 mt-1 mb-3">
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setFrequenza("Every day");
+                          setIsfrequenza(false);
+                        }}
+                      >
+                        Every day
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setFrequenza("Every week");
+                          setIsfrequenza(false);
+                        }}
+                      >
+                        Every week
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setFrequenza("Every month");
+                          setIsfrequenza(false);
+                        }}
+                      >
+                        Every month
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setFrequenza("Every year");
+                          setIsfrequenza(false);
+                        }}
+                      >
+                        Every year
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setFrequenza("Personalize");
+                          setIsfrequenza(false);
+                        }}
+                      >
+                        Personalize
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setFrequenza("Never");
+                          setIsfrequenza(false);
+                        }}
+                      >
+                        Never
+                      </button>
+                    </div>
+                  )}
+                  {frequenza !== "Never" && (
+                    <div className="bg-[#1B1B1F] h-12 rounded-b-xl -mt-3 w-full p-4 flex  items-center ">
+                      <div className="text-white">End repetition</div>
+                      <div className="flex flex-row bg-none text-white w-auto ml-auto mr-0">
+                        <input
+                        className="bg-transparent"
+                          type="date"
+                          id="start"
+                          name="trip-start"
+                          value="2018-07-21"
+                          min="2024-11-01"
+                          max="2038-12-31"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
                 <button
                   onClick={SubmitEvent}
-                  className=" top-[50%] right-0 w-10 h-6  bg-violet-500 rounded-full"
+                  className="  right-0 w-full min-h-10 text-white bg-violet-500 rounded-full"
                 >
                   submit event
                 </button>
