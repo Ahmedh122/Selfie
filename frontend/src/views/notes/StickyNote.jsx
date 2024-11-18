@@ -136,6 +136,11 @@ export default function StickyNote({ note,onClose,onDuplicate,onUpdate,categorie
                     +
                 </div>
             </div>
+            { ismarkdown ? (
+                <div 
+                    className="outline-none w-full p-2 h-64 resize-none border"
+                    dangerouslySetInnerHTML={{ __html: marked(stickyNoteContent) }}></div>
+            ) :(
             <div>
             <textarea
                 className="outline-none w-full p-2 h-64 resize-none border-none"
@@ -145,6 +150,15 @@ export default function StickyNote({ note,onClose,onDuplicate,onUpdate,categorie
                 cols="30"
                 rows="10"
             ></textarea>
+            </div>
+            )}
+            <div>
+            <button
+                    className="bg-blue-500 text-white p-1 mt-2 rounded"
+                    onClick={() => setIsmarkdown(!ismarkdown)}
+                >
+                    {ismarkdown ? "Edit" : "Preview Markdown"}
+                </button>
             </div>
               <div className="bg-blue-500 text-white p-2 flex justify-between">
                 <span>Category: <button onClick={toggleDropdown}>{note.category}</button></span>
