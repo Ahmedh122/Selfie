@@ -1,6 +1,6 @@
 import {useState, useRef, useEffect } from "react";
 import { makeRequest } from "../../axios";
-
+import { marked } from "marked";
 
 
 export default function StickyNote({ note,onClose,onDuplicate,onUpdate,categories }) {
@@ -9,6 +9,7 @@ export default function StickyNote({ note,onClose,onDuplicate,onUpdate,categorie
     const [stickyNoteContent, setStickyNoteContent] = useState(note.content);
     const [stickyNoteCategory, setStickyNoteCategory] = useState(note.category);
     const [Dropdown, setDropdown] = useState(false);
+    const [ismarkdown, setIsmarkdown] = useState(false);
 
     const refTitle = useRef();
     const refContent = useRef();
@@ -135,16 +136,16 @@ export default function StickyNote({ note,onClose,onDuplicate,onUpdate,categorie
                     +
                 </div>
             </div>
+            <div>
             <textarea
                 className="outline-none w-full p-2 h-64 resize-none border-none"
                 defaultValue={stickyNoteContent}
                 ref={refContent}
                 onChange={handleContentChange}
-                name=""
-                id=""
                 cols="30"
                 rows="10"
             ></textarea>
+            </div>
               <div className="bg-blue-500 text-white p-2 flex justify-between">
                 <span>Category: <button onClick={toggleDropdown}>{note.category}</button></span>
                 {Dropdown && (

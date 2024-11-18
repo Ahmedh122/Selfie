@@ -12,10 +12,6 @@ data XX/XX/XXXX))
 
 - mettere le attivita
 
-# note
-
-- implementare categorie 
-
 # pomodoro
 
 - unire a evento (con task?)

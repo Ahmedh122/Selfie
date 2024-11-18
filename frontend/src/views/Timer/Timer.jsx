@@ -105,7 +105,7 @@ function Timer() {
   }
 
   useEffect(() => {
-    console.log("useEffect strano");
+    console.log("useEffect strano"); 
     pause();
     /*if (mode == 1) {remainingtime = workTime;}
     if (mode == 2) {remainingtime = shortBreakTime;}
