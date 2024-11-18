@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import settingico from "../../assets/icon-settings.svg";
+import { makeRequest } from "../../axios";
 
 function Timer() {
 
@@ -7,16 +8,24 @@ function Timer() {
   const [shortBreakTime, setShortBreakTime] = useState(300); //5 minutes = 300 seconds
   const [longBreakTime, setLongBreakTime] = useState(900); //15 minutes = 900 seconds
   const [longBreakInterval, setLongBreakInterval] = useState(3); //4 pomodoro = 1 long break
+  const [TotalStudyTime, setTotalStudyTime] = useState(1500*3); // total time to study
   const [minutes, setMinutes] = useState(Math.floor((workTime % 3600) / 60).toString().padStart(2, '0'));
   const [secs, setSecs] = useState((workTime % 60).toString().padStart(2, '0'));
   const [intervalId, setIntervalId] = useState(null);
   const [isPopupVisible, setPopupVisible] = useState(false);
-
-  let seconds = workTime;
+  const [isloading, setIsLoading] = useState(true);
+  const [remainingtime, setRemainingTime] = useState(workTime);
   const [brek, setBrek] = useState(longBreakInterval);
-
   const [numberpomodoro, setNumberpomodoro] = useState(0); //number of pomodoro done
   const [mode, setMode] = useState(1); //1=work, 2=short break, 3=long break
+
+  const [dummy, setDummy] = useState(false); 
+
+
+  useEffect(() => {
+    getTimer();
+    console.log("getTimer");
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -27,12 +36,16 @@ function Timer() {
   }, [intervalId]);
 
   function update() {
-    setMinutes(Math.floor((seconds % 3600) / 60).toString().padStart(2, '0'));
-    setSecs((seconds % 60).toString().padStart(2, '0'));
-    if (seconds === 0) { //25 minutes = 1500 seconds
+    setMinutes(Math.floor((remainingtime % 3600) / 60).toString().padStart(2, '0'));
+    setSecs((remainingtime % 60).toString().padStart(2, '0'));
+    if (remainingtime === 0) { //25 minutes = 1500 remainingtime
       setIntervalId(null);
       reset();
     }
+    if(dummy){
+      addTimer();
+    }
+    console.log(remainingtime);
   }
 
   function toggleclick() {
@@ -41,16 +54,17 @@ function Timer() {
       setIntervalId(null);
       return;
     }
-    if (mode == 1) {seconds = workTime;}
-    if (mode == 2) {seconds = shortBreakTime;}
-    if (mode == 3) {seconds = longBreakTime;}
+    console.log("toggleclick");
+  
     const id = setInterval(() => {
-      seconds--;
-      //setMemseconds(seconds);
-      update();
+      setRemainingTime(prevRemainingTime => prevRemainingTime - 1);
     }, 1000);
     setIntervalId(id);
   }
+
+  useEffect(() => {
+      update(); 
+  }, [remainingtime]);
 
   function pause() {
     if (intervalId) {
@@ -60,46 +74,47 @@ function Timer() {
   }
 
   function reset() {
-
+    setDummy(true);
     switch (mode) {
-      case 1:
+      case 1: //work
         setNumberpomodoro(numberpomodoro + 1);
         if (brek > 0) {
           setMode(mode + 1);
-          setBrek(brek - 1)
+          setBrek(brek - 1);
+          setRemainingTime(shortBreakTime);
         }
         else{
           setMode(3);
+          setRemainingTime(longBreakTime);
         }
         break;
-      case 2:
+      case 2: //short break
         setMode(1);
+        setRemainingTime(workTime);
         break;
-      case 3:
+      case 3: //long break
         setMode(1);
         setBrek(longBreakInterval)
+        setRemainingTime(workTime);
         break;
       default:
         setMode(1);
+        setRemainingTime(workTime);
     }
-    //if (mode == 1) {seconds = work;}
-    //if (mode == 2) {seconds = shortBreak;}
-    //if (mode == 3) {seconds = longBreak;}
-    //console.log("seconds=",seconds);
-    //setMemseconds(seconds);
-    //update();
+    addTimer();
   }
 
   useEffect(() => {
+    console.log("useEffect strano"); 
     pause();
-    if (mode == 1) {seconds = workTime;}
-    if (mode == 2) {seconds = shortBreakTime;}
-    if (mode == 3) {seconds = longBreakTime; alert("hai finito il ciclo");}
-    //setMemseconds(seconds);
+    /*if (mode == 1) {remainingtime = workTime;}
+    if (mode == 2) {remainingtime = shortBreakTime;}
+    if (mode == 3) {remainingtime = longBreakTime; alert("hai finito il ciclo");}*/
     update();
-  }, [mode,workTime, shortBreakTime, longBreakTime, longBreakInterval]); 
+  }, [mode]); 
 
   function togglePopup(){
+    setDummy(true);
     setPopupVisible(!isPopupVisible);
   }
   
@@ -108,8 +123,109 @@ function Timer() {
     togglePopup();
   };
 
+  const worktimehandler = (e) => {
+    const worktime = e.target.value * 60;
+    setWorkTime(worktime);
+    setTotalStudyTime(worktime * longBreakInterval);
+    if ((intervalId == null) && (mode == 1)) { // se non è in esecuzione il timer aggiorno il tempo rimanente con il nuovo worktime\
+      console.log("worktimehandler");
+      setRemainingTime(worktime);
+    }  
+  };
 
-  return (
+  const shorttimehandler = (e) => {
+    const shorttime = e.target.value * 60;
+    setShortBreakTime(shorttime);
+    if ((intervalId == null) && (mode == 2)) { // se non è in esecuzione il timer aggiorno il tempo rimanente con il nuovo worktime
+      setRemainingTime(shorttime);
+    }
+  };
+
+  const longtimehandler = (e) => {
+    const longtime = e.target.value * 60;
+    setLongBreakTime(longtime);
+    if ((intervalId == null) && (mode == 3)) { // se non è in esecuzione il timer aggiorno il tempo rimanente con il nuovo worktime
+      setRemainingTime(longtime);
+    }
+  };
+
+  const TotalStudyTimeHandler = (e) => {
+    const tottime = e.target.value * 60;
+    const newLongBreakInterval = Math.floor(tottime / workTime);
+    setTotalStudyTime(tottime);
+    setLongBreakInterval(newLongBreakInterval);
+    setBrek(newLongBreakInterval);
+  };
+
+  const longbreakintervalhandler = (e) => {
+    const longbreakinterval = e.target.value;
+    setLongBreakInterval(longbreakinterval);
+    setTotalStudyTime(workTime * longbreakinterval);
+    setBrek(longbreakinterval);
+  };
+  
+  function getTimer() {	
+    makeRequest.get("/timers/getTimer").then((response) => {
+      console.log(response.data);
+      if (response.data.length > 0) {
+        setWorkTime(response.data[0].workTime);
+        setShortBreakTime(response.data[0].shortBreakTime);
+        setLongBreakTime(response.data[0].longBreakTime);
+        setLongBreakInterval(response.data[0].longBreakInterval);
+        setTotalStudyTime(response.data[0].workTime * response.data[0].longBreakInterval);
+        setNumberpomodoro(response.data[0].donepomo);
+        setMode(response.data[0].mode);
+        if (response.data[0].remainingTime > 0) {
+          setRemainingTime(response.data[0].remainingTime);
+        }
+      }
+
+    });
+    setIsLoading(false);
+  }
+
+  // post timer or put timer if already exists
+  function addTimer() {
+    console.log("addTimer");
+    makeRequest.get("/timers/getTimer").then((response) => {
+      //se non c'è un timer, lo creo
+      if (response.data.length == 0) {
+        makeRequest.post("/timers/addTimer", {
+          donepomo: numberpomodoro,
+          remainingTime: remainingtime,
+          mode: mode,
+          workTime: workTime,
+          shortBreakTime: shortBreakTime,
+          longBreakTime: longBreakTime,
+          longBreakInterval: longBreakInterval,
+        })
+        .then((response) => {
+          console.log('post');
+        })
+      }
+      else{
+        //se c'è un timer, lo aggiorno
+        makeRequest.put("/timers/addTimer/" + response.data[0]._id, {
+          donepomo: numberpomodoro,
+          remainingTime: remainingtime,
+          mode: mode,
+          workTime: workTime,
+          shortBreakTime: shortBreakTime,
+          longBreakTime: longBreakTime,
+          longBreakInterval: longBreakInterval,
+        })
+        .then((response) => {
+          console.log('put');
+        })
+      }
+    });
+  }
+
+  function handleSave() {
+    addTimer();
+  }
+
+  return  isloading ? (<div>Loading...</div>) : (
     <div className="bg-gray-100 flex items-center 
              justify-center h-screen">
       <div className={`rounded-lg shadow-lg p-20 ${intervalId ? 'bg-red-400' : 'bg-white'}`}>
@@ -153,8 +269,8 @@ function Timer() {
                     <input
                       className="ml-2"
                       type="number"
-                      value={workTime}
-                      onChange={(e) => setWorkTime(e.target.value)}
+                      value={workTime/60}
+                      onChange={worktimehandler}
                       min={0}
                     />
                   </label>
@@ -165,8 +281,8 @@ function Timer() {
                     <input
                       className="ml-2"
                       type="number"
-                      value={shortBreakTime}
-                      onChange={(e) => setShortBreakTime(e.target.value)}
+                      value={shortBreakTime/60}
+                      onChange={shorttimehandler}
                       min={0}
                     />
                   </label>
@@ -177,8 +293,8 @@ function Timer() {
                     <input
                       className="ml-2"
                       type="number"
-                      value={longBreakTime}
-                      onChange={(e) => setLongBreakTime(e.target.value)}
+                      value={longBreakTime/60}
+                      onChange={longtimehandler}
                       min={0}
                     />
                   </label>
@@ -190,7 +306,7 @@ function Timer() {
                       className="ml-2"
                       type="number"
                       value={longBreakInterval}
-                      onChange={(e) => [setLongBreakInterval(e.target.value), setBrek(e.target.value)]}
+                      onChange={longbreakintervalhandler}
                       min={0}
                     />
                   </label>
@@ -201,14 +317,16 @@ function Timer() {
                     <input
                       className="ml-2"
                       type="number"
-                      value={workTime*longBreakInterval}
-                      onChange={(e) => setLongBreakInterval(Math.floor(e.target.value/workTime))}
+                      value={TotalStudyTime/60}
+                      onChange={TotalStudyTimeHandler}
                       min={0}
+                      step={workTime/60}
                     />
                   </label>
                 </div>
                 <div className="flex justify-center space-x-4 mt-8">
-                  <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                  <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                  onClick={handleSave}>
                     Save
                   </button>
                 </div>

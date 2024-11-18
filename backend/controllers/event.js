@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import Event from "../models/event.js";
-import Relationship from "../models/relationship.js";
+//import Relationship from "../models/relationship.js";
 import Subscription from "../models/subscription.js";
 
 
