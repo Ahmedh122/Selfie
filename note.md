@@ -12,12 +12,16 @@ data XX/XX/XXXX))
 
 - mettere le attivita
 
+- aggiungere al model dell evento il campo pomodoro e quanto tempo da studiare (max dall inizio dell evento alla fine dell'evento)
+
 # pomodoro
 
-- unire a evento (con task?)
+- ogni evento con pomodoro aggiungera una task nella view pomodoro (quando sono temporalmente nell evento)
+- se non finisco una task , la task si ripetera nel giorno seguente ammeno che non finisca l'evento in quel caso la task si toglie
 
+# note
 
-
+- markdown con pulsante che va da edita a prewiew
 
 
 
