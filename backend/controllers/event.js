@@ -126,6 +126,10 @@ export const addEvent = async (req, res) => {
       eventEnd: req.body.selectedDateEventEnd,
       description: req.body.description, 
       type: req.body.eventType,
+      pomodoro: req.body.Pomodoro,
+      pomodoroHours: req.body.PomodoroHours,
+      pomodoroMinutes: req.body.PomodoroMinutes,
+
     });
     //console.log(newPost);  
     const savedEvent = await newEvent.save();

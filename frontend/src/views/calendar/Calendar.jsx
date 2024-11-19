@@ -65,6 +65,11 @@ function Calendar() {
   const [EndFreqdd, setEndFreqdd] = useState("");
   const [EndFreqmm, setEndFreqmm] = useState("");
   const [EndFreqyy, setEndFreqyy] = useState("");
+  const [Pomodoro, setPomodoro] = useState(false);
+  const [PomTimehrs, setPomTimehrs] = useState("00");
+  const [PomTimemin, setPomTimemin] = useState("00");
+  const [maxPomTimehrs, setMaxPomTimehrs] = useState(0);
+  const [maxPomTimemin, setMaxPomTimemin] = useState(0);
   const [displayMonthEventStart, setDisplayMonthEventStart] = useState(
     currentDate.getMonth()
   );
@@ -345,18 +350,65 @@ function Calendar() {
     }
   }, [isPopupEventOpen]);
 
+  useEffect(() => {
+    if (EndFreqdd && EndFreqmm && EndFreqyy) {
+      const month = Number(EndFreqmm) - 1; // Convert month to 0-based index
+      const year = Number(EndFreqyy);
+      const numberOfDays = new Date(year, month + 1, 0).getDate();
 
-useEffect(() => {
-  if (EndFreqdd && EndFreqmm && EndFreqyy) {
-    const month = Number(EndFreqmm) - 1; // Convert month to 0-based index
-    const year = Number(EndFreqyy);
-    const numberOfDays = new Date(year, month + 1, 0).getDate();
-
-    if (Number(EndFreqdd) > numberOfDays) {
-      setEndFreqdd(String(numberOfDays)); // Adjust day to the max for the month
+      if (Number(EndFreqdd) > numberOfDays) {
+        setEndFreqdd(String(numberOfDays)); // Adjust day to the max for the month
+      }
     }
-  }
-}, [EndFreqdd, EndFreqmm, EndFreqyy]);
+  }, [EndFreqdd, EndFreqmm, EndFreqyy]);
+
+  useEffect(() => {
+    if (selectedDateEventStart && selectedDateEventEnd) {
+      const startDateTime = new Date(selectedDateEventStart);
+      startDateTime.setHours(hoursStart, minutesStart, 0, 0);
+
+      const endDateTime = new Date(selectedDateEventEnd);
+      endDateTime.setHours(hoursEnd, minutesEnd, 0, 0);
+
+      const TimeDifference = endDateTime - startDateTime;
+
+      if (TimeDifference > 0) {
+        const hours = Math.floor(TimeDifference / (1000 * 60 * 60));
+        const minutes = Math.floor(
+          (TimeDifference % (1000 * 60 * 60)) / (1000 * 60)
+        );
+
+        setMaxPomTimehrs(hours);
+        setMaxPomTimemin(minutes);
+      } else {
+        setMaxPomTimehrs(0);
+        setMaxPomTimemin(0);
+      }
+    }
+
+    
+  }, [
+    selectedDateEventStart,
+    hoursStart,
+    minutesStart,
+    selectedDateEventEnd,
+    hoursEnd,
+    minutesEnd,
+  ]);
+
+  useEffect(()=>{
+    const totlalpommin= parseInt(PomTimehrs, 10)* 60 + parseInt(PomTimemin, 10);
+    const maxpommin = maxPomTimehrs*60 + maxPomTimemin;
+    if (totlalpommin > maxpommin){
+      setPomTimehrs(String(maxPomTimehrs).padStart(2, '0'));
+      setPomTimemin(String(maxPomTimemin).padStart(2, '0'));
+    }
+  },[
+    PomTimehrs,
+    PomTimemin,
+    maxPomTimehrs,
+    maxPomTimemin,
+  ])
 
   const displayDay = selectedDate
     ? daysOfWeekFull[selectedDate.getDay()]
@@ -390,6 +442,8 @@ useEffect(() => {
 
       const startISO = formattedStartDate.toISOString();
       const endISO = formattedEndDate.toISOString();
+      const PomodoroHours = parseInt(PomTimehrs, 10);
+      const PomodoroMinutes = parseInt(PomTimemin, 10);
 
       const res = await makeRequest.post("/events", {
         title,
@@ -398,6 +452,11 @@ useEffect(() => {
         description,
         eventType,
         frequenza,
+        Pomodoro,
+        PomodoroHours, 
+        PomodoroMinutes, 
+        
+
       });
       queryClient.invalidateQueries(["events"]);
       queryClient.invalidateQueries(["eventDays"]);
@@ -1258,7 +1317,7 @@ useEffect(() => {
                       <div className="text-white">End repetition</div>
                       <div className="flex flex-row bg-none text-white w-auto ml-auto mr-0">
                         <input
-                        className="bg-transparent"
+                          className="bg-transparent"
                           type="date"
                           id="start"
                           name="trip-start"
@@ -1266,6 +1325,69 @@ useEffect(() => {
                           min="2024-11-01"
                           max="2038-12-31"
                         />
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <div className="flex items-center justify-between mt-4 bg-[#1B1B1F] h-10 p-4 rounded-xl">
+                    <span className="text-white">Pomodoro</span>
+                    <label className="relative inline-block w-12 h-6 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        className="hidden peer"
+                        onChange={() => {
+                          setPomodoro(!Pomodoro);
+                        }}
+                      />
+                      <div className="w-12 h-6 bg-[#4a484d] rounded-full peer-checked:bg-violet-500 transition duration-300"></div>
+                      <div className="absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow-md transform transition-transform duration-300 peer-checked:translate-x-6"></div>
+                    </label>
+                  </div>
+                  {Pomodoro && (
+                    <div className="flex items-center justify-between -mt-2 bg-[#1B1B1F] h-10 p-4 rounded-b-xl">
+                      <div className="text-white">Pomodoro time</div>
+                      <div className="text-white text-xl  ">
+                        <button className="mr-2  font-bold">-</button>
+                        <input
+                          className="bg-transparent w-6 outline-none"
+                          type="text"
+                          onChange={(e) => {
+                            const value = e.target.value;
+
+                            if (/^\d{0,2}$/.test(value)) {
+                              setPomTimehrs(value);
+                            }
+                          }}
+                          value={PomTimehrs}
+                          onBlur={() => {
+                            setPomTimehrs(String(PomTimehrs).padStart(2, "0"));
+                          }}
+                        />
+                        <span>:</span>
+                        <input
+                          className="bg-transparent w-6 outline-none"
+                          type="text"
+                          onChange={(e) => {
+                            const value = e.target.value;
+
+                            if (/^\d{0,2}$/.test(value)) {
+                              const numericValue = parseInt(value);
+                              if (value === "") {
+                                setPomTimemin(value); 
+                              } else if (numericValue <= 59) {
+                                setPomTimemin(value); 
+                              } else {
+                                setPomTimemin("59"); 
+                              }
+                            }
+                          }}
+                          value={PomTimemin}
+                          onBlur={() => {
+                            setPomTimemin(String(PomTimemin).padStart(2, "0"));
+                          }}
+                        />
+                        <button className="ml-2  font-bold ">+</button>
                       </div>
                     </div>
                   )}

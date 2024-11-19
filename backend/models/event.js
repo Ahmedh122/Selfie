@@ -37,8 +37,17 @@ const eventSchema = new mongoose.Schema({
   type :{
     type: String,
   },
+  pomodoro :{
+    type :Boolean,
+  },
 
-
+  pomodoroHours :{
+    type: Number,
+  },
+  pomodoroMinutes :{
+    type: Number, 
+  }
+ 
   
 });
 
