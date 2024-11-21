@@ -16,6 +16,7 @@ data XX/XX/XXXX))
 
 # pomodoro
 
+-aggiungere le task
 - ogni evento con pomodoro aggiungera una task nella view pomodoro (quando sono temporalmente nell evento)
 - se non finisco una task , la task si ripetera nel giorno seguente ammeno che non finisca l'evento in quel caso la task si toglie
 

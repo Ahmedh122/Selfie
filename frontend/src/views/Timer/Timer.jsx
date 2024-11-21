@@ -24,7 +24,7 @@ function Timer() {
 
   useEffect(() => {
     getTimer();
-    console.log("getTimer");
+    console.log("getTimerz");
   }, []);
 
   useEffect(() => {
