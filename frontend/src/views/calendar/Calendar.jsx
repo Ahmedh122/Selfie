@@ -305,6 +305,7 @@ function Calendar() {
 
   const togglePopupEvent = () => {
     setPopupEventOpen(!isPopupEventOpen);
+    setPomodoro(false);
     resetEventDate();
   };
 
@@ -513,6 +514,29 @@ function Calendar() {
     e.preventDefault();
     setIsfrequenza(!isFrequenza);
   };
+
+
+  const changePomoTime =(e, offset) =>{
+    e.preventDefault();
+    const maxPomoTime = maxPomTimehrs * 60 + maxPomTimemin;
+    let PomoTime = parseInt(PomTimehrs, 10) * 60 + parseInt(PomTimemin, 10);
+    if (PomoTime + offset <= maxPomoTime && PomoTime + offset>= 0){
+      PomoTime += offset;
+      setPomTimehrs(String(Math.floor(PomoTime / 60)).padStart(2,'0'));
+      setPomTimemin(String(PomoTime % 60).padStart(2, "0"));
+    }
+    else if(PomoTime + offset >maxPomoTime){
+      setPomTimehrs(String(maxPomTimehrs).padStart(2,"0"));
+      setPomTimemin(String(maxPomTimemin).padStart(2,"0"));
+    }
+    else if(PomoTime + offset<0){
+      setPomTimehrs("00");
+      setPomTimemin("00");
+    }
+
+
+
+  }
 
   return (
     <div className="calendar-app h-full w-full flex justify-center items-center relative">
@@ -1346,9 +1370,14 @@ function Calendar() {
                   </div>
                   {Pomodoro && (
                     <div className="flex items-center justify-between -mt-2 bg-[#1B1B1F] h-10 p-4 rounded-b-xl">
-                      <div className="text-white">Pomodoro time</div>
+                      <div className="text-white">Duration</div>
                       <div className="text-white text-xl  ">
-                        <button className="mr-2  font-bold">-</button>
+                        <button
+                          className="mr-2  font-bold"
+                          onClick={(e) => changePomoTime(e, -25)}
+                        >
+                          -
+                        </button>
                         <input
                           className="bg-transparent w-6 outline-none"
                           type="text"
@@ -1374,11 +1403,11 @@ function Calendar() {
                             if (/^\d{0,2}$/.test(value)) {
                               const numericValue = parseInt(value);
                               if (value === "") {
-                                setPomTimemin(value); 
+                                setPomTimemin(value);
                               } else if (numericValue <= 59) {
-                                setPomTimemin(value); 
+                                setPomTimemin(value);
                               } else {
-                                setPomTimemin("59"); 
+                                setPomTimemin("59");
                               }
                             }
                           }}
@@ -1387,7 +1416,12 @@ function Calendar() {
                             setPomTimemin(String(PomTimemin).padStart(2, "0"));
                           }}
                         />
-                        <button className="ml-2  font-bold ">+</button>
+                        <button
+                          className="ml-2  font-bold "
+                          onClick={(e) => changePomoTime(e, 25)}
+                        >
+                          +
+                        </button>
                       </div>
                     </div>
                   )}
