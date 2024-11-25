@@ -12,15 +12,9 @@ export default function Task({ task }) {
         <div className="text-white font-bold text-lg">{task.title}</div>
       </div>
       <div className='start-date flex flex-row'>
-        <div className='ml-5 text-purple-300'>Start:</div>
+        <div className='ml-5 text-purple-300'>pomos done:</div>
         <div className='flex ml-2 text-white'>{10}</div>
-        <div className='ml-2 text-slate-300'>at</div>
-        <div className='ml-2 text-white'>{10}</div>
-      </div>
-      <div className='end-date flex flex-row'>
-        <div className='ml-5 text-red-300'>End:</div>
-        <div className='ml-3 text-white'>{10}</div>
-        <div className='ml-2 text-slate-300'>at</div>
+        <div className='ml-2 text-slate-300'>/</div>
         <div className='ml-2 text-white'>{10}</div>
       </div>
     </div>

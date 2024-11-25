@@ -16,13 +16,15 @@ data XX/XX/XXXX))
 
 # pomodoro
 
--aggiungere le task
 - ogni evento con pomodoro aggiungera una task nella view pomodoro (quando sono temporalmente nell evento)
+
 - se non finisco una task , la task si ripetera nel giorno seguente ammeno che non finisca l'evento in quel caso la task si toglie
 
-# note
+- quando clicco l evento mi crea la task con evento se non cera altrimenti mi porta solo alla view del pomodoro (get progresso), e mi seleziona la task, settando anche il pomodoro
 
-- markdown con pulsante che va da edita a prewiew
+- nella task mettere il numero di pomodori come il sito pomodoro
+
+- fare un pomodoro indipendente per ogni evento e task senza evento con pulsante per aggiungere e rimuovere le task senza evento
 
 
 
