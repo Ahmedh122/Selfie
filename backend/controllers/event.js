@@ -5,6 +5,31 @@ import Subscription from "../models/subscription.js";
 
 
 
+export const getEventfromId = async (req, res) => {
+  const token = req.cookies.accessToken;
+  const id = req.params.id;
+  try {
+    if (!token) return res.status(401).json("Not logged in!");
+
+    const userInfo = jwt.verify(token, "secretkey");
+
+    const event = await Event.findOne({
+      _id: id,
+      userId: userInfo.id,
+    });
+
+    if (event) {
+      return res.status(200).json(event);
+    } else {
+      return res.status(404).json("Event not found!");
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json(error.message || "Internal Server Error");
+  }
+}
+
+
 export const getEvents = async (req, res) => {
   const { date } = req.query;
   const token = req.cookies.accessToken;

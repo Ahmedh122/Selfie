@@ -21,6 +21,7 @@ export const getTimer = async (req, res) => {
 export const addTimer = async (req, res) => {
 
   const token = req.cookies.accessToken;
+  console.log('BODY :',req.body);
 
   try {
     if (!token) return res.status(401).json("Not logged in!");
@@ -32,7 +33,7 @@ export const addTimer = async (req, res) => {
     });
 
     if (!timer) {
-      console.log("creo un nuovo timer");
+      //console.log("creo un nuovo timer");
       const newTimer = new Timer({
         userId: userInfo.id,
         donepomo: req.body.donepomo,
@@ -42,12 +43,13 @@ export const addTimer = async (req, res) => {
         shortBreakTime: req.body.shortBreakTime,
         longBreakTime: req.body.longBreakTime,
         longBreakInterval: req.body.longBreakInterval,
+        tasks: req.body.tasks,
       });
       const savedTimer = await newTimer.save();  
       return res.status(200).json({ message: "Timer has been created.", timerId: savedTimer._id });
     }
     else {
-      console.log("aggiorno il timer");
+      //console.log("aggiorno il timer");
       const updateFields = {};
       if (req.body.donepomo) updateFields.donepomo = req.body.donepomo;
       if (req.body.remainingTime) updateFields.remainingTime = req.body.remainingTime;
@@ -56,6 +58,7 @@ export const addTimer = async (req, res) => {
       if (req.body.shortBreakTime) updateFields.shortBreakTime = req.body.shortBreakTime;
       if (req.body.longBreakTime) updateFields.longBreakTime = req.body.longBreakTime;
       if (req.body.longBreakInterval) updateFields.longBreakInterval = req.body.longBreakInterval;
+      if (req.body.tasks) updateFields.tasks = req.body.tasks;
 
       const updatedTimer = await Timer.findOneAndUpdate(
         { _id: req.params.id },

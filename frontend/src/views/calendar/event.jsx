@@ -54,6 +54,7 @@ const Event = ({ event, user }) => {
           shortBreakTime: 300,
           longBreakTime: 900,
           longBreakInterval: ((event.pomodoroHours * 60 * 60) + event.pomodoroMinutes * 60)/1500,
+          tasks: [event._id]
         })
         .then((response) => {
           console.log('post');
@@ -61,6 +62,7 @@ const Event = ({ event, user }) => {
         })
       }
       else{
+        const existingTasks = response.data[0].tasks || [];
         //se c'è un timer, lo aggiorno
         makeRequest.put("/timers/addTimer/" + response.data[0]._id, {
           donepomo: 0,
@@ -70,9 +72,10 @@ const Event = ({ event, user }) => {
           shortBreakTime: 300,
           longBreakTime: 900,
           longBreakInterval: ((event.pomodoroHours * 60 * 60) + event.pomodoroMinutes * 60)/1500,
+          tasks: (existingTasks.includes(event._id) ? existingTasks : [...existingTasks, event._id])
         })
         .then((response) => {
-          console.log('put');
+          console.log('put'); 
           navigate(`/timer/${event.userId}`);
         })
       }
