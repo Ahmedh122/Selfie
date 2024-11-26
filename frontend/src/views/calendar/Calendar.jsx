@@ -62,9 +62,14 @@ function Calendar() {
   const [isTypeSelectOpen, setTypeSelectOpen] = useState(false);
   const [frequenza, setFrequenza] = useState("Never");
   const [isFrequenza, setIsfrequenza] = useState(false);
-  const [EndFreqdd, setEndFreqdd] = useState("");
-  const [EndFreqmm, setEndFreqmm] = useState("");
-  const [EndFreqyy, setEndFreqyy] = useState("");
+  const [pDays, setPdays] = useState([]);
+  const [pDates, setPdates] = useState(false);
+  const [pDatesArray, setPdatesArray] = useState([]);
+  
+  const [endFreqDate, setEndFreqDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
+ 
   const [Pomodoro, setPomodoro] = useState(false);
   const [PomTimehrs, setPomTimehrs] = useState("00");
   const [PomTimemin, setPomTimemin] = useState("00");
@@ -292,7 +297,16 @@ function Calendar() {
     }
 
     setIsEventDateEndManuallySet(true);
+     
+  
   };
+
+
+  useEffect(()=>{
+    if (selectedDateEventEnd > new Date(endFreqDate)) {
+      setEndFreqDate(selectedDateEventEnd.toISOString().split("T")[0]);
+    }
+  }, [selectedDateEventEnd, endFreqDate]);
 
   const resetEventDate = () => {
     setIsEventDateStartManuallySet(false);
@@ -351,18 +365,7 @@ function Calendar() {
     }
   }, [isPopupEventOpen]);
 
-  useEffect(() => {
-    if (EndFreqdd && EndFreqmm && EndFreqyy) {
-      const month = Number(EndFreqmm) - 1; // Convert month to 0-based index
-      const year = Number(EndFreqyy);
-      const numberOfDays = new Date(year, month + 1, 0).getDate();
-
-      if (Number(EndFreqdd) > numberOfDays) {
-        setEndFreqdd(String(numberOfDays)); // Adjust day to the max for the month
-      }
-    }
-  }, [EndFreqdd, EndFreqmm, EndFreqyy]);
-
+  
   useEffect(() => {
     if (selectedDateEventStart && selectedDateEventEnd) {
       const startDateTime = new Date(selectedDateEventStart);
@@ -453,6 +456,7 @@ function Calendar() {
         description,
         eventType,
         frequenza,
+        endFrequenza: new Date(endFreqDate),
         Pomodoro,
         PomodoroHours, 
         PomodoroMinutes, 
@@ -493,7 +497,7 @@ function Calendar() {
 
   const { data: eventDayss } = useQuery(["eventDays"], () =>
     makeRequest.get(`/events/getAllEvents`).then((res) => {
-      console.log("list", res.data);
+      
       return res.data;
     })
   );
@@ -536,6 +540,32 @@ function Calendar() {
 
 
 
+  }
+
+
+  const togglepDay = (e, day) =>{
+    e.preventDefault();
+    setPdays((prevdays)=> {
+      if (prevdays.includes(day)){
+        return prevdays.filter((d)=> d!== day);
+      } else {
+        return [...prevdays, day];
+      }
+    });
+
+   
+  }
+
+
+  const addPdatesArray = (e, day) => {
+    e.preventDefault();
+    setPdatesArray((prevdates)=>{
+      if (prevdates.includes(day)){
+        return prevdates.filter((d)=> d!== day);
+      }else {
+        return[...pDatesArray, day];
+      }
+    });
   }
 
   return (
@@ -1345,11 +1375,69 @@ function Calendar() {
                           type="date"
                           id="start"
                           name="trip-start"
-                          value="2018-07-21"
+                          value={endFreqDate}
                           min="2024-11-01"
                           max="2038-12-31"
+                          onChange={(e) => setEndFreqDate(e.target.value)}
                         />
                       </div>
+                    </div>
+                  )}
+                  {frequenza === "Personalize" && (
+                    <div>
+                      <div className="flex flex-row justify-between items-center bg-[#1B1B1F] h-12 rounded-b-xl -mt-3 w-full p-4 text-white font-bold">
+                        {["mon", "tue", "wed", "thu", "fri", "sat", "sun"].map(
+                          (day) => (
+                            <button
+                              key={day}
+                              onClick={(e) => togglepDay(e, day)}
+                              className={`transition-colors ${
+                                pDays.includes(day)
+                                  ? "text-violet-400"
+                                  : "text-white hover:text-slate-400"
+                              }`}
+                            >
+                              {day}
+                            </button>
+                          )
+                        )}
+                      </div>
+                      <div className="flex flex-row justify-between items-center bg-[#1B1B1F] h-12 rounded-b-xl -mt-3 w-full p-4 text-white ">
+                        <div>Select Dates</div>
+                        <label className="relative inline-block w-12 h-6 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            className="hidden peer"
+                            onChange={() => {
+                              setPdates(!pDates);
+                            }}
+                          />
+                          <div className="w-12 h-6 bg-[#4a484d] rounded-full peer-checked:bg-violet-500 transition duration-300"></div>
+                          <div className="absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow-md transform transition-transform duration-300 peer-checked:translate-x-6"></div>
+                        </label>
+                      </div>
+                      {pDates && (
+                        <div className=" grid grid-cols-7 gap-1 text-center bg-[#1B1B1F] h-auto rounded-b-xl -mt-3 w-full p-4 text-white">
+                          {
+                            [...Array(31)].map((_ , index) =>{
+                              const day = index+ 1 ;
+                              return (
+                                <button
+                                  key={day}
+                                  onClick={(e) => addPdatesArray(e, day)}
+                                  className={` flex items-center justify-center  font-bold transition-colors ${
+                                    pDatesArray.includes(day)
+                                      ? "text-violet-500 "
+                                      : " text-white hover:text-slate-400"
+                                  }`}
+                                >
+                                  {day}
+                                </button>
+                              );
+                            })
+                          }
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

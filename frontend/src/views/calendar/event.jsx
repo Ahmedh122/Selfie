@@ -81,47 +81,31 @@ const Event = ({ event, user }) => {
 
 
   return (
-<<<<<<< HEAD
-    <div className="  flex flex-col w-[70%] h-min  pb-4 pt-2 event bg-[#141517] mb-2 rounded-xl ">
-      <div className="flex text-white font-bold text-lg w-full  h-full ml-5 mt-2 ">
-        {event.title}
-      </div>
-      <div className="start-date flex flex-row ">
-        <div className="ml-5 text-purple-300">Start:</div>
-        <div className="flex ml-2 text-white"> {formattedStartDate} </div>
-        <div className="ml-2 text-slate-300">at</div>
-        <div className="ml-2 text-white">{startTime} </div>
-      </div>
-      <div className="end-date flex flex-row">
-        <div className=" ml-5 text-red-300 ">End:</div>
-        <div className="ml-3 text-white">{formattedEndDate}</div>
-        <div className="ml-2 text-slate-300">at</div>
-        <div className=" ml-2 text-white">{endTime}</div>
-=======
-    <div className="flex flex-col w-[70%] h-min event bg-gray-600 mb-2 rounded-xl">
+    <div className="flex flex-col w-[70%] h-min event bg-[#151518] mb-2 rounded-xl p-4">
       <div className="flex justify-between items-center w-full h-full ml-5 mt-2">
-        <div className="text-white font-bold text-lg">{event.title}</div>
+        <div className="text-white font-bold text-lg -mt-2">{event.title}</div>
         <div>
           {event.pomodoro ? (
             <button
               className="bg-blue-500 text-white px-4 py-2 rounded mr-5"
               onClick={handleButtonClick}
-            >go to pomo</button>
+            >
+              go to pomo
+            </button>
           ) : null}
         </div>
       </div>
-      <div className='start-date flex flex-row'>
-        <div className='ml-5 text-purple-300'>Start:</div>
-        <div className='flex ml-2 text-white'>{formattedStartDate}</div>
-        <div className='ml-2 text-slate-300'>at</div>
-        <div className='ml-2 text-white'>{startTime}</div>
+      <div className="start-date flex flex-row">
+        <div className="ml-5 text-purple-300">Start:</div>
+        <div className="flex ml-2 text-white">{formattedStartDate}</div>
+        <div className="ml-2 text-slate-300">at</div>
+        <div className="ml-2 text-white">{startTime}</div>
       </div>
-      <div className='end-date flex flex-row'>
-        <div className='ml-5 text-red-300'>End:</div>
-        <div className='ml-3 text-white'>{formattedEndDate}</div>
-        <div className='ml-2 text-slate-300'>at</div>
-        <div className='ml-2 text-white'>{endTime}</div>
->>>>>>> cdf5c33e1131218c91b59f210df49fd0602d5fe7
+      <div className="end-date flex flex-row">
+        <div className="ml-5 text-red-300">End:</div>
+        <div className="ml-3 text-white">{formattedEndDate}</div>
+        <div className="ml-2 text-slate-300">at</div>
+        <div className="ml-2 text-white">{endTime}</div>
       </div>
     </div>
   );

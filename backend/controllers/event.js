@@ -113,28 +113,95 @@ export const addEvent = async (req, res) => {
     if (!token) return res.status(401).json("Not logged in!");
 
     const userInfo = jwt.verify(token, "secretkey");
-    //console.log(userInfo.id);
+  
      const title =
        req.body.title && req.body.title.trim() !== ""
          ? req.body.title
          : "Untitled";
+
+         const frequenza = req.body.frequenza;
+         const endFrequenza = req.body.endFrequenza
+         const eventStart = req.body.selectedDateEventStart;
+         const eventEnd = req.body.selectedDateEventEnd;
+         const events = [];
+
+         if (frequenza === "Never"){
+          events.push(
+            new Event({
+              title: title,
+              userId: userInfo.id,
+              eventStart,
+              eventEnd,
+              description: req.body.description,
+              type: req.body.eventType,
+              pomodoro: req.body.Pomodoro,
+              pomodoroHours: req.body.PomodoroHours,
+              pomodoroMinutes: req.body.PomodoroMinutes,
+            })
+          );
+
+         } else {
+          let currentStart = new Date(eventStart);
+          let currentEnd = new Date(eventEnd);
+
+          while (
+            currentStart <= new Date(endFrequenza).setUTCHours(23, 59, 59, 999)
+          ) {
+            events.push(
+              new Event({
+                title: title,
+                userId: userInfo.id,
+                eventStart: new Date(currentStart),
+                eventEnd: new Date(currentEnd),
+                description: req.body.description,
+                type: req.body.eventType,
+                pomodoro: req.body.Pomodoro,
+                pomodoroHours: req.body.PomodoroHours,
+                pomodoroMinutes: req.body.PomodoroMinutes,
+              })
+            );
+            switch (frequenza) {
+              case "Every day":
+                currentStart.setDate(currentStart.getDate() + 1);
+                currentEnd.setDate(currentEnd.getDate() + 1);
+                break;
+
+              case "Every week":
+                currentStart.setDate(currentStart.getDate() + 7);
+                currentEnd.setDate(currentEnd.getDate() + 7);
+                break;
+
+              case "Every month":
+                currentStart.setMonth(currentStart.getMonth() + 1);
+                currentEnd.setMonth(currentEnd.getMonth() + 1);
+                break;
+
+              case "Every Year":
+                currentStart.setFullYear(currentStart.getFullYear() + 1);
+                currentEnd.setFullYear(currentEnd.getFullYear() + 1);
+                break;
+              case "Personalize":
+                currentStart.setFullYear(currentStart.getFullYear() + 1);
+                currentEnd.setFullYear(currentEnd.getFullYear() + 1);
+                break;
+
+              default:
+                return res.status(400).json("Invalid frequenza value.");
+            }
+          }
+         }
+
     
-    const newEvent = new Event({
-      title: title,
-      userId: userInfo.id,
-      eventStart: req.body.selectedDateEventStart,
-      eventEnd: req.body.selectedDateEventEnd,
-      description: req.body.description, 
-      type: req.body.eventType,
-      pomodoro: req.body.Pomodoro,
-      pomodoroHours: req.body.PomodoroHours,
-      pomodoroMinutes: req.body.PomodoroMinutes,
 
-    });
-    //console.log(newPost);  
-    const savedEvent = await newEvent.save();
+    
+    const savedEvents = await Event.insertMany(events);
 
-    return res.status(200).json({ message: "event has been created.", eventId: savedEvent._id});
+    return res
+      .status(200)
+      .json({
+        message: `${savedEvents.length} event(s) created successfully.`,
+        eventIds: savedEvents.map((event) => event._id),
+      });
   } catch (error) {
     console.error(error);
     return res.status(500).json(error.message || "Internal Server Error");

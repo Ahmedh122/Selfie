@@ -46,7 +46,15 @@ const eventSchema = new mongoose.Schema({
   },
   pomodoroMinutes :{
     type: Number, 
-  }
+  },
+
+  frequenza :{
+    type : String,
+  },
+
+  endFrequenza :{
+    type :Date,
+  },
  
   
 });
