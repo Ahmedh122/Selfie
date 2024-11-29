@@ -42,44 +42,21 @@ const Event = ({ event, user }) => {
   };
 
   function addTimer() {
-    console.log('aaaa');
-    makeRequest.get("/timers/getTimer").then((response) => {
-      //se non c'è un timer, lo creo
-      if (response.data.length == 0) {
-        makeRequest.post("/timers/addTimer", {
-          donepomo: 0,
-          remainingTime: 1500,
-          mode: 1,
-          workTime: 1500,
-          shortBreakTime: 300,
-          longBreakTime: 900,
-          longBreakInterval: ((event.pomodoroHours * 60 * 60) + event.pomodoroMinutes * 60)/1500,
-          tasks: [event._id]
-        })
-        .then((response) => {
-          console.log('post');
-          navigate(`/timer/${event.userId}`);
-        })
-      }
-      else{
-        const existingTasks = response.data[0].tasks || [];
-        //se c'è un timer, lo aggiorno
-        makeRequest.put("/timers/addTimer/" + response.data[0]._id, {
-          donepomo: 0,
-          remainingTime: 1500,
-          mode: 1,
-          workTime: 1500,
-          shortBreakTime: 300,
-          longBreakTime: 900,
-          longBreakInterval: ((event.pomodoroHours * 60 * 60) + event.pomodoroMinutes * 60)/1500,
-          tasks: (existingTasks.includes(event._id) ? existingTasks : [...existingTasks, event._id])
-        })
-        .then((response) => {
-          console.log('put'); 
-          navigate(`/timer/${event.userId}`);
-        })
-      }
-    });
+      makeRequest.post("/timers/addTimer", {
+        donepomo: 0,
+        remainingTime: 1500,
+        mode: 1,
+        workTime: 1500,
+        shortBreakTime: 300,
+        longBreakTime: 900,
+        longBreakInterval: ((event.pomodoroHours * 60 * 60) + event.pomodoroMinutes * 60) / 1500,
+        taskname: event.title,
+        eventId: event._id
+      })
+      .then((response) => {
+        console.log(response.data);
+        navigate(`/timer/${event.userId}`);
+      })
   }
 
 

@@ -6,7 +6,7 @@ export const getTimer = async (req, res) => {
   const userInfo = jwt.verify(token, "secretkey");
   const userId = userInfo.id;
 
-  try{
+  try {
     if (!token) return res.status(401).json({ message: "Not logged in" });
 
     const timers = await Timer.find({ userId: userId });
@@ -14,42 +14,54 @@ export const getTimer = async (req, res) => {
 
   }
   catch (error) {
-  res.status(404).json({ message: error.message });
-}
+    res.status(404).json({ message: error.message });
+  }
 };
 
 export const addTimer = async (req, res) => {
-
   const token = req.cookies.accessToken;
-  console.log('BODY :',req.body);
+  try {
+    if (!token) return res.status(401).json("Not logged in!");
+    const userInfo = jwt.verify(token, "secretkey");
 
+    const newTimer = new Timer({
+      userId: userInfo.id,
+      donepomo: req.body.donepomo,
+      remainingTime: req.body.remainingTime,
+      mode: req.body.mode,
+      workTime: req.body.workTime,
+      shortBreakTime: req.body.shortBreakTime,
+      longBreakTime: req.body.longBreakTime,
+      longBreakInterval: req.body.longBreakInterval,
+      taskname: req.body.taskname,
+      eventId: req.body.eventId
+    });
+
+    const savedTimer = await newTimer.save();
+
+    return res.status(200).json({ message: "Timer has been created.", timerId: savedTimer._id });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json(error.message || "Internal Server Error");
+  }
+};
+
+export const updateTimer = async (req, res) => {
+  const token = req.cookies.accessToken;
   try {
     if (!token) return res.status(401).json("Not logged in!");
 
-    const userInfo = jwt.verify(token, "secretkey");
+    //const userInfo = jwt.verify(token, "secretkey");
 
     const timer = await Timer.findOne({
-      _id : req.params.id,
+      _id: req.params.id,
     });
 
     if (!timer) {
-      //console.log("creo un nuovo timer");
-      const newTimer = new Timer({
-        userId: userInfo.id,
-        donepomo: req.body.donepomo,
-        remainingTime: req.body.remainingTime,
-        mode: req.body.mode,
-        workTime: req.body.workTime,
-        shortBreakTime: req.body.shortBreakTime,
-        longBreakTime: req.body.longBreakTime,
-        longBreakInterval: req.body.longBreakInterval,
-        tasks: req.body.tasks,
-      });
-      const savedTimer = await newTimer.save();  
-      return res.status(200).json({ message: "Timer has been created.", timerId: savedTimer._id });
+      return res.status(404).json("Timer not found");
     }
     else {
-      //console.log("aggiorno il timer");
       const updateFields = {};
       if (req.body.donepomo) updateFields.donepomo = req.body.donepomo;
       if (req.body.remainingTime) updateFields.remainingTime = req.body.remainingTime;
@@ -58,7 +70,8 @@ export const addTimer = async (req, res) => {
       if (req.body.shortBreakTime) updateFields.shortBreakTime = req.body.shortBreakTime;
       if (req.body.longBreakTime) updateFields.longBreakTime = req.body.longBreakTime;
       if (req.body.longBreakInterval) updateFields.longBreakInterval = req.body.longBreakInterval;
-      if (req.body.tasks) updateFields.tasks = req.body.tasks;
+      if (req.body.taskname) updateFields.taskname = req.body.taskname;
+      if (req.body.eventId) updateFields.eventId = req.body.eventId;
 
       const updatedTimer = await Timer.findOneAndUpdate(
         { _id: req.params.id },
@@ -75,7 +88,6 @@ export const addTimer = async (req, res) => {
     console.error(error);
     return res.status(500).json(error.message || "Internal Server Error");
   }
-  
 };
 
 export const deleteTimer = async (req, res) => {
