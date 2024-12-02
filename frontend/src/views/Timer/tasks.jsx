@@ -4,47 +4,53 @@ import { makeRequest } from "../../axios";
 import { useContext } from "react";
 import { AuthContext } from "../../context/authcontext";
 
-function Tasks() {
+function Tasks({ onTaskSelect , tasks }) {
   const { user } = useContext(AuthContext);
-  const [tasks, setTasks] = useState([]);
+  //const [tasks, setTasks] = useState([]);
 
-  function getTasks() {
-    makeRequest.get("/timers/getTimer").then((response) => {
-      const taskIds = response.data[0].tasks;
-
-      // Itera sugli ID e aggiungi solo nuovi task
-      Promise.all(
-        taskIds.map((taskId) =>
-          makeRequest.get(`/events/getEventfromId/${taskId}`).then((res) => res.data)
-        )
-      ).then((newTasks) => {
-        setTasks((prevTasks) => {
-          const taskMap = new Map(prevTasks.map((task) => [task._id, task]));
-          newTasks.forEach((task) => {
-            if (!taskMap.has(task._id)) {
-              taskMap.set(task._id, task);
-            }
-          });
-          return Array.from(taskMap.values());
+  /*function getTasks() {
+    makeRequest.get("/timers/getTimer/0").then((response) => {
+      response.data.forEach(element => {
+        setTasks(prevTasks => {
+          if (!prevTasks.some(t => t._id === element._id)) {
+            return [...prevTasks, element];
+          }
+          return prevTasks;
         });
       });
     });
-  }
+  }*/
 
-  useEffect(() => {
+  /*useEffect(() => {
     getTasks();
-  }, []);
+    console.log("Tasks:", tasks);
+  }, [tasks]);*/
 
-  useEffect(() => {
-    console.log(tasks);
-  }, [tasks]);
+  function handleTaskClick(task) {
+    console.log("Task clicked:", task.taskname);
+    onTaskSelect(task); // invia la task selezionata al timer
+  };
+
+  function handleDelete(task) {
+    makeRequest.delete('/timers/deleteTimer/'+task.taskname)
+    .then((response) => {
+      console.log(response);
+      //setTasks(prevTasks => prevTasks.filter(t => t._id !== task._id));
+    });
+  }  
 
   return (
     <div className="flex flex-col w-full h-full">
       {tasks.map((task) => (
-        <Task key={task._id} task={task} user={user} />
+        <Task 
+          key={task._id} 
+          task={task} 
+          user={user} 
+          clicked={handleTaskClick} 
+          deletetask={handleDelete}/>
       ))}
     </div>
   );
 }
+
 export default Tasks;

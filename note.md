@@ -14,7 +14,7 @@ data XX/XX/XXXX))
 
 - aggiungere al model dell evento il campo pomodoro e quanto tempo da studiare (max dall inizio dell evento alla fine dell'evento)
 
-# pomodoro
+# pomodoroz
 
 - ogni evento con pomodoro aggiungera una task nella view pomodoro (quando sono temporalmente nell evento)
 

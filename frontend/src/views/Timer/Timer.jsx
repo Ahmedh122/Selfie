@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect} from "react";
 import settingico from "../../assets/icon-settings.svg";
 import { makeRequest } from "../../axios";
 import Tasks from "./tasks";
@@ -9,7 +9,7 @@ function Timer() {
   const [shortBreakTime, setShortBreakTime] = useState(300); //5 minutes = 300 seconds
   const [longBreakTime, setLongBreakTime] = useState(900); //15 minutes = 900 seconds
   const [longBreakInterval, setLongBreakInterval] = useState(3); //4 pomodoro = 1 long break
-  const [TotalStudyTime, setTotalStudyTime] = useState(1500*3); // total time to study
+  const [TotalStudyTime, setTotalStudyTime] = useState(1500 * 3); // total time to study
   const [minutes, setMinutes] = useState(Math.floor((workTime % 3600) / 60).toString().padStart(2, '0'));
   const [secs, setSecs] = useState((workTime % 60).toString().padStart(2, '0'));
   const [intervalId, setIntervalId] = useState(null);
@@ -19,14 +19,15 @@ function Timer() {
   const [brek, setBrek] = useState(longBreakInterval);
   const [numberpomodoro, setNumberpomodoro] = useState(0); //number of pomodoro done
   const [mode, setMode] = useState(1); //1=work, 2=short break, 3=long break
-
-  const [dummy, setDummy] = useState(false); 
-
+  const [taskname, setTaskName] = useState("");
+  const [dummy, setDummy] = useState(false);
+  const [allTasks, setAllTasks] = useState([]);
+  const [actualTask, setActualTask] = useState(null);
 
   useEffect(() => {
-    getTimer();
-    console.log("getTimerz");
-  }, []);
+    getTimer();    
+    getTasks();
+  }, [actualTask]);
 
   useEffect(() => {
     return () => {
@@ -43,8 +44,8 @@ function Timer() {
       setIntervalId(null);
       reset();
     }
-    if(dummy){
-      addTimer();
+    if (dummy) {
+      updateTimer(actualTask._id);
     }
     console.log(remainingtime);
   }
@@ -56,7 +57,7 @@ function Timer() {
       return;
     }
     console.log("toggleclick");
-  
+
     const id = setInterval(() => {
       setRemainingTime(prevRemainingTime => prevRemainingTime - 1);
     }, 1000);
@@ -64,7 +65,7 @@ function Timer() {
   }
 
   useEffect(() => {
-      update(); 
+    update();
   }, [remainingtime]);
 
   function pause() {
@@ -84,7 +85,7 @@ function Timer() {
           setBrek(brek - 1);
           setRemainingTime(shortBreakTime);
         }
-        else{
+        else {
           setMode(3);
           setRemainingTime(longBreakTime);
         }
@@ -102,23 +103,22 @@ function Timer() {
         setMode(1);
         setRemainingTime(workTime);
     }
-    addTimer();
+    updateTimer(actualTask._id);
   }
 
   useEffect(() => {
-    console.log("useEffect strano"); 
     pause();
     /*if (mode == 1) {remainingtime = workTime;}
     if (mode == 2) {remainingtime = shortBreakTime;}
     if (mode == 3) {remainingtime = longBreakTime; alert("hai finito il ciclo");}*/
     update();
-  }, [mode]); 
+  }, [mode]);
 
-  function togglePopup(){
+  function togglePopup() {
     setDummy(true);
     setPopupVisible(!isPopupVisible);
   }
-  
+
   const handleSubmit = (e) => {
     e.preventDefault();
     togglePopup();
@@ -131,7 +131,7 @@ function Timer() {
     if ((intervalId == null) && (mode == 1)) { // se non è in esecuzione il timer aggiorno il tempo rimanente con il nuovo worktime\
       console.log("worktimehandler");
       setRemainingTime(worktime);
-    }  
+    }
   };
 
   const shorttimehandler = (e) => {
@@ -164,183 +164,223 @@ function Timer() {
     setTotalStudyTime(workTime * longbreakinterval);
     setBrek(longbreakinterval);
   };
-  
-  function getTimer() {	
-    makeRequest.get("/timers/getTimer").then((response) => {
+
+  function getTimer() {
+    if (!actualTask) {
+      return;
+    }
+    makeRequest.get("/timers/getTimer/" + actualTask._id).then((response) => {
       console.log(response.data);
-      if (response.data.length > 0) {
-        setWorkTime(response.data[0].workTime);
-        setShortBreakTime(response.data[0].shortBreakTime);
-        setLongBreakTime(response.data[0].longBreakTime);
-        setLongBreakInterval(response.data[0].longBreakInterval);
-        setTotalStudyTime(response.data[0].workTime * response.data[0].longBreakInterval);
-        setNumberpomodoro(response.data[0].donepomo);
-        setMode(response.data[0].mode);
-        if (response.data[0].remainingTime > 0) {
-          setRemainingTime(response.data[0].remainingTime);
-        }
+      setWorkTime(response.data.workTime);
+      setShortBreakTime(response.data.shortBreakTime);
+      setLongBreakTime(response.data.longBreakTime);
+      setLongBreakInterval(response.data.longBreakInterval);
+      setTotalStudyTime(response.data.workTime * response.data.longBreakInterval);
+      setNumberpomodoro(response.data.donepomo);
+      setMode(response.data.mode);
+      setTaskName(response.data.taskname);
+      if (response.data.remainingTime > 0) {
+        setRemainingTime(response.data.remainingTime);
       }
     });
     setIsLoading(false);
   }
 
+  function getTasks() {
+    makeRequest.get("/timers/getTimer/0").then((response) => {
+      console.log(response.data);
+      setAllTasks(response.data);
+    });
+  }
   // post timer or put timer if already exists
   function addTimer() {
     console.log("addTimer");
-    makeRequest.get("/timers/getTimer").then((response) => {
-      //se non c'è un timer, lo creo
-      if (response.data.length == 0) {
-        makeRequest.post("/timers/addTimer", {
-          donepomo: numberpomodoro,
-          remainingTime: remainingtime,
-          mode: mode,
-          workTime: workTime,
-          shortBreakTime: shortBreakTime,
-          longBreakTime: longBreakTime,
-          longBreakInterval: longBreakInterval,
-        })
-        .then((response) => {
-          console.log('post');
-        })
-      }
-      else{
-        //se c'è un timer, lo aggiorno
-        makeRequest.put("/timers/addTimer/" + response.data[0]._id, {
-          donepomo: numberpomodoro,
-          remainingTime: remainingtime,
-          mode: mode,
-          workTime: workTime,
-          shortBreakTime: shortBreakTime,
-          longBreakTime: longBreakTime,
-          longBreakInterval: longBreakInterval,
-        })
-        .then((response) => {
-          console.log('put');
-        })
-      }
-    });
+    //se non c'è un timer, lo creo
+    makeRequest.post("/timers/addTimer", {
+      donepomo: numberpomodoro,
+      remainingTime: remainingtime,
+      mode: mode,
+      workTime: workTime,
+      shortBreakTime: shortBreakTime,
+      longBreakTime: longBreakTime,
+      longBreakInterval: longBreakInterval,
+      taskname: taskname,
+    })
+      .then((response) => {
+        console.log(response.data);
+        getTimer();
+        getTasks();
+      })
+  }
+
+  function updateTimer(timerId) {
+    console.log("updateTimer");
+    makeRequest.put("/timers/updateTimer/" + timerId, {
+      donepomo: numberpomodoro,
+      remainingTime: remainingtime,
+      mode: mode,
+      workTime: workTime,
+      shortBreakTime: shortBreakTime,
+      longBreakTime: longBreakTime,
+      longBreakInterval: longBreakInterval,
+      taskname: taskname,
+    })
+      .then((response) => {
+        console.log(response.data);
+      })
   }
 
   function handleSave() {
     addTimer();
   }
 
-  return  isloading ? (<div>Loading...</div>) : 
-  (
-    <div className="bg-gray-100 flex items-center 
+  function handleUpdate() {
+    updateTimer(actualTask._id);
+  }
+
+  const handleTaskSelect = (task) => {
+    setActualTask(task);
+  };
+
+ 
+
+  return (
+      <div className="bg-gray-100 flex items-center 
              justify-center h-screen">
-      <div className="flex space-x-8">
-        <div className="bg-white rounded-lg shadow-lg p-6 w-64">
-          <Tasks />
-        </div>
-      </div>
-      <div className={`rounded-lg shadow-lg p-20 ${intervalId ? 'bg-red-400' : 'bg-white'}`}>
-        <h1 class="text-3xl font-bold mb-2 text-center">
-          Timer
-        </h1>
-        <h1 className="text-3xl font-bold mb-2 text-center">
-          {mode == 1 ? 'Work' : mode == 2 ? 'Short Break' : 'Long Break'} 
-        </h1>
-        <div className="flex items-center justify-center 
-                    bg-gray-200 rounded-lg p-4 mt-8">
-          <span id="timer" className="text-4xl font-bold">
-          {`${minutes}:${secs}`}
-          </span>
-        </div>
-        <div className="flex justify-center space-x-4 mt-8">
-          <button id="startBtn"
-            className={`px-4 py-2 rounded text-white ${intervalId ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-blue-500 hover:bg-blue-600'}`} onClick={toggleclick}>{intervalId ? 'Pause' : 'Start'}
-          </button>
-          <button id="resetBtn"
-            className="px-4 py-2 bg-red-500 text-white 
-                           rounded hover:bg-red-600" onClick={reset}>Skip
-          </button>
-        </div>
-        <div className="flex justify-center space-x-4 mt-8">
-          <h6>#{numberpomodoro}</h6>
-        </div>
-        <div className="flex justify-center space-x-4 mt-8">
-          <h6><button className="bg-black" onClick={togglePopup}><img src={settingico} alt="" /></button></h6>
-        </div>
-      </div>
-      {isPopupVisible && (
-        <div className="bg-gray-100 flex items-center justify-center h-screen">
-          <div className="rounded-lg shadow-lg p-20 bg-white">
-            <h1 className="text-3xl font-bold mb-2 text-center">Settings</h1>
-            <div className="flex justify-center space-x-4 mt-8">
-              <form onSubmit={handleSubmit}>
-                <div className="flex justify-center space-x-4 mt-8">
-                  <label>
-                    Work time:
-                    <input
-                      className="ml-2"
-                      type="number"
-                      value={workTime/60}
-                      onChange={worktimehandler}
-                      min={0}
-                    />
-                  </label>
-                </div>
-                <div className="flex justify-center space-x-4 mt-8">
-                  <label>
-                    Short break time:
-                    <input
-                      className="ml-2"
-                      type="number"
-                      value={shortBreakTime/60}
-                      onChange={shorttimehandler}
-                      min={0}
-                    />
-                  </label>
-                </div>
-                <div className="flex justify-center space-x-4 mt-8">
-                  <label>
-                    Long break time:
-                    <input
-                      className="ml-2"
-                      type="number"
-                      value={longBreakTime/60}
-                      onChange={longtimehandler}
-                      min={0}
-                    />
-                  </label>
-                </div>
-                <div className="flex justify-center space-x-4 mt-8">
-                  <label>
-                    Long break interval:
-                    <input
-                      className="ml-2"
-                      type="number"
-                      value={longBreakInterval}
-                      onChange={longbreakintervalhandler}
-                      min={0}
-                    />
-                  </label>
-                </div>
-                <div className="flex justify-center space-x-4 mt-8">
-                  <label>
-                    Total study time:
-                    <input
-                      className="ml-2"
-                      type="number"
-                      value={TotalStudyTime/60}
-                      onChange={TotalStudyTimeHandler}
-                      min={0}
-                      step={workTime/60}
-                    />
-                  </label>
-                </div>
-                <div className="flex justify-center space-x-4 mt-8">
-                  <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                  onClick={handleSave}>
-                    Save
-                  </button>
-                </div>
-              </form>
-            </div>
+        <div className="flex space-x-8">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-64">
+            <Tasks 
+              onTaskSelect={handleTaskSelect}  
+              tasks={allTasks}
+            />
           </div>
         </div>
-      )}
-    </div>
-  );
-} export default Timer;
+        {isloading ? (<div>Loading...</div>) : (
+        <div className={`rounded-lg shadow-lg p-20 ${intervalId ? 'bg-red-400' : 'bg-white'}`}>
+          <h1 class="text-3xl font-bold mb-2 text-center">
+            Timer
+          </h1>
+          <h1 className="text-3xl font-bold mb-2 text-center">
+            {mode == 1 ? 'Work' : mode == 2 ? 'Short Break' : 'Long Break'}
+          </h1>
+          <div className="flex items-center justify-center 
+                    bg-gray-200 rounded-lg p-4 mt-8">
+            <span id="timer" className="text-4xl font-bold">
+              {`${minutes}:${secs}`}
+            </span>
+          </div>
+          <div className="flex justify-center space-x-4 mt-8">
+            <button id="startBtn"
+              className={`px-4 py-2 rounded text-white ${intervalId ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-blue-500 hover:bg-blue-600'}`} onClick={toggleclick}>{intervalId ? 'Pause' : 'Start'}
+            </button>
+            <button id="resetBtn"
+              className="px-4 py-2 bg-red-500 text-white 
+                           rounded hover:bg-red-600" onClick={reset}>Skip
+            </button>
+          </div>
+          <div className="flex justify-center space-x-4 mt-8">
+            <h6>#{numberpomodoro}</h6>
+          </div>
+          <div className="flex justify-center space-x-4 mt-8">
+            <h6><button className="bg-black" onClick={togglePopup}><img src={settingico} alt="" /></button></h6>
+          </div>
+        </div>
+        )}
+        {isPopupVisible && (
+          <div className="bg-gray-100 flex items-center justify-center h-screen">
+            <div className="rounded-lg shadow-lg p-20 bg-white">
+              <h1 className="text-3xl font-bold mb-2 text-center">Settings</h1>
+              <div className="flex justify-center space-x-4 mt-8">
+                <form onSubmit={handleSubmit}>
+                  <div className="flex justify-center space-x-4 mt-8">
+                    <label>
+                      Task Name:
+                      <input
+                        className="ml-2"
+                        type="text"
+                        value={taskname}
+                        onChange={(e) => setTaskName(e.target.value)}
+                        placeholder="nome della task"
+                      />
+                    </label>
+                  </div>
+                  <div className="flex justify-center space-x-4 mt-8">
+                    <label>
+                      Work time:
+                      <input
+                        className="ml-2"
+                        type="number"
+                        value={workTime / 60}
+                        onChange={worktimehandler}
+                        min={0}
+                      />
+                    </label>
+                  </div>
+                  <div className="flex justify-center space-x-4 mt-8">
+                    <label>
+                      Short break time:
+                      <input
+                        className="ml-2"
+                        type="number"
+                        value={shortBreakTime / 60}
+                        onChange={shorttimehandler}
+                        min={0}
+                      />
+                    </label>
+                  </div>
+                  <div className="flex justify-center space-x-4 mt-8">
+                    <label>
+                      Long break time:
+                      <input
+                        className="ml-2"
+                        type="number"
+                        value={longBreakTime / 60}
+                        onChange={longtimehandler}
+                        min={0}
+                      />
+                    </label>
+                  </div>
+                  <div className="flex justify-center space-x-4 mt-8">
+                    <label>
+                      Long break interval:
+                      <input
+                        className="ml-2"
+                        type="number"
+                        value={longBreakInterval}
+                        onChange={longbreakintervalhandler}
+                        min={0}
+                      />
+                    </label>
+                  </div>
+                  <div className="flex justify-center space-x-4 mt-8">
+                    <label>
+                      Total study time:
+                      <input
+                        className="ml-2"
+                        type="number"
+                        value={TotalStudyTime / 60}
+                        onChange={TotalStudyTimeHandler}
+                        min={0}
+                        step={workTime / 60}
+                      />
+                    </label>
+                  </div>
+                  <div className="flex justify-center space-x-4 mt-8">
+                    <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                      onClick={handleSave}>
+                      Save New
+                    </button>
+                    <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                      onClick={handleUpdate}>
+                      Update
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  } 
+export default Timer;
