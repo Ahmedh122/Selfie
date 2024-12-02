@@ -3,9 +3,9 @@ import { getTimer, addTimer, deleteTimer,updateTimer } from "../controllers/time
 
 const router = express.Router();
 
-router.get("/getTimer", getTimer);
+router.get("/getTimer/:id", getTimer);
 router.post("/addTimer", addTimer);
 router.put("/updateTimer/:id", updateTimer); 
-router.delete("/deleteTimer", deleteTimer);
+router.delete("/deleteTimer/:id", deleteTimer);
 
 export default router;

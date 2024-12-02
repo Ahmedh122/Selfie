@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect} from "react";
 import settingico from "../../assets/icon-settings.svg";
 import { makeRequest } from "../../axios";
 import Tasks from "./tasks";
@@ -21,13 +21,13 @@ function Timer() {
   const [mode, setMode] = useState(1); //1=work, 2=short break, 3=long break
   const [taskname, setTaskName] = useState("");
   const [dummy, setDummy] = useState(false);
-  const [timerId, setTimerId] = useState("");
-
+  const [allTasks, setAllTasks] = useState([]);
+  const [actualTask, setActualTask] = useState(null);
 
   useEffect(() => {
-    getTimer();
-    console.log("getTimerz");
-  }, []);
+    getTimer();    
+    getTasks();
+  }, [actualTask]);
 
   useEffect(() => {
     return () => {
@@ -45,7 +45,7 @@ function Timer() {
       reset();
     }
     if (dummy) {
-      updateTimer(timerId);
+      updateTimer(actualTask._id);
     }
     console.log(remainingtime);
   }
@@ -103,11 +103,10 @@ function Timer() {
         setMode(1);
         setRemainingTime(workTime);
     }
-    updateTimer(timerId);
+    updateTimer(actualTask._id);
   }
 
   useEffect(() => {
-    console.log("useEffect strano");
     pause();
     /*if (mode == 1) {remainingtime = workTime;}
     if (mode == 2) {remainingtime = shortBreakTime;}
@@ -167,25 +166,32 @@ function Timer() {
   };
 
   function getTimer() {
-    makeRequest.get("/timers/getTimer").then((response) => {
+    if (!actualTask) {
+      return;
+    }
+    makeRequest.get("/timers/getTimer/" + actualTask._id).then((response) => {
       console.log(response.data);
-      if (response.data.length > 0) {
-        setWorkTime(response.data[0].workTime);
-        setShortBreakTime(response.data[0].shortBreakTime);
-        setLongBreakTime(response.data[0].longBreakTime);
-        setLongBreakInterval(response.data[0].longBreakInterval);
-        setTotalStudyTime(response.data[0].workTime * response.data[0].longBreakInterval);
-        setNumberpomodoro(response.data[0].donepomo);
-        setMode(response.data[0].mode);
-        setTimerId(response.data[0]._id);
-        if (response.data[0].remainingTime > 0) {
-          setRemainingTime(response.data[0].remainingTime);
-        }
+      setWorkTime(response.data.workTime);
+      setShortBreakTime(response.data.shortBreakTime);
+      setLongBreakTime(response.data.longBreakTime);
+      setLongBreakInterval(response.data.longBreakInterval);
+      setTotalStudyTime(response.data.workTime * response.data.longBreakInterval);
+      setNumberpomodoro(response.data.donepomo);
+      setMode(response.data.mode);
+      setTaskName(response.data.taskname);
+      if (response.data.remainingTime > 0) {
+        setRemainingTime(response.data.remainingTime);
       }
     });
     setIsLoading(false);
   }
 
+  function getTasks() {
+    makeRequest.get("/timers/getTimer/0").then((response) => {
+      console.log(response.data);
+      setAllTasks(response.data);
+    });
+  }
   // post timer or put timer if already exists
   function addTimer() {
     console.log("addTimer");
@@ -202,12 +208,14 @@ function Timer() {
     })
       .then((response) => {
         console.log(response.data);
+        getTimer();
+        getTasks();
       })
   }
 
   function updateTimer(timerId) {
     console.log("updateTimer");
-    makeRequest.put("/timers/updateTimer/"+timerId, {
+    makeRequest.put("/timers/updateTimer/" + timerId, {
       donepomo: numberpomodoro,
       remainingTime: remainingtime,
       mode: mode,
@@ -222,148 +230,157 @@ function Timer() {
       })
   }
 
+  function handleSave() {
+    addTimer();
+  }
 
-    function handleSave() {
-      addTimer();
-    }
+  function handleUpdate() {
+    updateTimer(actualTask._id);
+  }
 
-    const handleTaskSelect = (task) => {
-      setWorkTime(task.workTime || 1500);
-      setShortBreakTime(task.shortBreakTime || 300);
-      setLongBreakTime(task.longBreakTime || 900);
-      setLongBreakInterval(task.longBreakInterval || 3);
-      setMode(task.mode || 1);
-      setRemainingTime(task.remainingTime || task.workTime || 1500);
-      console.log("Timer updated with task:", task);
-    };
+  const handleTaskSelect = (task) => {
+    setActualTask(task);
+  };
 
-    return isloading ? (<div>Loading...</div>) :
-      (
-        <div className="bg-gray-100 flex items-center 
+ 
+
+  return (
+      <div className="bg-gray-100 flex items-center 
              justify-center h-screen">
-          <div className="flex space-x-8">
-            <div className="bg-white rounded-lg shadow-lg p-6 w-64">
-              <Tasks onTaskSelect={handleTaskSelect}/>
-            </div>
+        <div className="flex space-x-8">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-64">
+            <Tasks 
+              onTaskSelect={handleTaskSelect}  
+              tasks={allTasks}
+            />
           </div>
-          <div className={`rounded-lg shadow-lg p-20 ${intervalId ? 'bg-red-400' : 'bg-white'}`}>
-            <h1 class="text-3xl font-bold mb-2 text-center">
-              Timer
-            </h1>
-            <h1 className="text-3xl font-bold mb-2 text-center">
-              {mode == 1 ? 'Work' : mode == 2 ? 'Short Break' : 'Long Break'}
-            </h1>
-            <div className="flex items-center justify-center 
+        </div>
+        {isloading ? (<div>Loading...</div>) : (
+        <div className={`rounded-lg shadow-lg p-20 ${intervalId ? 'bg-red-400' : 'bg-white'}`}>
+          <h1 class="text-3xl font-bold mb-2 text-center">
+            Timer
+          </h1>
+          <h1 className="text-3xl font-bold mb-2 text-center">
+            {mode == 1 ? 'Work' : mode == 2 ? 'Short Break' : 'Long Break'}
+          </h1>
+          <div className="flex items-center justify-center 
                     bg-gray-200 rounded-lg p-4 mt-8">
-              <span id="timer" className="text-4xl font-bold">
-                {`${minutes}:${secs}`}
-              </span>
-            </div>
-            <div className="flex justify-center space-x-4 mt-8">
-              <button id="startBtn"
-                className={`px-4 py-2 rounded text-white ${intervalId ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-blue-500 hover:bg-blue-600'}`} onClick={toggleclick}>{intervalId ? 'Pause' : 'Start'}
-              </button>
-              <button id="resetBtn"
-                className="px-4 py-2 bg-red-500 text-white 
-                           rounded hover:bg-red-600" onClick={reset}>Skip
-              </button>
-            </div>
-            <div className="flex justify-center space-x-4 mt-8">
-              <h6>#{numberpomodoro}</h6>
-            </div>
-            <div className="flex justify-center space-x-4 mt-8">
-              <h6><button className="bg-black" onClick={togglePopup}><img src={settingico} alt="" /></button></h6>
-            </div>
+            <span id="timer" className="text-4xl font-bold">
+              {`${minutes}:${secs}`}
+            </span>
           </div>
-          {isPopupVisible && (
-            <div className="bg-gray-100 flex items-center justify-center h-screen">
-              <div className="rounded-lg shadow-lg p-20 bg-white">
-                <h1 className="text-3xl font-bold mb-2 text-center">Settings</h1>
-                <div className="flex justify-center space-x-4 mt-8">
-                  <form onSubmit={handleSubmit}>
-                    <div className="flex justify-center space-x-4 mt-8">
-                      <label>
-                        Task Name:
-                        <input
-                          className="ml-2"
-                          type="text"
-                          onChange={(e) => setTaskName(e.target.value)}
-                          placeholder="nome della task"
-                        />
-                      </label>
-                    </div>
-                    <div className="flex justify-center space-x-4 mt-8">
-                      <label>
-                        Work time:
-                        <input
-                          className="ml-2"
-                          type="number"
-                          value={workTime / 60}
-                          onChange={worktimehandler}
-                          min={0}
-                        />
-                      </label>
-                    </div>
-                    <div className="flex justify-center space-x-4 mt-8">
-                      <label>
-                        Short break time:
-                        <input
-                          className="ml-2"
-                          type="number"
-                          value={shortBreakTime / 60}
-                          onChange={shorttimehandler}
-                          min={0}
-                        />
-                      </label>
-                    </div>
-                    <div className="flex justify-center space-x-4 mt-8">
-                      <label>
-                        Long break time:
-                        <input
-                          className="ml-2"
-                          type="number"
-                          value={longBreakTime / 60}
-                          onChange={longtimehandler}
-                          min={0}
-                        />
-                      </label>
-                    </div>
-                    <div className="flex justify-center space-x-4 mt-8">
-                      <label>
-                        Long break interval:
-                        <input
-                          className="ml-2"
-                          type="number"
-                          value={longBreakInterval}
-                          onChange={longbreakintervalhandler}
-                          min={0}
-                        />
-                      </label>
-                    </div>
-                    <div className="flex justify-center space-x-4 mt-8">
-                      <label>
-                        Total study time:
-                        <input
-                          className="ml-2"
-                          type="number"
-                          value={TotalStudyTime / 60}
-                          onChange={TotalStudyTimeHandler}
-                          min={0}
-                          step={workTime / 60}
-                        />
-                      </label>
-                    </div>
-                    <div className="flex justify-center space-x-4 mt-8">
-                      <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                        onClick={handleSave}>
-                        Save
-                      </button>
-                    </div>
-                  </form>
-                </div>
+          <div className="flex justify-center space-x-4 mt-8">
+            <button id="startBtn"
+              className={`px-4 py-2 rounded text-white ${intervalId ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-blue-500 hover:bg-blue-600'}`} onClick={toggleclick}>{intervalId ? 'Pause' : 'Start'}
+            </button>
+            <button id="resetBtn"
+              className="px-4 py-2 bg-red-500 text-white 
+                           rounded hover:bg-red-600" onClick={reset}>Skip
+            </button>
+          </div>
+          <div className="flex justify-center space-x-4 mt-8">
+            <h6>#{numberpomodoro}</h6>
+          </div>
+          <div className="flex justify-center space-x-4 mt-8">
+            <h6><button className="bg-black" onClick={togglePopup}><img src={settingico} alt="" /></button></h6>
+          </div>
+        </div>
+        )}
+        {isPopupVisible && (
+          <div className="bg-gray-100 flex items-center justify-center h-screen">
+            <div className="rounded-lg shadow-lg p-20 bg-white">
+              <h1 className="text-3xl font-bold mb-2 text-center">Settings</h1>
+              <div className="flex justify-center space-x-4 mt-8">
+                <form onSubmit={handleSubmit}>
+                  <div className="flex justify-center space-x-4 mt-8">
+                    <label>
+                      Task Name:
+                      <input
+                        className="ml-2"
+                        type="text"
+                        value={taskname}
+                        onChange={(e) => setTaskName(e.target.value)}
+                        placeholder="nome della task"
+                      />
+                    </label>
+                  </div>
+                  <div className="flex justify-center space-x-4 mt-8">
+                    <label>
+                      Work time:
+                      <input
+                        className="ml-2"
+                        type="number"
+                        value={workTime / 60}
+                        onChange={worktimehandler}
+                        min={0}
+                      />
+                    </label>
+                  </div>
+                  <div className="flex justify-center space-x-4 mt-8">
+                    <label>
+                      Short break time:
+                      <input
+                        className="ml-2"
+                        type="number"
+                        value={shortBreakTime / 60}
+                        onChange={shorttimehandler}
+                        min={0}
+                      />
+                    </label>
+                  </div>
+                  <div className="flex justify-center space-x-4 mt-8">
+                    <label>
+                      Long break time:
+                      <input
+                        className="ml-2"
+                        type="number"
+                        value={longBreakTime / 60}
+                        onChange={longtimehandler}
+                        min={0}
+                      />
+                    </label>
+                  </div>
+                  <div className="flex justify-center space-x-4 mt-8">
+                    <label>
+                      Long break interval:
+                      <input
+                        className="ml-2"
+                        type="number"
+                        value={longBreakInterval}
+                        onChange={longbreakintervalhandler}
+                        min={0}
+                      />
+                    </label>
+                  </div>
+                  <div className="flex justify-center space-x-4 mt-8">
+                    <label>
+                      Total study time:
+                      <input
+                        className="ml-2"
+                        type="number"
+                        value={TotalStudyTime / 60}
+                        onChange={TotalStudyTimeHandler}
+                        min={0}
+                        step={workTime / 60}
+                      />
+                    </label>
+                  </div>
+                  <div className="flex justify-center space-x-4 mt-8">
+                    <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                      onClick={handleSave}>
+                      Save New
+                    </button>
+                    <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                      onClick={handleUpdate}>
+                      Update
+                    </button>
+                  </div>
+                </form>
               </div>
             </div>
-          )}
-        </div>
-      );
-  } export default Timer;
+          </div>
+        )}
+      </div>
+    );
+  } 
+export default Timer;
