@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import settingico from "../../assets/icon-settings.svg";
 import { makeRequest } from "../../axios";
+import Tasks from "./tasks";
 
 function Timer() {
 
@@ -179,7 +180,6 @@ function Timer() {
           setRemainingTime(response.data[0].remainingTime);
         }
       }
-
     });
     setIsLoading(false);
   }
@@ -225,9 +225,15 @@ function Timer() {
     addTimer();
   }
 
-  return  isloading ? (<div>Loading...</div>) : (
+  return  isloading ? (<div>Loading...</div>) : 
+  (
     <div className="bg-gray-100 flex items-center 
              justify-center h-screen">
+      <div className="flex space-x-8">
+        <div className="bg-white rounded-lg shadow-lg p-6 w-64">
+          <Tasks />
+        </div>
+      </div>
       <div className={`rounded-lg shadow-lg p-20 ${intervalId ? 'bg-red-400' : 'bg-white'}`}>
         <h1 class="text-3xl font-bold mb-2 text-center">
           Timer
