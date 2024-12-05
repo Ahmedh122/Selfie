@@ -4,7 +4,7 @@ import { makeRequest } from "../../axios";
 import { useContext } from "react";
 import { AuthContext } from "../../context/authcontext";
 
-function Tasks({ onTaskSelect , tasks }) {
+function Tasks({ onTaskSelect , tasks , resettimerPOMOPADRE }) {
   const { user } = useContext(AuthContext);
   //const [tasks, setTasks] = useState([]);
 
@@ -39,6 +39,10 @@ function Tasks({ onTaskSelect , tasks }) {
     });
   }  
 
+  function handleReset(task) {
+    resettimerPOMOPADRE(task);
+  }
+
   return (
     <div className="flex flex-col w-full h-full">
       {tasks.map((task) => (
@@ -47,7 +51,8 @@ function Tasks({ onTaskSelect , tasks }) {
           task={task} 
           user={user} 
           clicked={handleTaskClick} 
-          deletetask={handleDelete}/>
+          deletetask={handleDelete}
+          resettimer={handleReset}/>
       ))}
     </div>
   );

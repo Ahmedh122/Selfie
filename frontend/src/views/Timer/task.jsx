@@ -1,7 +1,7 @@
 
 
 
-export default function Task({ task , clicked ,deletetask}) {
+export default function Task({ task,clicked,deletetask,resettimer}) {
   
   return (
     <div onClick={()=> clicked(task)} className="flex flex-col w-[70%] h-min event bg-gray-600 mb-2 rounded-xl">
@@ -19,7 +19,11 @@ export default function Task({ task , clicked ,deletetask}) {
           <button onClick={() => deletetask(task)} className="bg-red-500 text-white px-4 py-2 rounded">Delete</button>
         )}
       </div>
-
+      <div className='start-date flex flex-row'>
+      {task.eventId == undefined && (
+          <button onClick={() => resettimer(task)} className="bg-yellow-500 text-white px-4 py-2 rounded">Reset</button>
+        )}
+      </div>
     </div>
   );
 }
