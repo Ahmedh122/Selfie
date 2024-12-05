@@ -187,6 +187,9 @@ function Timer() {
           setRemainingTime(response.data.remainingTime);
         }
       }
+      else{
+        setIsLoading(true);
+      }
     });
     setIsLoading(false);
   }
@@ -202,9 +205,9 @@ function Timer() {
     console.log("addTimer");
     //se non c'è un timer, lo creo
     makeRequest.post("/timers/addTimer", {
-      donepomo: numberpomodoro,
-      remainingTime: remainingtime,
-      mode: mode,
+      donepomo: 0,
+      remainingTime: workTime,
+      mode: 1,
       workTime: workTime,
       shortBreakTime: shortBreakTime,
       longBreakTime: longBreakTime,
@@ -252,10 +255,34 @@ function Timer() {
 
   function handleResetTimer(task) {
     // funzione che stoppi il timer e riporti il timer alle condizioni di partenza resettando il remaining time ecc...
-    setRemainingTime(workTime);
-    setNumberpomodoro(0);
-    setMode(1);
+     if (intervalId) {
+      clearInterval(intervalId);
+      setIntervalId(null);
+    } 
+    makeRequest.put("/timers/updateTimer/" + task._id, {
+      donepomo: 0,
+      remainingTime: task.workTime,
+      mode: 1,
+      workTime: task.workTime,
+      shortBreakTime: task.shortBreakTime,
+      longBreakTime: task.longBreakTime,
+      longBreakInterval: task.longBreakInterval,
+      taskname: task.taskname,
+    })
+      .then((response) => {
+        setRemainingTime(task.workTime);
+        setNumberpomodoro(0);
+        setMode(1);
+        setBrek(longBreakInterval);
+        console.log("Timer resettato:", response.data);
+        getTimer();
+        getTasks();
+      })
+      .catch((error) => {
+        console.error("Errore durante il reset del timer:", error);
+      });
   }
+
 
   return (
     <div className="bg-gray-100 flex items-center 
@@ -295,11 +322,11 @@ function Timer() {
           <div className="flex justify-center space-x-4 mt-8">
             <h6>#{numberpomodoro}</h6>
           </div>
-          <div className="flex justify-center space-x-4 mt-8">
-            <h6><button className="bg-black" onClick={togglePopup}><img src={settingico} alt="" /></button></h6>
-          </div>
         </div>
       )}
+      <div className="flex justify-center space-x-4 mt-8">
+        <h6><button className="bg-black" onClick={togglePopup}><img src={settingico} alt="" /></button></h6>
+      </div>
       {isPopupVisible && (
         <div className="bg-gray-100 flex items-center justify-center h-screen">
           <div className="rounded-lg shadow-lg p-20 bg-white">
