@@ -1,4 +1,4 @@
-import { useState, useEffect} from "react";
+import { useState, useEffect } from "react";
 import settingico from "../../assets/icon-settings.svg";
 import { makeRequest } from "../../axios";
 import Tasks from "./tasks";
@@ -25,7 +25,7 @@ function Timer() {
   const [actualTask, setActualTask] = useState(null);
 
   useEffect(() => {
-    getTimer();    
+    getTimer();
     getTasks();
   }, [actualTask]);
 
@@ -44,7 +44,10 @@ function Timer() {
       setIntervalId(null);
       reset();
     }
-    if (dummy) {
+    /*if (dummy) {   // PERCHE LHO MESSO SEMBRA FUNZIONARE ANCHE SENZA SAAAAAAAAA
+      updateTimer(actualTask._id);
+    }*/
+    if (actualTask != null) {
       updateTimer(actualTask._id);
     }
     console.log(remainingtime);
@@ -170,17 +173,22 @@ function Timer() {
       return;
     }
     makeRequest.get("/timers/getTimer/" + actualTask._id).then((response) => {
-      console.log(response.data);
-      setWorkTime(response.data.workTime);
-      setShortBreakTime(response.data.shortBreakTime);
-      setLongBreakTime(response.data.longBreakTime);
-      setLongBreakInterval(response.data.longBreakInterval);
-      setTotalStudyTime(response.data.workTime * response.data.longBreakInterval);
-      setNumberpomodoro(response.data.donepomo);
-      setMode(response.data.mode);
-      setTaskName(response.data.taskname);
-      if (response.data.remainingTime > 0) {
-        setRemainingTime(response.data.remainingTime);
+      if (response.data != null) {
+        console.log(response.data);
+        setWorkTime(response.data.workTime);
+        setShortBreakTime(response.data.shortBreakTime);
+        setLongBreakTime(response.data.longBreakTime);
+        setLongBreakInterval(response.data.longBreakInterval);
+        setTotalStudyTime(response.data.workTime * response.data.longBreakInterval);
+        setNumberpomodoro(response.data.donepomo);
+        setMode(response.data.mode);
+        setTaskName(response.data.taskname);
+        if (response.data.remainingTime > 0) {
+          setRemainingTime(response.data.remainingTime);
+        }
+      }
+      else{
+        setIsLoading(true);
       }
     });
     setIsLoading(false);
@@ -197,6 +205,24 @@ function Timer() {
     console.log("addTimer");
     //se non c'è un timer, lo creo
     makeRequest.post("/timers/addTimer", {
+      donepomo: 0,
+      remainingTime: workTime,
+      mode: 1,
+      workTime: workTime,
+      shortBreakTime: shortBreakTime,
+      longBreakTime: longBreakTime,
+      longBreakInterval: longBreakInterval,
+      taskname: taskname,
+    })
+      .then((response) => {
+        console.log(response.data);
+        getTimer();
+        getTasks();
+      })
+  }
+
+  function updateTimer(timerId) {
+    makeRequest.put("/timers/updateTimer/" + timerId, {
       donepomo: numberpomodoro,
       remainingTime: remainingtime,
       mode: mode,
@@ -213,49 +239,64 @@ function Timer() {
       })
   }
 
-  function updateTimer(timerId) {
-    console.log("updateTimer");
-    makeRequest.put("/timers/updateTimer/" + timerId, {
-      donepomo: numberpomodoro,
-      remainingTime: remainingtime,
-      mode: mode,
-      workTime: workTime,
-      shortBreakTime: shortBreakTime,
-      longBreakTime: longBreakTime,
-      longBreakInterval: longBreakInterval,
-      taskname: taskname,
-    })
-      .then((response) => {
-        console.log(response.data);
-      })
-  }
-
   function handleSave() {
     addTimer();
   }
 
   function handleUpdate() {
-    updateTimer(actualTask._id);
+    if (actualTask.eventId == undefined) {
+      updateTimer(actualTask._id);
+    }
   }
 
   const handleTaskSelect = (task) => {
     setActualTask(task);
   };
 
- 
+  function handleResetTimer(task) {
+    // funzione che stoppi il timer e riporti il timer alle condizioni di partenza resettando il remaining time ecc...
+     if (intervalId) {
+      clearInterval(intervalId);
+      setIntervalId(null);
+    } 
+    makeRequest.put("/timers/updateTimer/" + task._id, {
+      donepomo: 0,
+      remainingTime: task.workTime,
+      mode: 1,
+      workTime: task.workTime,
+      shortBreakTime: task.shortBreakTime,
+      longBreakTime: task.longBreakTime,
+      longBreakInterval: task.longBreakInterval,
+      taskname: task.taskname,
+    })
+      .then((response) => {
+        setRemainingTime(task.workTime);
+        setNumberpomodoro(0);
+        setMode(1);
+        setBrek(longBreakInterval);
+        console.log("Timer resettato:", response.data);
+        getTimer();
+        getTasks();
+      })
+      .catch((error) => {
+        console.error("Errore durante il reset del timer:", error);
+      });
+  }
+
 
   return (
-      <div className="bg-gray-100 flex items-center 
+    <div className="bg-gray-100 flex items-center 
              justify-center h-screen">
-        <div className="flex space-x-8">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-64">
-            <Tasks 
-              onTaskSelect={handleTaskSelect}  
-              tasks={allTasks}
-            />
-          </div>
+      <div className="flex space-x-8">
+        <div className="bg-white rounded-lg shadow-lg p-6 w-64">
+          <Tasks
+            onTaskSelect={handleTaskSelect}
+            tasks={allTasks}
+            resettimerPOMOPADRE={handleResetTimer}
+          />
         </div>
-        {isloading ? (<div>Loading...</div>) : (
+      </div>
+      {isloading ? (<div>Loading...</div>) : (
         <div className={`rounded-lg shadow-lg p-20 ${intervalId ? 'bg-red-400' : 'bg-white'}`}>
           <h1 class="text-3xl font-bold mb-2 text-center">
             Timer
@@ -281,106 +322,106 @@ function Timer() {
           <div className="flex justify-center space-x-4 mt-8">
             <h6>#{numberpomodoro}</h6>
           </div>
-          <div className="flex justify-center space-x-4 mt-8">
-            <h6><button className="bg-black" onClick={togglePopup}><img src={settingico} alt="" /></button></h6>
-          </div>
         </div>
-        )}
-        {isPopupVisible && (
-          <div className="bg-gray-100 flex items-center justify-center h-screen">
-            <div className="rounded-lg shadow-lg p-20 bg-white">
-              <h1 className="text-3xl font-bold mb-2 text-center">Settings</h1>
-              <div className="flex justify-center space-x-4 mt-8">
-                <form onSubmit={handleSubmit}>
-                  <div className="flex justify-center space-x-4 mt-8">
-                    <label>
-                      Task Name:
-                      <input
-                        className="ml-2"
-                        type="text"
-                        value={taskname}
-                        onChange={(e) => setTaskName(e.target.value)}
-                        placeholder="nome della task"
-                      />
-                    </label>
-                  </div>
-                  <div className="flex justify-center space-x-4 mt-8">
-                    <label>
-                      Work time:
-                      <input
-                        className="ml-2"
-                        type="number"
-                        value={workTime / 60}
-                        onChange={worktimehandler}
-                        min={0}
-                      />
-                    </label>
-                  </div>
-                  <div className="flex justify-center space-x-4 mt-8">
-                    <label>
-                      Short break time:
-                      <input
-                        className="ml-2"
-                        type="number"
-                        value={shortBreakTime / 60}
-                        onChange={shorttimehandler}
-                        min={0}
-                      />
-                    </label>
-                  </div>
-                  <div className="flex justify-center space-x-4 mt-8">
-                    <label>
-                      Long break time:
-                      <input
-                        className="ml-2"
-                        type="number"
-                        value={longBreakTime / 60}
-                        onChange={longtimehandler}
-                        min={0}
-                      />
-                    </label>
-                  </div>
-                  <div className="flex justify-center space-x-4 mt-8">
-                    <label>
-                      Long break interval:
-                      <input
-                        className="ml-2"
-                        type="number"
-                        value={longBreakInterval}
-                        onChange={longbreakintervalhandler}
-                        min={0}
-                      />
-                    </label>
-                  </div>
-                  <div className="flex justify-center space-x-4 mt-8">
-                    <label>
-                      Total study time:
-                      <input
-                        className="ml-2"
-                        type="number"
-                        value={TotalStudyTime / 60}
-                        onChange={TotalStudyTimeHandler}
-                        min={0}
-                        step={workTime / 60}
-                      />
-                    </label>
-                  </div>
-                  <div className="flex justify-center space-x-4 mt-8">
-                    <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                      onClick={handleSave}>
-                      Save New
-                    </button>
-                    <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                      onClick={handleUpdate}>
-                      Update
-                    </button>
-                  </div>
-                </form>
-              </div>
+      )}
+      <div className="flex justify-center space-x-4 mt-8">
+        <h6><button className="bg-black" onClick={togglePopup}><img src={settingico} alt="" /></button></h6>
+      </div>
+      {isPopupVisible && (
+        <div className="bg-gray-100 flex items-center justify-center h-screen">
+          <div className="rounded-lg shadow-lg p-20 bg-white">
+            <h1 className="text-3xl font-bold mb-2 text-center">Settings</h1>
+            <div className="flex justify-center space-x-4 mt-8">
+              <form onSubmit={handleSubmit}>
+                <div className="flex justify-center space-x-4 mt-8">
+                  <label>
+                    Task Name:
+                    <input
+                      className="ml-2"
+                      type="text"
+                      value={taskname}
+                      onChange={(e) => setTaskName(e.target.value)}
+                      placeholder="nome della task"
+                    />
+                  </label>
+                </div>
+                <div className="flex justify-center space-x-4 mt-8">
+                  <label>
+                    Work time:
+                    <input
+                      className="ml-2"
+                      type="number"
+                      value={workTime / 60}
+                      onChange={worktimehandler}
+                      min={0}
+                    />
+                  </label>
+                </div>
+                <div className="flex justify-center space-x-4 mt-8">
+                  <label>
+                    Short break time:
+                    <input
+                      className="ml-2"
+                      type="number"
+                      value={shortBreakTime / 60}
+                      onChange={shorttimehandler}
+                      min={0}
+                    />
+                  </label>
+                </div>
+                <div className="flex justify-center space-x-4 mt-8">
+                  <label>
+                    Long break time:
+                    <input
+                      className="ml-2"
+                      type="number"
+                      value={longBreakTime / 60}
+                      onChange={longtimehandler}
+                      min={0}
+                    />
+                  </label>
+                </div>
+                <div className="flex justify-center space-x-4 mt-8">
+                  <label>
+                    Long break interval:
+                    <input
+                      className="ml-2"
+                      type="number"
+                      value={longBreakInterval}
+                      onChange={longbreakintervalhandler}
+                      min={0}
+                    />
+                  </label>
+                </div>
+                <div className="flex justify-center space-x-4 mt-8">
+                  <label>
+                    Total study time:
+                    <input
+                      className="ml-2"
+                      type="number"
+                      value={TotalStudyTime / 60}
+                      onChange={TotalStudyTimeHandler}
+                      min={0}
+                      step={workTime / 60}
+                    />
+                  </label>
+                </div>
+                <div className="flex justify-center space-x-4 mt-8">
+                  <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                    onClick={handleSave}>
+                    Save New
+                  </button>
+                  <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                    onClick={handleUpdate}>
+                    Update
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
-        )}
-      </div>
-    );
-  } 
+        </div>
+      )}
+    </div>
+  );
+}
 export default Timer;

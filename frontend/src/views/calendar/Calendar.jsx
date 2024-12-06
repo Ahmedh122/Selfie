@@ -524,10 +524,12 @@ function Calendar() {
       PomoTime += offset;
       setPomTimehrs(String(Math.floor(PomoTime / 60)).padStart(2, "0"));
       setPomTimemin(String(PomoTime % 60).padStart(2, "0"));
-    } else if (PomoTime + offset > maxPomoTime) {
-      setPomTimehrs(String(maxPomTimehrs).padStart(2, "0"));
-      setPomTimemin(String(maxPomTimemin).padStart(2, "0"));
-    } else if (PomoTime + offset < 0) {
+    }
+    /*else if(PomoTime + offset >maxPomoTime){
+      setPomTimehrs(String(maxPomTimehrs).padStart(2,"0"));
+      setPomTimemin(String(maxPomTimemin).padStart(2,"0"));
+    }*/
+    else if(PomoTime + offset<0){
       setPomTimehrs("00");
       setPomTimemin("00");
     }

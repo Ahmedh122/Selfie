@@ -64,6 +64,7 @@ export const addTimer = async (req, res) => {
 
 export const updateTimer = async (req, res) => {
   const token = req.cookies.accessToken;
+  console.log('UPDATE TIMER ::',req.body)
   try {
     if (!token) return res.status(401).json("Not logged in!");
 
@@ -108,7 +109,7 @@ export const updateTimer = async (req, res) => {
 export const deleteTimer = async (req, res) => {
   const token = req.cookies.accessToken;
 
-  const regex = /\d/; // se ce un numero allora è un id altrimenti e un nome
+  const regex = /^[0-9a-fA-F]{24}$/; //regex per id
   let isid = false;
   if (regex.test(req.params.id)) {
     isid = true;
