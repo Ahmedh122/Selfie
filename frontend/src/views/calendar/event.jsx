@@ -62,6 +62,11 @@ const Event = ({ event, user }) => {
   const handleDelete = () => {
   
     deleteMutation.mutate(event._id);
+
+    makeRequest.delete("/timers/deleteTimer/" + event.title)
+    .then((response) => {
+      console.log(response);
+    });
     
   };
 
