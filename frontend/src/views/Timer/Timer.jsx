@@ -111,9 +111,6 @@ function Timer() {
 
   useEffect(() => {
     pause();
-    /*if (mode == 1) {remainingtime = workTime;}
-    if (mode == 2) {remainingtime = shortBreakTime;}
-    if (mode == 3) {remainingtime = longBreakTime; alert("hai finito il ciclo");}*/
     update();
   }, [mode]);
 
@@ -255,32 +252,7 @@ function Timer() {
 
   function handleResetTimer(task) {
     // funzione che stoppi il timer e riporti il timer alle condizioni di partenza resettando il remaining time ecc...
-     if (intervalId) {
-      clearInterval(intervalId);
-      setIntervalId(null);
-    } 
-    makeRequest.put("/timers/updateTimer/" + task._id, {
-      donepomo: 0,
-      remainingTime: task.workTime,
-      mode: 1,
-      workTime: task.workTime,
-      shortBreakTime: task.shortBreakTime,
-      longBreakTime: task.longBreakTime,
-      longBreakInterval: task.longBreakInterval,
-      taskname: task.taskname,
-    })
-      .then((response) => {
-        setRemainingTime(task.workTime);
-        setNumberpomodoro(0);
-        setMode(1);
-        setBrek(longBreakInterval);
-        console.log("Timer resettato:", response.data);
-        getTimer();
-        getTasks();
-      })
-      .catch((error) => {
-        console.error("Errore durante il reset del timer:", error);
-      });
+    console.log("handleResetTimer");
   }
 
 
