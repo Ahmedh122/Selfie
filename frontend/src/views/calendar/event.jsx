@@ -1,16 +1,14 @@
-import React, { useContext } from 'react'
-import { AuthContext } from '../../context/authcontext';
-import { useMutation, useQueryClient } from 'react-query';
-import { makeRequest } from '../../axios';
-import { useNavigate } from 'react-router-dom';
+import React, { useContext } from "react";
 
+import { useMutation, useQueryClient } from "react-query";
+import { makeRequest } from "../../axios";
+import { useNavigate } from "react-router-dom";
 
 const Event = ({ event, user }) => {
   const queryClient = useQueryClient();
 
-  const navigate = useNavigate(); 
-  const { curretUser } = useContext(AuthContext);
-
+  const navigate = useNavigate();
+ 
 
   const deleteMutation = useMutation(
     (eventId) => {
@@ -22,10 +20,10 @@ const Event = ({ event, user }) => {
       },
     }
   );
-  const formattedStartDate = new Date(event.eventStart).toLocaleDateString("en-GB");
-  const formattedEndDate = new Date(event.eventEnd).toLocaleDateString(
+  const formattedStartDate = new Date(event.eventStart).toLocaleDateString(
     "en-GB"
   );
+  const formattedEndDate = new Date(event.eventEnd).toLocaleDateString("en-GB");
   const formatTimeUTC = (dateString) => {
     const date = new Date(dateString);
     const hours = date.getUTCHours().toString().padStart(2, "0");
@@ -42,23 +40,30 @@ const Event = ({ event, user }) => {
   };
 
   function addTimer() {
-      makeRequest.post("/timers/addTimer", {
+    makeRequest
+      .post("/timers/addTimer", {
         donepomo: 0,
         remainingTime: 1500,
         mode: 1,
         workTime: 1500,
         shortBreakTime: 300,
         longBreakTime: 900,
-        longBreakInterval: ((event.pomodoroHours * 60 * 60) + event.pomodoroMinutes * 60) / 1500,
+        longBreakInterval:
+          (event.pomodoroHours * 60 * 60 + event.pomodoroMinutes * 60) / 1500,
         taskname: event.title,
-        eventId: event._id
+        eventId: event._id,
       })
       .then((response) => {
         console.log(response.data);
         navigate(`/timer/${event.userId}`);
-      })
+      });
   }
 
+  const handleDelete = () => {
+  
+    deleteMutation.mutate(event._id);
+    
+  };
 
   return (
     <div className="flex flex-col w-[70%] h-min event bg-[#151518] mb-2 rounded-xl p-4">
@@ -81,14 +86,16 @@ const Event = ({ event, user }) => {
         <div className="ml-2 text-slate-300">at</div>
         <div className="ml-2 text-white">{startTime}</div>
       </div>
-      <div className='end-date flex flex-row'>
-        <div className='ml-5 text-red-300'>End:</div>
-        <div className='ml-3 text-white'>{formattedEndDate}</div>
-        <div className='ml-2 text-slate-300'>at</div>
-        <div className='ml-2 text-white'>{endTime}</div>
+      <div className="end-date flex flex-row">
+        <div className="ml-5 text-red-300">End:</div>
+        <div className="ml-3 text-white">{formattedEndDate}</div>
+        <div className="ml-2 text-slate-300">at</div>
+        <div className="ml-2 text-white">{endTime}</div>
       </div>
+      <button className="bg-blue-600 rounded-xl w-[30%] mr-5 "
+      onClick={handleDelete}> delete</button>
     </div>
   );
-}
+};
 
-export default Event
+export default Event;

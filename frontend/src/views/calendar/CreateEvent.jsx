@@ -4,10 +4,11 @@ import { makeRequest } from "../../axios";
 
 function CreateEvent({
   selecteddate,
-  currentdate,
   eventType,
   setEventType,
   setPopupEventOpen,
+  displayYear, 
+  displayMonth
 }) {
   const queryClient = useQueryClient();
 
@@ -197,6 +198,8 @@ function CreateEvent({
         personalizedDatesArray: pDatesArray,
         fotm,
         eotm,
+        displayMonth, 
+        displayYear
       });
       queryClient.invalidateQueries(["events"]);
       queryClient.invalidateQueries(["eventDays"]);

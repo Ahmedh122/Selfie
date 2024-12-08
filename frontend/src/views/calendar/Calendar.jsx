@@ -900,6 +900,8 @@ function Calendar() {
                   setEventType={setEventType}
                   currentdate={currentDate}
                   setPopupEventOpen={setPopupEventOpen}
+                  displayYear={displayYear}
+                  displayMonth={displayMonth}
                 />
               )}
               {eventType === "activity" && (

@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import Event from "../models/event.js";
+import EventDays from "../models/eventDays.js";
 //import Relationship from "../models/relationship.js";
 import Subscription from "../models/subscription.js";
 
@@ -119,6 +120,31 @@ export const getAllEvents = async (req, res) => {
   }
 };
 
+async function addEventDays(eventStart, eventEnd) {
+  let currentDate = new Date(eventStart);
+  const endDate = new Date(eventEnd);
+
+  while (currentDate <= endDate) {
+    // Extract current month and year
+    const currentMonth = currentDate.getMonth();
+    const currentYear = currentDate.getFullYear();
+
+    // Collect all days for the current month
+    const days = [];
+    while (currentDate.getMonth() === currentMonth && currentDate <= endDate) {
+      days.push(currentDate.getDate());
+      currentDate.setDate(currentDate.getDate() + 1); // Increment day
+    }
+
+    // Update the database
+    await EventDays.findOneAndUpdate(
+      { month: currentMonth, year: currentYear },
+      { $addToSet: { days: { $each: days } } }, // Add unique days to the array
+      { upsert: true } // Create document if it doesn't exist
+    );
+  }
+}
+
 export const addEvent = async (req, res) => {
   const token = req.cookies.accessToken;
   //console.log(req.body);
@@ -152,7 +178,8 @@ export const addEvent = async (req, res) => {
         59,
         999
       );
-      let eventDuration = (new Date(eventEnd) - new Date (eventStart)) / (1000 * 60 * 60 * 24);
+      let eventDuration =
+        (new Date(eventEnd) - new Date(eventStart)) / (1000 * 60 * 60 * 24);
 
       if (personalizedDays.length > 0) {
         for (let day of personalizedDays) {
@@ -166,14 +193,14 @@ export const addEvent = async (req, res) => {
           ) {
             currentStart.setDate(currentStart.getDate() + 1);
           }
-          currentEnd.setDate(currentStart.getDate()+ eventDuration);
-        
+          currentEnd.setDate(currentStart.getDate() + eventDuration);
+
           while (currentStart <= endFrequenzaDate) {
             if (!personalizedDates) {
               events.push(
                 new Event({
                   title: title,
-                  userId: userInfo.id,  
+                  userId: userInfo.id,
                   eventStart: new Date(currentStart),
                   eventEnd: new Date(currentEnd),
                   description: req.body.description,
@@ -182,7 +209,7 @@ export const addEvent = async (req, res) => {
                   pomodoroHours: req.body.PomodoroHours,
                   pomodoroMinutes: req.body.PomodoroMinutes,
                 })
-              );
+              ); addEventDays(currentStart, currentEnd);
             } else if (
               personalizedDatesArray.includes(
                 currentStart.toISOString().split("T")[0]
@@ -200,7 +227,7 @@ export const addEvent = async (req, res) => {
                   pomodoroHours: req.body.PomodoroHours,
                   pomodoroMinutes: req.body.PomodoroMinutes,
                 })
-              );
+              ); addEventDays(currentStart, currentEnd);
             }
 
             // Increment to the next week
@@ -224,7 +251,7 @@ export const addEvent = async (req, res) => {
             pomodoroHours: req.body.PomodoroHours,
             pomodoroMinutes: req.body.PomodoroMinutes,
           })
-        );
+        ); addEventDays(currentStart, currentEnd);
 
         while (currentStart <= endFrequenzaDate) {
           for (let date of personalizedDatesArray) {
@@ -248,7 +275,7 @@ export const addEvent = async (req, res) => {
                     pomodoroHours: req.body.PomodoroHours,
                     pomodoroMinutes: req.body.PomodoroMinutes,
                   })
-                );
+                ); addEventDays(eventDateStart, eventDateEnd);
               }
             }
           }
@@ -288,7 +315,7 @@ export const addEvent = async (req, res) => {
                     pomodoroHours: req.body.PomodoroHours,
                     pomodoroMinutes: req.body.PomodoroMinutes,
                   })
-                );
+                );addEventDays(currentStart, currentEnd);
               }
             }
           }
@@ -318,7 +345,7 @@ export const addEvent = async (req, res) => {
                     pomodoroHours: req.body.PomodoroHours,
                     pomodoroMinutes: req.body.PomodoroMinutes,
                   })
-                );
+                );addEventDays(currentStart, currentEnd);
               }
             }
           }
@@ -342,7 +369,9 @@ export const addEvent = async (req, res) => {
           pomodoroHours: req.body.PomodoroHours,
           pomodoroMinutes: req.body.PomodoroMinutes,
         })
+        
       );
+      addEventDays(eventStart, eventEnd);;
     } else if (frequenza !== "Personalize") {
       let currentStart = new Date(eventStart);
       let currentEnd = new Date(eventEnd);
@@ -362,7 +391,8 @@ export const addEvent = async (req, res) => {
             pomodoroHours: req.body.PomodoroHours,
             pomodoroMinutes: req.body.PomodoroMinutes,
           })
-        );
+        )
+        addEventDays(currentStart, currentEnd);
         switch (frequenza) {
           case "Every day":
             currentStart.setDate(currentStart.getDate() + 1);
@@ -409,12 +439,12 @@ export const deleteEvent = async (req, res) => {
 
     const userInfo = jwt.verify(token, "secretkey");
 
-    const deletedPost = await Post.findOneAndDelete({
+    const deletedEvent = await Event.findOneAndDelete({
       _id: req.params.id,
       userId: userInfo.id,
     });
 
-    if (deletedPost) {
+    if (deletedEvent) {
       return res.status(200).json("Post has been deleted.");
     } else {
       return res.status(403).json("You can delete only your post.");
