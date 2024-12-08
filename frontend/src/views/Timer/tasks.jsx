@@ -6,25 +6,6 @@ import { AuthContext } from "../../context/authcontext";
 
 function Tasks({ onTaskSelect , tasks , resettimerPOMOPADRE }) {
   const { user } = useContext(AuthContext);
-  //const [tasks, setTasks] = useState([]);
-
-  /*function getTasks() {
-    makeRequest.get("/timers/getTimer/0").then((response) => {
-      response.data.forEach(element => {
-        setTasks(prevTasks => {
-          if (!prevTasks.some(t => t._id === element._id)) {
-            return [...prevTasks, element];
-          }
-          return prevTasks;
-        });
-      });
-    });
-  }*/
-
-  /*useEffect(() => {
-    getTasks();
-    console.log("Tasks:", tasks);
-  }, [tasks]);*/
 
   function handleTaskClick(task) {
     console.log("Task clicked:", task.taskname);
@@ -35,11 +16,23 @@ function Tasks({ onTaskSelect , tasks , resettimerPOMOPADRE }) {
     makeRequest.delete('/timers/deleteTimer/'+task.taskname)
     .then((response) => {
       console.log(response);
-      //setTasks(prevTasks => prevTasks.filter(t => t._id !== task._id));
     });
   }  
 
   function handleReset(task) {
+    makeRequest.put("/timers/updateTimer/" + task._id, {
+      donepomo: 0,
+      remainingTime: task.workTime,
+      mode: 1,
+      workTime: task.workTime,
+      shortBreakTime: task.shortBreakTime,
+      longBreakTime: task.longBreakTime,
+      longBreakInterval: task.longBreakInterval,
+      taskname: task.taskname,
+    })
+      .then((response) => {
+        console.log(response.data);
+      })
     resettimerPOMOPADRE(task);
   }
 
