@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import settingico from "../../assets/icon-settings.svg";
 import { makeRequest } from "../../axios";
 import Tasks from "./tasks";
+import YouTube from 'react-youtube';
 
 function Timer() {
 
@@ -293,6 +294,14 @@ function Timer() {
           </div>
           <div className="flex justify-center space-x-4 mt-8">
             <h6>#{numberpomodoro}</h6>
+          </div>
+          <div>
+            <YouTube 
+              videoId="jfKfPfyJRdk" 
+              opts={{ height: '220', width: '390', playerVars: { autoplay: 1 } }} 
+              
+            />
+
           </div>
         </div>
       )}
