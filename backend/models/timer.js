@@ -11,6 +11,7 @@ const timerSchema = new mongoose.Schema({
   longBreakInterval : { type: Number, required: true }, // intervallo tra le pause lunghe
   taskname : { type: String, required: true }, // nome della task associata al timer (deve essere univoco?)
   eventId : { type: String, required: false}, // id dell'evento associato al timer se presente deve essere univoco
+  lastModifiedDate : { type: Date, default: Date.now , required: true }, // data e ora dell'ultima modifica
 });
 
 const Timer = mongoose.model("Timer", timerSchema);
