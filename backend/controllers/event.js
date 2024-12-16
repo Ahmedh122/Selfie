@@ -79,7 +79,7 @@ export const getEvents = async (req, res) => {
   }
 };
 
-
+// DA RINOMINARE, PRENDE TUTTI GLI EVENTI CHE CI SONO NEL MESE (PER FARE I NUMERI VERDI)
 export const getAllEvents = async (req, res) => {
   const { month, year } = req.params;
   const token = req.cookies.accessToken;

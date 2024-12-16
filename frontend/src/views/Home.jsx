@@ -39,7 +39,7 @@
     function getweekEvent() {
       makeRequest.get("/events/getEvents/")
         .then((response) => {
-          console.log(response.data)
+          console.log(response)
           if (response.data && response.data.length > 0) {
             const today = new Date();
             const endOfWeek = new Date();
@@ -83,7 +83,7 @@
     function handleEventclick() {
       console.log("Event clicked")
       // manda alla vista event
-      console.log(events)
+      getweekEvent()
     }
 
     return (
