@@ -8,7 +8,19 @@ function CreateEvent({
   setEventType,
   setPopupEventOpen,
   displayYear, 
-  displayMonth
+  displayMonth,
+  selectedDateEventStart,
+  selectedDateEventEnd,
+  displayMonthEventStart,
+  displayMonthEventEnd,
+  setSelectedDateEventStart,
+  setSelectedDateEventEnd,
+  setDisplayMonthEventStart,
+  setDisplayMonthEventEnd,
+  displayYearEventStart,
+  displayYearEventEnd,
+  setDisplayYearEventStart,
+  setDisplayYearEventEnd
 }) {
   const queryClient = useQueryClient();
 
@@ -53,21 +65,7 @@ function CreateEvent({
   const [PomTimemin, setPomTimemin] = useState("00");
   const [maxPomTimehrs, setMaxPomTimehrs] = useState(0);
   const [maxPomTimemin, setMaxPomTimemin] = useState(0);
-  const [displayMonthEventStart, setDisplayMonthEventStart] = useState(
-    currentDate.getMonth()
-  );
-  const [displayYearEventStart, setDisplayYearEventStart] = useState(
-    currentDate.getFullYear()
-  );
-  const [selectedDateEventStart, setSelectedDateEventStart] =
-    useState(currentDate);
-  const [displayMonthEventEnd, setDisplayMonthEventEnd] = useState(
-    currentDate.getMonth()
-  );
-  const [displayYearEventEnd, setDisplayYearEventEnd] = useState(
-    currentDate.getFullYear()
-  );
-  const [selectedDateEventEnd, setSelectedDateEventEnd] = useState(currentDate);
+
   const [isEventDateStartManuallySet, setIsEventDateStartManuallySet] =
     useState(false);
   const [isEventDateEndManuallySet, setIsEventDateEndManuallySet] =
@@ -170,15 +168,21 @@ function CreateEvent({
   const SubmitEvent = async (e) => {
     e.preventDefault();
     try {
-      const formattedStartDate = new Date(selectedDateEventStart);
-      const formattedEndDate = new Date(selectedDateEventEnd);
-      formattedStartDate.setUTCHours(hoursStart);
-      formattedStartDate.setUTCMinutes(minutesStart);
-      formattedEndDate.setUTCHours(hoursEnd);
-      formattedEndDate.setUTCMinutes(minutesEnd);
+    const formattedStartDate = new Date(selectedDateEventStart);
+    const formattedEndDate = new Date(selectedDateEventEnd);
 
-      const startISO = formattedStartDate.toISOString();
-      const endISO = formattedEndDate.toISOString();
+   
+    formattedStartDate.setUTCHours(hoursStart);
+    formattedStartDate.setUTCMinutes(minutesStart);
+    formattedEndDate.setUTCHours(hoursEnd);
+    formattedEndDate.setUTCMinutes(minutesEnd);
+
+    const startISO = formattedStartDate.toISOString();
+    const endISO = formattedEndDate.toISOString();
+
+   
+   
+      
       const PomodoroHours = parseInt(PomTimehrs, 10);
       const PomodoroMinutes = parseInt(PomTimemin, 10);
 
@@ -201,7 +205,7 @@ function CreateEvent({
         displayMonth, 
         displayYear
       });
-      queryClient.invalidateQueries(["events"]);
+      queryClient.invalidateQueries(["events"], { refetchActive: true });
       queryClient.invalidateQueries(["eventDays"]);
       setEndEventDateopen(false);
       setStartEventDateopen(false);
@@ -298,20 +302,27 @@ function CreateEvent({
     1
   ).getDay();
 
-  useEffect(() => {
-    if (!isEventDateStartManuallySet && selectedDate !== null) {
-      if (selectedDate && selectedDateEventStart !== selectedDate) {
-        setSelectedDateEventStart(selectedDate);
-      } else if (!selectedDate && selectedDateEventStart !== currentDate) {
-        setSelectedDateEventStart(currentDate);
-      }
+useEffect(() => {
+  if (!isEventDateStartManuallySet && selectedDate !== null) {
+    if (
+      selectedDate &&
+      selectedDateEventStart?.toISOString() !== selectedDate.toISOString()
+    ) {
+      setSelectedDateEventStart(selectedDate);
+    } else if (
+      !selectedDate &&
+      selectedDateEventStart?.toISOString() !== currentDate.toISOString()
+    ) {
+      setSelectedDateEventStart(currentDate);
     }
-  }, [
-    selectedDate,
-    currentDate,
-    isEventDateStartManuallySet,
-    selectedDateEventStart,
-  ]);
+  }
+}, [
+  selectedDate,
+  currentDate,
+  isEventDateStartManuallySet,
+  selectedDateEventStart,
+]);
+
 
   const handleDateClickEventStart = (day) => {
     const selectedDateUTC = new Date(
@@ -321,11 +332,11 @@ function CreateEvent({
     setIsEventDateStartManuallySet(true);
   };
 
-  useEffect(() => {
-    if (selectedDateEventEnd < selectedDateEventStart) {
-      setSelectedDateEventEnd(selectedDateEventStart);
-    }
-  }, [selectedDateEventStart, selectedDateEventEnd]);
+ useEffect(() => {
+   if (selectedDateEventEnd < selectedDateEventStart) {
+     setSelectedDateEventEnd(selectedDateEventStart);
+   }
+ }, [selectedDateEventStart, selectedDateEventEnd]);
 
   useEffect(() => {
     if (
@@ -352,6 +363,7 @@ function CreateEvent({
     selectedDateEventEnd,
     selectedDateEventStart,
     isEventDateStartManuallySet,
+    setSelectedDateEventEnd
   ]);
 
   const handleDateClickEventEnd = (day) => {
@@ -390,14 +402,16 @@ function CreateEvent({
       const TimeDifference = endDateTime - startDateTime;
 
       if (TimeDifference > 0) {
-        const hours = Math.floor(TimeDifference / (1000 * 60 * 60));
-        const minutes = Math.floor(
+        const newHours = Math.floor(TimeDifference / (1000 * 60 * 60));
+        const newMinutes = Math.floor(
           (TimeDifference % (1000 * 60 * 60)) / (1000 * 60)
         );
 
-        setMaxPomTimehrs(hours);
-        setMaxPomTimemin(minutes);
-      } else {
+        if (newHours !== maxPomTimehrs || newMinutes !== maxPomTimemin) {
+          setMaxPomTimehrs(newHours);
+          setMaxPomTimemin(newMinutes);
+        }
+      } else if (maxPomTimehrs !== 0 || maxPomTimemin !== 0) {
         setMaxPomTimehrs(0);
         setMaxPomTimemin(0);
       }
@@ -409,7 +423,10 @@ function CreateEvent({
     selectedDateEventEnd,
     hoursEnd,
     minutesEnd,
+    maxPomTimehrs,
+    maxPomTimemin,
   ]);
+
 
   useEffect(() => {
     const totlalpommin =
@@ -421,15 +438,7 @@ function CreateEvent({
     }
   }, [PomTimehrs, PomTimemin, maxPomTimehrs, maxPomTimemin]);
 
-  useEffect(() => {
-    console.log({
-      frequenza,
-      pDays,
-      pDates,
-      pDatesArray,
-      endFrequenzaDate: new Date(endFreqDate),
-    });
-  }, [pDates, pDatesArray, pDays, endFreqDate, frequenza]);
+
 
   return (
     <form className="flex flex-col gap-4 absolute w-full h-full px-8 top-[20%]">
@@ -880,7 +889,7 @@ function CreateEvent({
                 id="start"
                 name="trip-start"
                 value={endFreqDate}
-                min="2024-11-01"
+                min="1900-01-01"
                 max="2038-12-31"
                 onChange={(e) => setEndFreqDate(e.target.value)}
               />

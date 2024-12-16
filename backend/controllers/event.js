@@ -79,71 +79,107 @@ export const getEvents = async (req, res) => {
   }
 };
 
-function getDatesBetween(startDate, endDate) {
-  const dates = [];
-  const currentDate = new Date(startDate);
 
-  while (currentDate.getDate() <= endDate.getDate()) {
-    dates.push(new Date(currentDate)); // Add a copy of the date
-    currentDate.setDate(currentDate.getDate() + 1); // Move to the next day
-  }
-
-  return dates;
-}
 export const getAllEvents = async (req, res) => {
+  const { month, year } = req.params;
   const token = req.cookies.accessToken;
 
-  if (!token) return res.status(401).json("Not logged in!");
-
   try {
+    if (!token) {
+      return res.status(401).json("Not logged in!");
+    }
+
     const userInfo = jwt.verify(token, "secretkey");
     const userId = userInfo.id;
 
-    // Fetch all events for the user, sorted by creation date
-    const events = await Event.find({ userId: userId });
-    const allEventDays = new Set(); // Using a Set to keep dates unique
+    const eventDays = await EventDays.findOne({
+      userId,
+      month: parseInt(month),
+      year: parseInt(year),
+    }).exec();
 
-    events.forEach((event) => {
-      const eventDays = getDatesBetween(event.eventStart, event.eventEnd);
-      eventDays.forEach((day) => {
-        // Push only the date part without time for comparison purposes
-        allEventDays.add(day.toISOString().split("T")[0]);
-      });
+    if (!eventDays) {
+      return res.json([]);
+    }
+
+    // Create the list of event dates in "DD-MM-YYYY" format
+    const eventDates = eventDays.days.map((event) => {
+      return `${String(event.day).padStart(2, "0")}-${String(month).padStart(
+        2,
+        "0"
+      )}-${String(year)}`;
     });
-    console.log(Array.from(allEventDays));
 
-    // Convert the Set to an array, each date in ISO string format (yyyy-mm-dd)
-    return res.json(Array.from(allEventDays));
+    // Send the event dates as a response
+    return res.json(eventDates);
   } catch (error) {
     console.error(error);
     return res.status(500).json(error.message || "Internal Server Error");
   }
 };
 
-async function addEventDays(eventStart, eventEnd) {
+
+
+async function addEventDays(userId, eventStart, eventEnd) {
   let currentDate = new Date(eventStart);
   const endDate = new Date(eventEnd);
 
   while (currentDate <= endDate) {
-    // Extract current month and year
     const currentMonth = currentDate.getMonth();
     const currentYear = currentDate.getFullYear();
 
-    // Collect all days for the current month
-    const days = [];
+    const daysMatrix = {};
     while (currentDate.getMonth() === currentMonth && currentDate <= endDate) {
-      days.push(currentDate.getDate());
-      currentDate.setDate(currentDate.getDate() + 1); // Increment day
+      const day = currentDate.getDate();
+
+      const existingEntry = await EventDays.findOne({
+        userId: userId,
+        month: currentMonth,
+        year: currentYear,
+        "days.day": day,
+      });
+
+      const eventCount = existingEntry
+        ? existingEntry.days.find((d) => d.day === day)?.count || 0
+        : 0;
+
+      daysMatrix[day] = eventCount + 1;
+
+      currentDate.setDate(currentDate.getDate() + 1);
     }
 
-    // Update the database
-    await EventDays.findOneAndUpdate(
-      { month: currentMonth, year: currentYear },
-      { $addToSet: { days: { $each: days } } }, // Add unique days to the array
-      { upsert: true } // Create document if it doesn't exist
-    );
+    // Iterate over the daysMatrix to update each day
+    for (const [day, count] of Object.entries(daysMatrix)) {
+      const dayInt = parseInt(day);
+
+      // First, try to update the count if the day exists
+      const updateResult = await EventDays.updateOne(
+        {
+          userId: userId,
+          month: currentMonth,
+          year: currentYear,
+          "days.day": dayInt,
+        },
+        { $set: { "days.$.count": count } }
+      );
+
+      // If no document was updated, add the new day
+      if (updateResult.modifiedCount === 0) {
+        await EventDays.updateOne(
+          { userId: userId, month: currentMonth, year: currentYear },
+          {
+            $addToSet: {
+              days: { day: dayInt, count },
+            },
+          },
+          { upsert: true }
+        );
+      }
+    }
   }
 }
+
+
 
 export const addEvent = async (req, res) => {
   const token = req.cookies.accessToken;
@@ -209,7 +245,8 @@ export const addEvent = async (req, res) => {
                   pomodoroHours: req.body.PomodoroHours,
                   pomodoroMinutes: req.body.PomodoroMinutes,
                 })
-              ); addEventDays(currentStart, currentEnd);
+              );
+              addEventDays(userInfo.id, currentStart, currentEnd);
             } else if (
               personalizedDatesArray.includes(
                 currentStart.toISOString().split("T")[0]
@@ -227,7 +264,8 @@ export const addEvent = async (req, res) => {
                   pomodoroHours: req.body.PomodoroHours,
                   pomodoroMinutes: req.body.PomodoroMinutes,
                 })
-              ); addEventDays(currentStart, currentEnd);
+              );
+              addEventDays(userInfo.id, currentStart, currentEnd);
             }
 
             // Increment to the next week
@@ -251,7 +289,8 @@ export const addEvent = async (req, res) => {
             pomodoroHours: req.body.PomodoroHours,
             pomodoroMinutes: req.body.PomodoroMinutes,
           })
-        ); addEventDays(currentStart, currentEnd);
+        );
+        addEventDays(userInfo.id, currentStart, currentEnd);
 
         while (currentStart <= endFrequenzaDate) {
           for (let date of personalizedDatesArray) {
@@ -275,7 +314,8 @@ export const addEvent = async (req, res) => {
                     pomodoroHours: req.body.PomodoroHours,
                     pomodoroMinutes: req.body.PomodoroMinutes,
                   })
-                ); addEventDays(eventDateStart, eventDateEnd);
+                );
+                addEventDays(userInfo.id, eventDateStart, eventDateEnd);
               }
             }
           }
@@ -315,7 +355,8 @@ export const addEvent = async (req, res) => {
                     pomodoroHours: req.body.PomodoroHours,
                     pomodoroMinutes: req.body.PomodoroMinutes,
                   })
-                );addEventDays(currentStart, currentEnd);
+                );
+                addEventDays(userInfo.id, currentStart, currentEnd);
               }
             }
           }
@@ -345,7 +386,8 @@ export const addEvent = async (req, res) => {
                     pomodoroHours: req.body.PomodoroHours,
                     pomodoroMinutes: req.body.PomodoroMinutes,
                   })
-                );addEventDays(currentStart, currentEnd);
+                );
+                addEventDays(userInfo.id, currentStart, currentEnd);
               }
             }
           }
@@ -369,9 +411,8 @@ export const addEvent = async (req, res) => {
           pomodoroHours: req.body.PomodoroHours,
           pomodoroMinutes: req.body.PomodoroMinutes,
         })
-        
       );
-      addEventDays(eventStart, eventEnd);;
+      addEventDays(userInfo.id, eventStart, eventEnd);
     } else if (frequenza !== "Personalize") {
       let currentStart = new Date(eventStart);
       let currentEnd = new Date(eventEnd);
@@ -391,8 +432,8 @@ export const addEvent = async (req, res) => {
             pomodoroHours: req.body.PomodoroHours,
             pomodoroMinutes: req.body.PomodoroMinutes,
           })
-        )
-        addEventDays(currentStart, currentEnd);
+        );
+        addEventDays(userInfo.id, currentStart, currentEnd);
         switch (frequenza) {
           case "Every day":
             currentStart.setDate(currentStart.getDate() + 1);
@@ -439,35 +480,58 @@ export const deleteEvent = async (req, res) => {
 
     const userInfo = jwt.verify(token, "secretkey");
 
-    const deletedEvent = await Event.findOneAndDelete({
+    const eventToDelete = await Event.findOneAndDelete({
       _id: req.params.id,
       userId: userInfo.id,
     });
 
-    if (deletedEvent) {
-      return res.status(200).json("Post has been deleted.");
-    } else {
-      return res.status(403).json("You can delete only your post.");
+    if (!eventToDelete) {
+      return res.status(404).json("Event not found.");
     }
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json(error.message || "Internal Server Error");
-  }
-};
 
-export const getPublicPosts = async (req, res) => {
-  try {
-    const posts = await Post.find({ public: true })
-      .sort({ createdAt: -1 })
-      .populate({
-        path: "userId",
-        model: "User",
-        select: "username profilePic",
+    const { eventStart, eventEnd } = eventToDelete;
+    let currentDate = new Date(eventStart);
+    const endDate = new Date(eventEnd);
+
+    while (currentDate <= endDate) {
+      const currentMonth = currentDate.getMonth();
+      const currentYear = currentDate.getFullYear();
+      const day = currentDate.getDate();
+
+      const existingEntry = await EventDays.findOne({
+        month: currentMonth,
+        year: currentYear,
+        userId: userInfo.id,
       });
 
-    return res.status(200).json(posts);
+      if (existingEntry) {
+        const dayEntry = existingEntry.days.find((d) => d.day === day);
+
+        if (dayEntry) {
+          dayEntry.count -= 1;
+
+          if (dayEntry.count <= 0) {
+            existingEntry.days = existingEntry.days.filter(
+              (d) => d.day !== day
+            );
+          }
+
+          await existingEntry.save();
+
+           if (existingEntry.days.length === 0) {
+             await EventDays.deleteOne({ _id: existingEntry._id });
+           }
+        }
+      }
+
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    return res.status(200).json("Post has been deleted.");
   } catch (error) {
     console.error(error);
     return res.status(500).json(error.message || "Internal Server Error");
   }
 };
+
+

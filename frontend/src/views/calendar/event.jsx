@@ -17,6 +17,7 @@ const Event = ({ event, user }) => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(["events"]);
+        queryClient.invalidateQueries(["eventDays"]);
       },
     }
   );
@@ -62,6 +63,7 @@ const Event = ({ event, user }) => {
   const handleDelete = () => {
   
     deleteMutation.mutate(event._id);
+
     
   };
 

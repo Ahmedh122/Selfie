@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import { makeRequest } from "../../axios";
 import Events from "./events";
 import { useQuery, useQueryClient } from "react-query";
-import { AuthContext } from "../../context/authcontext";
+
 import Activities from "./Activities";
 import CreateEvent from "./CreateEvent";
 
@@ -55,107 +55,39 @@ function Calendar() {
   const [isPopupVisible, setPopupVisible] = useState(false);
   const [isPopupEventOpen, setPopupEventOpen] = useState(false);
   const [isPopupEventvisible, setPopupEventVisible] = useState(false);
-  const [isStartEventDateopen, setStartEventDateopen] = useState(false);
-  const [isStartEventTimeopen, setStartEventTimeopen] = useState(false);
-  const [isEndEventDateopen, setEndEventDateopen] = useState(false);
-  const [isEndEventTimeopen, setEndEventTimeopen] = useState(false);
+
+    const [displayMonthEventStart, setDisplayMonthEventStart] = useState(
+      currentDate.getMonth()
+    );
+    const [displayYearEventStart, setDisplayYearEventStart] = useState(
+      currentDate.getFullYear()
+    );
+    const [selectedDateEventStart, setSelectedDateEventStart] =
+      useState(currentDate);
+    const [displayMonthEventEnd, setDisplayMonthEventEnd] = useState(
+      currentDate.getMonth()
+    );
+    const [displayYearEventEnd, setDisplayYearEventEnd] = useState(
+      currentDate.getFullYear()
+    );
+    const [selectedDateEventEnd, setSelectedDateEventEnd] =
+      useState(currentDate);
+
   const [eventType, setEventType] = useState("event");
-  const [unSelectedType, setUnselectedType] = useState("activity");
-  const [isTypeSelectOpen, setTypeSelectOpen] = useState(false);
-  const [frequenza, setFrequenza] = useState("Never");
-  const [isFrequenza, setIsfrequenza] = useState(false);
-  const [pDays, setPdays] = useState([]);
-  const [pDates, setPdates] = useState(false);
-  const [pDatesArray, setPdatesArray] = useState([]);
-  const [fotm, setFotm] = useState(false);
-  const [eotm, setEotm] = useState(false);
 
   const [endFreqDate, setEndFreqDate] = useState(
     new Date().toISOString().split("T")[0]
   );
 
-  const [Pomodoro, setPomodoro] = useState(false);
-  const [PomTimehrs, setPomTimehrs] = useState("00");
-  const [PomTimemin, setPomTimemin] = useState("00");
-  const [maxPomTimehrs, setMaxPomTimehrs] = useState(0);
-  const [maxPomTimemin, setMaxPomTimemin] = useState(0);
-  const [displayMonthEventStart, setDisplayMonthEventStart] = useState(
-    currentDate.getMonth()
-  );
-  const [displayYearEventStart, setDisplayYearEventStart] = useState(
-    currentDate.getFullYear()
-  );
-  const [selectedDateEventStart, setSelectedDateEventStart] =
-    useState(currentDate);
-  const [displayMonthEventEnd, setDisplayMonthEventEnd] = useState(
-    currentDate.getMonth()
-  );
-  const [displayYearEventEnd, setDisplayYearEventEnd] = useState(
-    currentDate.getFullYear()
-  );
-  const [selectedDateEventEnd, setSelectedDateEventEnd] = useState(currentDate);
   const [isEventDateStartManuallySet, setIsEventDateStartManuallySet] =
     useState(false);
   const [isEventDateEndManuallySet, setIsEventDateEndManuallySet] =
     useState(false);
-
-  const [title, setTitle] = useState("");
-  const [hoursStart, setHoursStart] = useState(0);
-  const [minutesStart, setMinutesStart] = useState(0);
-  const [hoursEnd, setHoursEnd] = useState(0);
-  const [minutesEnd, setMinutesEnd] = useState(0);
-  const [description, setDescription] = useState("");
-
-  const handleIncrementTime = (type, e) => {
-    e.preventDefault();
-    if (type === "hoursStart") {
-      setHoursStart((prev) => (prev + 1 + 24) % 24);
-    } else if (type === "minutesStart") {
-      setMinutesStart((prev) => (prev + 1 + 60) % 60);
-    } else if (type === "hoursEnd") {
-      setHoursEnd((prev) => (prev + 1 + 24) % 24);
-    } else if (type === "minutesEnd") {
-      setMinutesEnd((prev) => (prev + 1 + 60) % 60);
-    }
-  };
-
-  const handleDecrementTime = (type, e) => {
-    e.preventDefault();
-    if (type === "hoursStart") {
-      setHoursStart((prev) => (prev - 1 + 24) % 24);
-    } else if (type === "minutesStart") {
-      setMinutesStart((prev) => (prev - 1 + 60) % 60);
-    } else if (type === "hoursEnd") {
-      setHoursEnd((prev) => (prev - 1 + 24) % 24);
-    } else if (type === "minutesEnd") {
-      setMinutesEnd((prev) => (prev - 1 + 60) % 60);
-    }
-  };
+    
 
   const daysInMonth = new Date(displayYear, displayMonth + 1, 0).getDate();
-  const daysInMonthEventDateStart = new Date(
-    displayYearEventStart,
-    displayMonthEventStart + 1,
-    0
-  ).getDate();
 
-  const daysInMonthEventDateEnd = new Date(
-    displayYearEventEnd,
-    displayMonthEventEnd + 1,
-    0
-  ).getDate();
   const firstDayOfMonth = new Date(displayYear, displayMonth, 1).getDay();
-  const firstDayOfMonthEventDateStart = new Date(
-    displayYearEventStart,
-    displayMonthEventStart,
-    1
-  ).getDay();
-
-  const firstDayOfMonthEventDateEnd = new Date(
-    displayYearEventEnd,
-    displayMonthEventEnd,
-    1
-  ).getDay();
 
   const changeMonth = (offset) => {
     setDisplayMonth((prevMonth) => {
@@ -165,38 +97,6 @@ function Calendar() {
         return 11;
       } else if (newMonth > 11) {
         setDisplayYear(displayYear + 1);
-        return 0;
-      } else {
-        return newMonth;
-      }
-    });
-  };
-
-  const changeMonthStartEvent = (offset, e) => {
-    e.preventDefault();
-    setDisplayMonthEventStart((prevMonth) => {
-      const newMonth = prevMonth + offset;
-      if (newMonth < 0) {
-        setDisplayYearEventStart(displayYearEventStart - 1);
-        return 11;
-      } else if (newMonth > 11) {
-        setDisplayYearEventStart(displayYearEventStart + 1);
-        return 0;
-      } else {
-        return newMonth;
-      }
-    });
-  };
-
-  const changeMonthEndEvent = (offset, e) => {
-    e.preventDefault();
-    setDisplayMonthEventEnd((prevMonth) => {
-      const newMonth = prevMonth + offset;
-      if (newMonth < 0) {
-        setDisplayYearEventEnd(displayYearEventEnd - 1);
-        return 11;
-      } else if (newMonth > 11) {
-        setDisplayYearEventEnd(displayYearEventEnd + 1);
         return 0;
       } else {
         return newMonth;
@@ -226,8 +126,8 @@ function Calendar() {
     const selectedDateUTC = new Date(Date.UTC(displayYear, displayMonth, day));
     setSelectedDate(selectedDateUTC);
     setDisplayMonthEventStart(displayMonth);
-    setDisplayYearEventStart(displayYear);
     setDisplayMonthEventEnd(displayMonth);
+    setDisplayYearEventStart(displayYear);
     setDisplayYearEventEnd(displayYear);
     setSelectedDateEventStart(selectedDateUTC);
     setSelectedDateEventEnd(selectedDateUTC);
@@ -247,14 +147,6 @@ function Calendar() {
     isEventDateStartManuallySet,
     selectedDateEventStart,
   ]);
-
-  const handleDateClickEventStart = (day) => {
-    const selectedDateUTC = new Date(
-      Date.UTC(displayYearEventStart, displayMonthEventStart, day)
-    );
-    setSelectedDateEventStart(selectedDateUTC);
-    setIsEventDateStartManuallySet(true);
-  };
 
   useEffect(() => {
     if (selectedDateEventEnd < selectedDateEventStart) {
@@ -289,20 +181,6 @@ function Calendar() {
     isEventDateStartManuallySet,
   ]);
 
-  const handleDateClickEventEnd = (day) => {
-    const selectedEndDateUTC = new Date(
-      Date.UTC(displayYearEventEnd, displayMonthEventEnd, day)
-    );
-
-    if (selectedEndDateUTC < selectedDateEventStart) {
-      setSelectedDateEventEnd(selectedDateEventStart);
-    } else {
-      setSelectedDateEventEnd(selectedEndDateUTC);
-    }
-
-    setIsEventDateEndManuallySet(true);
-  };
-
   useEffect(() => {
     if (selectedDateEventEnd > new Date(endFreqDate)) {
       setEndFreqDate(selectedDateEventEnd.toISOString().split("T")[0]);
@@ -320,32 +198,8 @@ function Calendar() {
 
   const togglePopupEvent = () => {
     setPopupEventOpen(!isPopupEventOpen);
-    setPomodoro(false);
+
     resetEventDate();
-  };
-
-  const toggleStartEventDate = (e) => {
-    e.preventDefault();
-    setStartEventDateopen(!isStartEventDateopen);
-    setStartEventTimeopen(false);
-  };
-
-  const toggleEndEventDate = (e) => {
-    e.preventDefault();
-    setEndEventDateopen(!isEndEventDateopen);
-    setEndEventTimeopen(false);
-  };
-
-  const toggleStartEventTime = (e) => {
-    e.preventDefault();
-    setStartEventTimeopen(!isStartEventTimeopen);
-    setStartEventDateopen(false);
-  };
-
-  const toggleEndEventTime = (e) => {
-    e.preventDefault();
-    setEndEventTimeopen(!isEndEventTimeopen);
-    setEndEventDateopen(false);
   };
 
   useEffect(() => {
@@ -365,48 +219,6 @@ function Calendar() {
       return () => clearTimeout(timer);
     }
   }, [isPopupEventOpen]);
-
-  useEffect(() => {
-    if (selectedDateEventStart && selectedDateEventEnd) {
-      const startDateTime = new Date(selectedDateEventStart);
-      startDateTime.setHours(hoursStart, minutesStart, 0, 0);
-
-      const endDateTime = new Date(selectedDateEventEnd);
-      endDateTime.setHours(hoursEnd, minutesEnd, 0, 0);
-
-      const TimeDifference = endDateTime - startDateTime;
-
-      if (TimeDifference > 0) {
-        const hours = Math.floor(TimeDifference / (1000 * 60 * 60));
-        const minutes = Math.floor(
-          (TimeDifference % (1000 * 60 * 60)) / (1000 * 60)
-        );
-
-        setMaxPomTimehrs(hours);
-        setMaxPomTimemin(minutes);
-      } else {
-        setMaxPomTimehrs(0);
-        setMaxPomTimemin(0);
-      }
-    }
-  }, [
-    selectedDateEventStart,
-    hoursStart,
-    minutesStart,
-    selectedDateEventEnd,
-    hoursEnd,
-    minutesEnd,
-  ]);
-
-  useEffect(() => {
-    const totlalpommin =
-      parseInt(PomTimehrs, 10) * 60 + parseInt(PomTimemin, 10);
-    const maxpommin = maxPomTimehrs * 60 + maxPomTimemin;
-    if (totlalpommin > maxpommin) {
-      setPomTimehrs(String(maxPomTimehrs).padStart(2, "0"));
-      setPomTimemin(String(maxPomTimemin).padStart(2, "0"));
-    }
-  }, [PomTimehrs, PomTimemin, maxPomTimehrs, maxPomTimemin]);
 
   const displayDay = selectedDate
     ? daysOfWeekFull[selectedDate.getDay()]
@@ -428,59 +240,6 @@ function Calendar() {
     setPopupOpen(false);
   };
 
-  const SubmitEvent = async (e) => {
-    e.preventDefault();
-    try {
-      const formattedStartDate = new Date(selectedDateEventStart);
-      const formattedEndDate = new Date(selectedDateEventEnd);
-      formattedStartDate.setUTCHours(hoursStart);
-      formattedStartDate.setUTCMinutes(minutesStart);
-      formattedEndDate.setUTCHours(hoursEnd);
-      formattedEndDate.setUTCMinutes(minutesEnd);
-
-      const startISO = formattedStartDate.toISOString();
-      const endISO = formattedEndDate.toISOString();
-      const PomodoroHours = parseInt(PomTimehrs, 10);
-      const PomodoroMinutes = parseInt(PomTimemin, 10);
-
-      const res = await makeRequest.post("/events", {
-        title,
-        selectedDateEventStart: startISO,
-        selectedDateEventEnd: endISO,
-        description,
-        eventType,
-        frequenza,
-        endFrequenza: new Date(endFreqDate),
-        Pomodoro,
-        PomodoroHours,
-        PomodoroMinutes,
-        personalizedDays: pDays,
-        personalizedDates: pDates,
-        personalizedDatesArray: pDatesArray,
-        fotm,
-        eotm,
-      });
-      queryClient.invalidateQueries(["events"]);
-      queryClient.invalidateQueries(["eventDays"]);
-      setEndEventDateopen(false);
-      setStartEventDateopen(false);
-      setEndEventTimeopen(false);
-      setStartEventTimeopen(false);
-      setHoursStart(0);
-      setHoursEnd(0);
-      setMinutesStart(0);
-      setMinutesEnd(0);
-      setPopupEventOpen(false);
-      const resetDate = selectedDate || currentDate;
-      setSelectedDateEventStart(resetDate);
-      setSelectedDateEventEnd(resetDate);
-      setTitle("");
-      setDescription("");
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
   const returnToSelection = () => {
     if (selectedDate) {
       setDisplayMonth(selectedDate.getMonth());
@@ -492,70 +251,15 @@ function Calendar() {
     }
   };
 
-  const { data: eventDayss } = useQuery(["eventDays"], () =>
-    makeRequest.get(`/events/getAllEvents`).then((res) => {
-      return res.data;
-    })
-  );
+const { data: eventDayss } = useQuery(
+  ["eventDays", displayMonth, displayYear],
+  () =>
+    makeRequest
+      .get(`/events/getAllEvents/${displayMonth}/${displayYear}`)
+      .then((res) => res.data)
+);
 
-  const selectEventType = (e) => {
-    e.preventDefault();
-    setTypeSelectOpen(!isTypeSelectOpen);
-  };
 
-  const changeType = (e) => {
-    e.preventDefault();
-    eventType === "event" ? setEventType("activity") : setEventType("event");
-    unSelectedType === "event"
-      ? setUnselectedType("activity")
-      : setUnselectedType("event");
-    setTypeSelectOpen(false);
-  };
-  const toggleFrequenza = (e) => {
-    e.preventDefault();
-    setIsfrequenza(!isFrequenza);
-  };
-
-  const changePomoTime = (e, offset) => {
-    e.preventDefault();
-    const maxPomoTime = maxPomTimehrs * 60 + maxPomTimemin;
-    let PomoTime = parseInt(PomTimehrs, 10) * 60 + parseInt(PomTimemin, 10);
-    if (PomoTime + offset <= maxPomoTime && PomoTime + offset >= 0) {
-      PomoTime += offset;
-      setPomTimehrs(String(Math.floor(PomoTime / 60)).padStart(2, "0"));
-      setPomTimemin(String(PomoTime % 60).padStart(2, "0"));
-    }
-    /*else if(PomoTime + offset >maxPomoTime){
-      setPomTimehrs(String(maxPomTimehrs).padStart(2,"0"));
-      setPomTimemin(String(maxPomTimemin).padStart(2,"0"));
-    }*/
-    else if(PomoTime + offset<0){
-      setPomTimehrs("00");
-      setPomTimemin("00");
-    }
-  };
-
-  const togglepDay = (e, day) => {
-    e.preventDefault();
-    setPdays((prevdays) => {
-      if (prevdays.includes(day)) {
-        return prevdays.filter((d) => d !== day);
-      } else {
-        return [...prevdays, day];
-      }
-    });
-  };
-
-  const addPdatesArray = (e, day) => {
-    e.preventDefault();
-    setPdatesArray((prevdates) => {
-      if (prevdates.includes(day)) {
-        return prevdates.filter((d) => d !== day);
-      } else {
-        return [...pDatesArray, day];
-      }
-    });
-  };
 
   return (
     <div className="calendar-app h-full w-full flex justify-center items-center relative">
@@ -740,14 +444,13 @@ function Calendar() {
                   selectedDate.getFullYear() === displayYear;
                 const isCurrentDay = isToday(date);
 
-                const isEventDay = eventDayss?.some((eventDay) => {
-                  const eventDate = new Date(eventDay);
-                  return (
-                    eventDate.getDate() === date &&
-                    eventDate.getMonth() === displayMonth &&
-                    eventDate.getFullYear() === displayYear
-                  );
-                });
+                const currentDateFormatted = `${String(date).padStart(
+                  2,
+                  "0"
+                )}-${String(displayMonth).padStart(2, "0")}-${displayYear}`;
+
+                const isEventDay = eventDayss?.includes(currentDateFormatted);
+
                 return (
                   <span
                     key={date}
@@ -869,28 +572,32 @@ function Calendar() {
                   : "animate-popup-down"
               } md:shadow-[inset_0px_-4px_0px_rgba(0,0,0,0.3)]`}
             >
-              <div className="sticky top-0 z-50 flex justify-center items-center bg-violet-700 w-full h-[14%] rounded-t-2xl ">
+              <div className="sticky top-0 z-50 flex justify-between px-6 items-center bg-violet-700 w-full h-[14%] rounded-t-2xl ">
                 <span className="text-xl font-bold font-sans text-slate-200">
-                  New event
+                  New {eventType}
                 </span>
                 <button
-                  className="absolute w-10 h-10 top-3 flex justify-center items-center left-5 text-red-500 text-3xl rounded-full bg-[#1B1B1F] transition-all duration-250 ease-in-out"
+                  className="absolute p-2 top-4 flex justify-center items-center right-5 text-red-500 text-3xl rounded-full bg-[#1B1B1F] transition-all duration-250 ease-in-out"
                   onClick={togglePopupEvent}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
-                    strokeWidth="1.5"
+                    strokeWidth={1.5}
                     stroke="currentColor"
-                    className="absolute w-2 h-3 md:w-8 md:h-8 glow-on-hover-white bottom-1 transition-all duration-250 ease-in-out"
+                    className=" size-6  glow-on-hover-white bottom-1 transition-all duration-250 ease-in-out"
                   >
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      d="m19.5 8.25-7.5 7.5-7.5-7.5"
+                      d="M6 18 18 6M6 6l12 12"
                     />
                   </svg>
+
+                 
+                 
+                 
                 </button>
               </div>
               {eventType === "event" && (
@@ -902,6 +609,18 @@ function Calendar() {
                   setPopupEventOpen={setPopupEventOpen}
                   displayYear={displayYear}
                   displayMonth={displayMonth}
+                  selectedDateEventStart={selectedDateEventStart}
+                  selectedDateEventEnd={selectedDateEventEnd}
+                  setSelectedDateEventStart={setSelectedDateEventStart}
+                  setSelectedDateEventEnd={setSelectedDateEventEnd}
+                  displayMonthEventStart={displayMonthEventStart}
+                  displayMonthEventEnd={displayMonthEventEnd}
+                  setDisplayMonthEventStart={setDisplayMonthEventStart}
+                  setDisplayMonthEventEnd={setDisplayMonthEventEnd}
+                  displayYearEventStart={displayYearEventStart}
+                  displayYearEventEnd={displayYearEventEnd}
+                  setDisplayYearEventStart={setDisplayYearEventStart}
+                  setDisplayYearEventEnd={setDisplayYearEventEnd}
                 />
               )}
               {eventType === "activity" && (

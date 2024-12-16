@@ -77,7 +77,7 @@ function Navbar() {
         <NotesIcon />
       </div>
       <div
-        onClick={() => handleClick("profile", `/search/${currentUser._id}`)}
+        onClick={() => handleClick("profile", `/profile/${currentUser._id}`)}
         className={`p-2 cursor-pointer ${
           activeIcon === "profile" ? "active" : ""
         }`}
