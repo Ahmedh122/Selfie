@@ -79,6 +79,7 @@ export const updateTimer = async (req, res) => {
     }
     else {
       const updateFields = {};
+      updateFields.lastModifiedDate = Date.now();
       if (req.body.donepomo) updateFields.donepomo = req.body.donepomo;
       if (req.body.remainingTime) updateFields.remainingTime = req.body.remainingTime;
       if (req.body.mode) updateFields.mode = req.body.mode;
@@ -88,6 +89,7 @@ export const updateTimer = async (req, res) => {
       if (req.body.longBreakInterval) updateFields.longBreakInterval = req.body.longBreakInterval;
       if (req.body.taskname) updateFields.taskname = req.body.taskname;
       if (req.body.eventId) updateFields.eventId = req.body.eventId;
+
 
       const updatedTimer = await Timer.findOneAndUpdate(
         { _id: req.params.id },
