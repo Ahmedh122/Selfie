@@ -71,8 +71,18 @@ const Searchbar = ({ handleUserSelect }) => {
                   key={entry._id}
                   onClick={() => handleUserSelect(entry)}
                 >
-                  <div className="info">
-                    <span>{entry.name}</span>
+                  <div className="flex flex-row gap-2">
+                    <img
+                      className="w-8 h-8 rounded-full"
+                      src={
+                        entry && entry.profilePic
+                          ? `http://localhost:8800${entry.profilePic}`
+                          : "https://cdn-icons-png.flaticon.com/512/10542/10542486.png"
+                      }
+                      alt=""
+                    />
+                    <span className="text-white font-bold">{entry.name}</span>
+                    <span className="text-white font-bold">{entry.surname}</span>
                   </div>
                 </div>
               ))}
