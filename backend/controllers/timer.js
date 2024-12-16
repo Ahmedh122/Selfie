@@ -120,7 +120,7 @@ export const deleteTimer = async (req, res) => {
 
     const userInfo = jwt.verify(token, "secretkey");
 
-    const deletedTimer = isid ? await Timer.findOneAndDelete({  // se è un id allora elimina per eventid altrimenti per tasknema
+    const deletedTimer = isid ? await Timer.findOneAndDelete({  // se è un id allora elimina per eventid altrimenti per taskname
       eventId: req.params.id,
       userId: userInfo.id,
     }) : await Timer.findOneAndDelete({
