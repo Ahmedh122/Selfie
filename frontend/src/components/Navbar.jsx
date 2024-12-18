@@ -8,8 +8,11 @@ import NotesIcon from "../icons/Notes_icon";
 import ProfileIcon from "../icons/Profile_icon";
 import Teardrop from "./Teardrop"; 
 import { AuthContext } from "../context/authcontext";
+import { useQueryClient } from "react-query";
 
 function Navbar() {
+   
+    const queryClient = useQueryClient();
   const [activeIcon, setActiveIcon] = useState("home"); 
   const navigate = useNavigate(); 
   const {currentUser} = useContext(AuthContext);
@@ -77,7 +80,7 @@ function Navbar() {
         <NotesIcon />
       </div>
       <div
-        onClick={() => handleClick("profile", `/profile/${currentUser._id}`)}
+        onClick={() => {handleClick("profile", `/profile/${currentUser._id}`);}}
         className={`p-2 cursor-pointer ${
           activeIcon === "profile" ? "active" : ""
         }`}

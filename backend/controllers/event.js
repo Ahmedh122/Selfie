@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import Event from "../models/event.js";
 import EventDays from "../models/eventDays.js";
 //import Relationship from "../models/relationship.js";
-import Subscription from "../models/subscription.js";
+import Subscription from "../models/friends.js";
 
 export const getEventfromId = async (req, res) => {
   const token = req.cookies.accessToken;
@@ -79,12 +79,15 @@ export const getEvents = async (req, res) => {
   }
 };
 
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const getAllEvents = async (req, res) => {
   const { month, year } = req.params;
   const token = req.cookies.accessToken;
 
   try {
+    await delay(100);
+
     if (!token) {
       return res.status(401).json("Not logged in!");
     }
@@ -98,6 +101,7 @@ export const getAllEvents = async (req, res) => {
       year: parseInt(year),
     }).exec();
 
+    
     if (!eventDays) {
       return res.json([]);
     }
@@ -109,7 +113,7 @@ export const getAllEvents = async (req, res) => {
         "0"
       )}-${String(year)}`;
     });
-
+    
     // Send the event dates as a response
     return res.json(eventDates);
   } catch (error) {
@@ -117,8 +121,6 @@ export const getAllEvents = async (req, res) => {
     return res.status(500).json(error.message || "Internal Server Error");
   }
 };
-
-
 
 async function addEventDays(userId, eventStart, eventEnd) {
   let currentDate = new Date(eventStart);
@@ -178,8 +180,6 @@ async function addEventDays(userId, eventStart, eventEnd) {
     }
   }
 }
-
-
 
 export const addEvent = async (req, res) => {
   const token = req.cookies.accessToken;
@@ -518,9 +518,9 @@ export const deleteEvent = async (req, res) => {
 
           await existingEntry.save();
 
-           if (existingEntry.days.length === 0) {
-             await EventDays.deleteOne({ _id: existingEntry._id });
-           }
+          if (existingEntry.days.length === 0) {
+            await EventDays.deleteOne({ _id: existingEntry._id });
+          }
         }
       }
 
@@ -533,5 +533,3 @@ export const deleteEvent = async (req, res) => {
     return res.status(500).json(error.message || "Internal Server Error");
   }
 };
-
-

@@ -1,10 +1,11 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../context/authcontext";
 import { useLocation } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { makeRequest } from "../axios";
 
 const Profile = () => {
+   
   const queryClient = useQueryClient();
   const userId = useLocation().pathname.split("/")[2];
   const { currentUser } = useContext(AuthContext);
@@ -22,14 +23,18 @@ const Profile = () => {
     },
     {
       onSuccess: (data) => {
-        queryClient.invalidateQueries(["usersprofile"]);
+        queryClient.invalidateQueries(["userprofile"]);
         setEdit(false);
         setCoverPic(null);
       },
     }
   );
 
-  const { isLoading, data } = useQuery(["usersprofile"], () =>
+
+
+   
+
+  const { isLoading, data } = useQuery(["userprofile"], () =>
     makeRequest.get("/users/find/" + userId).then((res) => {
       return res.data;
     })
@@ -143,7 +148,7 @@ const Profile = () => {
                 {data.surname}
               </span>
             </div>
-
+      
             <div
               className="absolute right-6 top-80"
               onClick={(e) => {
@@ -166,7 +171,7 @@ const Profile = () => {
                 />
               </svg>
             </div>
-            {edit && (
+            {edit && data._id === currentUser._id && (
               <>
                 <div className="backgroundpopupblur w-full h-full absolute inset-0 flex bg-black/60 backdrop-blur-[4px] rounded-none md:rounded-xl transition-transform duration-300 ease-in-out justify-center items-center">
                   <div className="relative bg-[#2C2C2E] w-[90%] sm:w-[70%] md:w-[60%] h-[90%] sm:h-[80%] rounded-xl flex flex-col items-center justify-start overflow-hidden">
@@ -200,10 +205,7 @@ const Profile = () => {
                       </div>
                     </div>
 
-                    {/* Add a wrapper for the form with a fixed height and overflow scroll */}
-
                     <form className="flex flex-col w-full pt-72 px-20 justify-center items-center gap-6  overflow-y-auto no-scrollbar">
-                      {/* Form fields */}
                       <div className="flex flex-col w-full gap-4  bg-[#1B1B1F] p-4 rounded-xl">
                         <div className="flex justify-between items-center w-full">
                           <div className="text-white font-semibold">
@@ -308,8 +310,10 @@ const Profile = () => {
                         ></textarea>
                       </div>
                     </form>
-                    <button className="absolute flex bottom-3 right-2.5 bg-violet-600 w-[3rem] h-[3rem] rounded-full items-center justify-center"
-                    onClick={handleEdit}>
+                    <button
+                      className="absolute flex bottom-3 right-2.5 bg-violet-600 w-[3rem] h-[3rem] rounded-full items-center justify-center"
+                      onClick={handleEdit}
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"

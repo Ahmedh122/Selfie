@@ -5,6 +5,7 @@ import { makeRequest } from "../../axios";
 import { useNavigate } from "react-router-dom";
 
 const Event = ({ event, user }) => {
+  const currentDate = new Date();
   const queryClient = useQueryClient();
 
   const navigate = useNavigate();

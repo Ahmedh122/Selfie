@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { useQuery } from "react-query";
 import { makeRequest } from "../axios";
+import { useNavigate } from "react-router-dom";
 
 const Search = () => {
  
   const [search_value, setValue] = useState("");
+    const navigate = useNavigate(); 
 
  const { isLoading, data: datasearch = [] } = useQuery(
    ["search", search_value],
@@ -20,6 +22,11 @@ const Search = () => {
      enabled: !!search_value, 
    }
  );
+
+
+ const handleClick = ( path) => {
+   navigate(path);
+ };
 
   
 
@@ -71,6 +78,9 @@ const Search = () => {
                   <div
                     className="dropdownrow  flex flex-col justify-start h-[50px] p-6 w-full rounded-b-2xl -top-3 text-white  "
                     key={entry._id}
+                    onClick={() =>
+                    navigate(`/profiles/${entry._id}`) 
+                    }
                   >
                     <div className="info">
                       <span>{entry.name}</span>

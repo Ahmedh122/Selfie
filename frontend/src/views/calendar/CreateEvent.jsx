@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useQuery, useQueryClient } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { makeRequest } from "../../axios";
 
 function CreateEvent({
@@ -165,6 +165,51 @@ function CreateEvent({
     setEndEventDateopen(false);
   };
 
+
+  const mutation = useMutation(
+    ({startISO, endISO, PomodoroHours, PomodoroMinutes}) => {
+      return makeRequest.post("/events", {
+        title,
+        selectedDateEventStart: startISO,
+        selectedDateEventEnd: endISO,
+        description,
+        eventType,
+        frequenza,
+        endFrequenza: new Date(endFreqDate),
+        Pomodoro,
+        PomodoroHours,
+        PomodoroMinutes,
+        personalizedDays: pDays,
+        personalizedDates: pDates,
+        personalizedDatesArray: pDatesArray,
+        fotm,
+        eotm,
+        displayMonth,
+        displayYear,
+      });
+    }, {
+      onSuccess: async ()=>{
+        queryClient.invalidateQueries(["events"], { refetchActive: true });
+       await queryClient.invalidateQueries(["eventDays"], { refetchActive: true });
+      
+        setEndEventDateopen(false);
+        setStartEventDateopen(false);
+        setEndEventTimeopen(false);
+        setStartEventTimeopen(false);
+        setHoursStart(0);
+        setHoursEnd(0);
+        setMinutesStart(0);
+        setMinutesEnd(0);
+        setPopupEventOpen(false);
+        const resetDate = selectedDate || currentDate;
+        setSelectedDateEventStart(resetDate);
+        setSelectedDateEventEnd(resetDate);
+        setTitle("");
+        setDescription("");
+      }
+    }
+  );
+
   const SubmitEvent = async (e) => {
     e.preventDefault();
     try {
@@ -186,41 +231,7 @@ function CreateEvent({
       const PomodoroHours = parseInt(PomTimehrs, 10);
       const PomodoroMinutes = parseInt(PomTimemin, 10);
 
-      const res = await makeRequest.post("/events", {
-        title,
-        selectedDateEventStart: startISO,
-        selectedDateEventEnd: endISO,
-        description,
-        eventType,
-        frequenza,
-        endFrequenza: new Date(endFreqDate),
-        Pomodoro,
-        PomodoroHours,
-        PomodoroMinutes,
-        personalizedDays: pDays,
-        personalizedDates: pDates,
-        personalizedDatesArray: pDatesArray,
-        fotm,
-        eotm,
-        displayMonth, 
-        displayYear
-      });
-      queryClient.invalidateQueries(["events"], { refetchActive: true });
-      queryClient.invalidateQueries(["eventDays"]);
-      setEndEventDateopen(false);
-      setStartEventDateopen(false);
-      setEndEventTimeopen(false);
-      setStartEventTimeopen(false);
-      setHoursStart(0);
-      setHoursEnd(0);
-      setMinutesStart(0);
-      setMinutesEnd(0);
-      setPopupEventOpen(false);
-      const resetDate = selectedDate || currentDate;
-      setSelectedDateEventStart(resetDate);
-      setSelectedDateEventEnd(resetDate);
-      setTitle("");
-      setDescription("");
+      mutation.mutate({startISO, endISO, PomodoroHours, PomodoroMinutes});
     } catch (error) {
       console.error(error);
     }

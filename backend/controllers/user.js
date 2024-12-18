@@ -1,33 +1,51 @@
-  import jwt from "jsonwebtoken";
-  import User from "../models/users.js"; 
-  import mongoose from "mongoose";
-  import fs from "fs"; 
-  import path from "path"; 
-  import { fileURLToPath } from "url";  
-  const __filename = fileURLToPath(import.meta.url);
-  const __dirname = path.dirname(__filename);
+import jwt from "jsonwebtoken";
+import User from "../models/users.js";
+import Friends from "../models/friends.js";
+import Notifications from "../models/notifications.js";
+import mongoose from "mongoose";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-  export const getUser = async (req, res) => {
-    const userId = req.params.userId;
-  
-    try {
-      const user = await User.findOne({ _id: userId });
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
+export const getUser = async (req, res) => {
+  const token = req.cookies.accessToken;
+  const userId = req.params.userId;
 
-      
-      const { password, ...data } = user.toObject();
-      return res.json(data);
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ message: "Internal Server Error" });
+  try {
+    if (!token) return res.status(401).json("Not logged in!");
+    const userInfo = jwt.verify(token, "secretkey");
+    const user = await User.findOne({ _id: userId });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
-  };
 
+    const PendingFriendReq = await Notifications.findOne({
+      userId: userId, 
+      sender: userInfo.id,
+      type: "Friend_req", 
+    });
 
+    const isPending= !!PendingFriendReq;
 
+    const friendFound = await Friends.findOne(
+      { userId: userInfo.id, friends: userId },
+      { _id: 1 }
+    );
+    const isfriend = !!friendFound;
+    let friendshipState = "";
+    if (isPending){friendshipState="Pending"}
+    else if(isfriend){friendshipState="Friends"}
+    else{friendshipState="Not_friends"}
 
+    const { password, ...data } = user.toObject();
+    return res.json({ ...data, friendshipState });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
 
 export const updateUser = async (req, res) => {
   const token = req.cookies.accessToken;
@@ -57,7 +75,7 @@ export const updateUser = async (req, res) => {
       const updateFields = {};
 
       if (req.file) {
-        const { type } = req.body; 
+        const { type } = req.body;
 
         if (type === "profilePic") {
           // Delete old profile picture if it exists
@@ -89,7 +107,6 @@ export const updateUser = async (req, res) => {
       if (req.body.surname) updateFields.surname = req.body.surname;
       if (req.body.BirthDay) updateFields.BirthDay = req.body.BirthDay;
       if (req.body.Bio) updateFields.Bio = req.body.Bio;
-      
 
       // Save the updated user
       const updatedUser = await User.findByIdAndUpdate(
@@ -106,28 +123,22 @@ export const updateUser = async (req, res) => {
   });
 };
 
-
-
-  
-  
-
-
-  export const getUsers = async (req, res) => {
-    try {
-      const users = await User.find({});
-      if (!users) {
-        return res.status(404).json({ message: "No users found" });
-      }
-
-      // Exclude sensitive information like password before sending the response
-      const usersData = users.map(user => {
-        const { password, ...data } = user.toObject();
-        return data;
-      });
-
-      return res.json(usersData);
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ message: "Internal Server Error" });
+export const getUsers = async (req, res) => {
+  try {
+    const users = await User.find({});
+    if (!users) {
+      return res.status(404).json({ message: "No users found" });
     }
-  };
+
+    // Exclude sensitive information like password before sending the response
+    const usersData = users.map((user) => {
+      const { password, ...data } = user.toObject();
+      return data;
+    });
+
+    return res.json(usersData);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};

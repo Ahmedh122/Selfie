@@ -12,7 +12,8 @@ import noteRoutes from "./routes/notes.js";
 import timerRoutes from "./routes/timers.js";
 import channelRoutes from "./routes/channels.js";
 import authRoutes from "./routes/auth.js";
-import subscriptionRoutes from "./routes/subscriptions.js";
+import friendsRoutes from "./routes/friends.js";
+import notificationRoutes from "./routes/notifications.js";
 import searchRoutes from "./routes/search.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -43,8 +44,9 @@ app.use("/api/notes", noteRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/timers", timerRoutes);
 app.use("/api/channels", channelRoutes);
-app.use("/api/subscriptions", subscriptionRoutes);
+app.use("/api/friends", friendsRoutes);
 app.use("/api/search", searchRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 const PORT = 8800;
 

@@ -56,22 +56,21 @@ function Calendar() {
   const [isPopupEventOpen, setPopupEventOpen] = useState(false);
   const [isPopupEventvisible, setPopupEventVisible] = useState(false);
 
-    const [displayMonthEventStart, setDisplayMonthEventStart] = useState(
-      currentDate.getMonth()
-    );
-    const [displayYearEventStart, setDisplayYearEventStart] = useState(
-      currentDate.getFullYear()
-    );
-    const [selectedDateEventStart, setSelectedDateEventStart] =
-      useState(currentDate);
-    const [displayMonthEventEnd, setDisplayMonthEventEnd] = useState(
-      currentDate.getMonth()
-    );
-    const [displayYearEventEnd, setDisplayYearEventEnd] = useState(
-      currentDate.getFullYear()
-    );
-    const [selectedDateEventEnd, setSelectedDateEventEnd] =
-      useState(currentDate);
+  const [displayMonthEventStart, setDisplayMonthEventStart] = useState(
+    currentDate.getMonth()
+  );
+  const [displayYearEventStart, setDisplayYearEventStart] = useState(
+    currentDate.getFullYear()
+  );
+  const [selectedDateEventStart, setSelectedDateEventStart] =
+    useState(currentDate);
+  const [displayMonthEventEnd, setDisplayMonthEventEnd] = useState(
+    currentDate.getMonth()
+  );
+  const [displayYearEventEnd, setDisplayYearEventEnd] = useState(
+    currentDate.getFullYear()
+  );
+  const [selectedDateEventEnd, setSelectedDateEventEnd] = useState(currentDate);
 
   const [eventType, setEventType] = useState("event");
 
@@ -83,7 +82,6 @@ function Calendar() {
     useState(false);
   const [isEventDateEndManuallySet, setIsEventDateEndManuallySet] =
     useState(false);
-    
 
   const daysInMonth = new Date(displayYear, displayMonth + 1, 0).getDate();
 
@@ -251,15 +249,16 @@ function Calendar() {
     }
   };
 
-const { data: eventDayss } = useQuery(
-  ["eventDays", displayMonth, displayYear],
-  () =>
-    makeRequest
-      .get(`/events/getAllEvents/${displayMonth}/${displayYear}`)
-      .then((res) => res.data)
-);
+  const { data: eventDayss } = useQuery(
+    ["eventDays"],
+    () =>
+      makeRequest
+        .get(`/events/getAllEvents/${displayMonth}/${displayYear}`)
+        .then((res) => {
+          return res.data;
+        }),
 
-
+  );
 
   return (
     <div className="calendar-app h-full w-full flex justify-center items-center relative">
@@ -594,10 +593,6 @@ const { data: eventDayss } = useQuery(
                       d="M6 18 18 6M6 6l12 12"
                     />
                   </svg>
-
-                 
-                 
-                 
                 </button>
               </div>
               {eventType === "event" && (

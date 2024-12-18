@@ -17,6 +17,8 @@ import Profile from "./views/Profile";
 import Timer from "./views/Timer/Timer";
 import Login from "./views/auth/Login";
 import Register from "./views/auth/Register";
+import Notifications from "./components/Notifications";
+import Profiles from "./components/Profiles";
 import { AuthContext } from "./context/authcontext";
 
 function App() {
@@ -46,8 +48,10 @@ function App() {
                 }
               `}
             </style>
+            <div className="absolute flex  top-3 right-14 ">
+              <Notifications/> </div>
             <button
-              className="rounded-full absolute flex top-3 right-3"
+              className="rounded-full absolute flex  top-3 right-3 "
               onClick={logout}
             >
               <svg
@@ -70,6 +74,7 @@ function App() {
                 />
               </svg>
             </button>
+           
           </div>
         </div>
       </QueryClientProvider>
@@ -103,6 +108,7 @@ function App() {
         { path: "/search/:id", element: <Search /> },
         { path: "/profile/:id", element: <Profile /> },
         { path: "/timer/:id", element: <Timer /> },
+        { path: "/profiles/:id", element: <Profiles /> },
       ],
     },
     { path: "/login", element: <Login /> },

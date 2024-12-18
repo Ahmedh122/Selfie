@@ -24,13 +24,13 @@ const Searchbar = ({ handleUserSelect }) => {
     <div className="w-full h-full">
       <div className="search flex h-full w-full overflow-visible  ">
         <div
-          className={` flex w-full bg-[#1B1B1F] justify-center   items-center  ${
+          className={` flex w-full bg-[#1B1B1F] justify-center p-3 py-6  items-center  ${
             datasearch.length !== 0 ? "" : "rounded-b-2xl"
           }`}
         >
           <input
             type="text"
-            className="search_input flex bg-[#1B1B1F] w-full h-full ml-4   text-white text-lg focus:outline-none"
+            className="search_input flex bg-[#1B1B1F] w-full  ml-4   text-white text-lg focus:outline-none"
             placeholder="Search..."
             value={search_value}
             onChange={(e) => setValue(e.target.value)}
@@ -67,7 +67,7 @@ const Searchbar = ({ handleUserSelect }) => {
               })
               .map((entry) => (
                 <div
-                  className="dropdownrow  flex flex-col justify-start h-[50px] p-6 w-full rounded-b-2xl -top-3 text-white  "
+                  className="dropdownrow  flex flex-col justify-start  p-4 w-full rounded-b-2xl -top-3 text-white  "
                   key={entry._id}
                   onClick={() => handleUserSelect(entry)}
                 >
