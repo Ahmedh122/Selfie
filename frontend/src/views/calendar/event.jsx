@@ -65,10 +65,12 @@ const Event = ({ event, user }) => {
   
     deleteMutation.mutate(event._id);
 
-    makeRequest.delete("/timers/deleteTimer/" + event.title)
-    .then((response) => {
-      console.log(response);
-    });
+    if(event.pomodoro){
+      makeRequest.delete("/timers/deleteTimer/" + event.title)
+      .then((response) => {
+        console.log(response);
+      });
+    }
     
   };
 
