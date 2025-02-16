@@ -5,7 +5,7 @@ const router = express.Router();
 
 
 router.post("/sendNotif/:userId",sendNotif);
-router.delete("/deleteNotif", deleteNotif);
+router.delete("/deleteNotif/:id/", deleteNotif);
 router.get("/getNotif",getNotif);
 
 

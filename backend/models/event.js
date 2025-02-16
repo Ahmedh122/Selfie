@@ -8,6 +8,10 @@ const eventSchema = new mongoose.Schema({
   img: {
     type: String,
   },
+  type:{
+    type: String, 
+    default:"event",
+  },
   createdAt: {
     type: Date,
     default: Date.now,

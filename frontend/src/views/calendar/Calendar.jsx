@@ -1,10 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { makeRequest } from "../../axios";
 import Events from "./events";
-import { useQuery, useQueryClient } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 
 import Activities from "./Activities";
 import CreateEvent from "./CreateEvent";
+import { AuthContext } from "../../context/authcontext";
+import io from "socket.io-client";
+
+const socket = io("http://localhost:8800", {
+  transports: ["websocket"],
+});
+
 
 function Calendar() {
   const queryClient = useQueryClient();
@@ -249,16 +256,51 @@ function Calendar() {
     }
   };
 
-  const { data: eventDayss } = useQuery(
-    ["eventDays"],
-    () =>
-      makeRequest
-        .get(`/events/getAllEvents/${displayMonth}/${displayYear}`)
-        .then((res) => {
-          return res.data;
-        }),
+   const [eventDayss, setEventDayss] = useState(null);
 
-  );
+   const eventDaysMutation = useMutation(
+     () => {
+       return makeRequest
+         .get(`/events/getAllEvents/${displayMonth}/${displayYear}`)
+         .then((res) => {
+        
+           return res.data;
+         });
+     },
+     {
+       onSuccess: (data) => {
+     
+         setEventDayss(data); 
+       },
+ 
+     }
+   );
+
+    const { currentUser } = useContext(AuthContext);
+
+  useEffect(() => {
+    if (currentUser) {
+      socket.emit("join", currentUser._id);
+
+      const handleEventDays = () => {
+        eventDaysMutation.mutate();
+      };
+
+      socket.on("eventDays", handleEventDays);
+
+      return () => {
+        socket.off("eventDays", handleEventDays);
+      };
+    }
+
+    return () => {};
+  }, [currentUser]);
+
+   useEffect(() => {
+   
+       eventDaysMutation.mutate();
+     
+   }, [displayMonth, displayYear]);
 
   return (
     <div className="calendar-app h-full w-full flex justify-center items-center relative">
@@ -364,7 +406,7 @@ function Calendar() {
             </div>
           </div>
           <div className="eventList flex w-full h-full overflow-scroll no-scrollbar ">
-            <Events selectedDate={selectedDate} currentDate={currentDate} />
+            <Events selectedDate={selectedDate} currentDate={currentDate} eventDaysMutation={eventDaysMutation} />
           </div>
         </div>
 
@@ -385,7 +427,13 @@ function Calendar() {
               <div className="flex justify-between w-[25%] mr-1 md:mr-3.5 ">
                 <button
                   className="bg-[#141517] flex justify-center items-center text-red-500 rounded-full w-8 h-8 "
-                  onClick={() => changeMonth(-1)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    changeMonth(-1);
+                    queryClient.invalidateQueries(["eventDays"], {
+                      refetchActive: true,
+                    });
+                  }}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -404,7 +452,13 @@ function Calendar() {
                 </button>
                 <button
                   className="bg-[#141517] flex justify-center items-center text-red-500 rounded-full ml-3 w-8 h-8 "
-                  onClick={() => changeMonth(1)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    changeMonth(1);
+                    queryClient.invalidateQueries(["eventDays"], {
+                      refetchActive: true,
+                    });
+                  }}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -616,10 +670,16 @@ function Calendar() {
                   displayYearEventEnd={displayYearEventEnd}
                   setDisplayYearEventStart={setDisplayYearEventStart}
                   setDisplayYearEventEnd={setDisplayYearEventEnd}
+                  eventDaysMutation={eventDaysMutation}
                 />
               )}
               {eventType === "activity" && (
-                <Activities eventType={eventType} setEventType={setEventType} />
+                <Activities
+                  eventType={eventType}
+                  setEventType={setEventType}
+                  setPopupEventOpen={setPopupEventOpen}
+                  eventDaysMutation={eventDaysMutation}
+                />
               )}
             </div>
           </div>

@@ -10,7 +10,7 @@ const router = express.Router();
 
 
 
-router.post("/", addFriend);
+router.post("/:userId", addFriend);
 
 
 export default router;

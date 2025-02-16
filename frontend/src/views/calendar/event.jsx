@@ -4,21 +4,22 @@ import { useMutation, useQueryClient } from "react-query";
 import { makeRequest } from "../../axios";
 import { useNavigate } from "react-router-dom";
 
-const Event = ({ event, user }) => {
+const Event = ({ event, user, eventDaysMutation }) => {
   const currentDate = new Date();
   const queryClient = useQueryClient();
 
   const navigate = useNavigate();
  
+  
 
   const deleteMutation = useMutation(
-    (eventId) => {
-      return makeRequest.delete("/events/" + eventId);
+    ({eventId, offset}) => {
+      return makeRequest.delete(`/events/${eventId}/${offset}`);
     },
     {
       onSuccess: () => {
         queryClient.invalidateQueries(["events"]);
-        queryClient.invalidateQueries(["eventDays"]);
+        eventDaysMutation.mutate();
       },
     }
   );
@@ -61,9 +62,11 @@ const Event = ({ event, user }) => {
       });
   }
 
+  const offset = new Date().getTimezoneOffset() * -60000;
+
   const handleDelete = () => {
   
-    deleteMutation.mutate(event._id);
+    deleteMutation.mutate({ eventId: event._id, offset });
 
     if(event.pomodoro){
       makeRequest.delete("/timers/deleteTimer/" + event.title)
@@ -75,7 +78,7 @@ const Event = ({ event, user }) => {
   };
 
   return (
-    <div className="flex flex-col w-[70%] h-min event bg-[#151518] mb-2 rounded-xl p-4">
+    <div className="flex flex-col w-full  event bg-[#151518] mb-2 rounded-xl p-4">
       <div className="flex justify-between items-center w-full h-full ml-5 mt-2">
         <div className="text-white font-bold text-lg -mt-2">{event.title}</div>
         <div>

@@ -1,20 +1,146 @@
 import React, { useEffect, useState } from "react";
 import Searchbar from "../../components/Searchbar";
+import { useMutation, useQueryClient } from "react-query";
+import { makeRequest } from "../../axios";
 
-const Activities = ({ eventType, setEventType }) => {
+const Activities = ({
+  eventType,
+  setEventType,
+  setPopupEventOpen,
+  eventDaysMutation,
+}) => {
   const [title, setTitle] = useState("");
   const [isSearch, setIsSearch] = useState(false);
   const currentDate = new Date();
   const [isTypeSelectOpen, setIsTypeSelectOpen] = useState(false);
-  const [unSelectedType, setUnSelectedType] = useState("event");
-  const [endDate, setEndDate] = useState(currentDate);
+  const unSelectedType = "event";
+  const formattedDate = currentDate.toISOString().split("T")[0]; // Formats the date to "yyyy-MM-dd"
+  const [endDate, setEndDate] = useState(formattedDate);
   const [selectedUsers, setSelectedUsers] = useState([]);
-  const [endHours, setEndHours] =useState("00");
-  const [endMinutes, setEndMinutes] =useState("00");
+  const [endHours, setEndHours] = useState("00");
+  const [endMinutes, setEndMinutes] = useState("00");
   const [istime, setIstime] = useState(false);
-  const [showsUsers, setShowsUsers] =useState(false);
-  
-  
+  const [showsUsers, setShowsUsers] = useState(false);
+  const [subactivities, setSub] = useState([]);
+
+  const Subactivity = (
+    title,
+    endDate,
+    istime,
+    endHours,
+    endMinutes,
+    friends,
+    isFriendsList,
+    addFriends
+  ) => ({
+    title,
+    endDate,
+    istime,
+    endHours,
+    endMinutes,
+    friends,
+    isFriendsList,
+    addFriends,
+  });
+
+  const queryClient = useQueryClient();
+
+  const handleSubFriends = (friend, index) => {
+    setSub((prevSub) =>
+      prevSub.map((sub, i) => {
+        if (i === index) {
+          const friendExists = sub.friends.some((f) => f._id === friend._id);
+          if (!friendExists) {
+            return { ...sub, friends: [...sub.friends, friend] };
+          }
+        }
+        return sub;
+      })
+    );
+  };
+
+  const handleDelSubFriends = (friendId, index) => {
+    setSub((prevSub) =>
+      prevSub.map((sub, i) => {
+        if (i === index) {
+          return {
+            ...sub,
+            friends: sub.friends.filter((friend) => friend._id !== friendId),
+          };
+        }
+        return sub;
+      })
+    );
+  };
+
+  const handleSubChange = (index, field, value, type, offset1, offset2) => {
+    setSub((prev) =>
+      prev.map((sub, i) => {
+        if (i === index) {
+          if (field === "istime") {
+            return { ...sub, istime: !sub.istime }; // Explicit case for "istime"
+          } else if (field === "isFriendsList") {
+            return { ...sub, isFriendsList: !sub.isFriendsList };
+          } else if (field === "addFriends") {
+            return { ...sub, addFriends: !sub.addFriends };
+          } else if (field === "time") {
+            if (type === "hoursEnd") {
+              let hours = parseInt(sub.endHours);
+              hours = (hours + offset1 + 24) % 24;
+              return { ...sub, endHours: String(hours).padStart(2, "0") };
+            } else if (type === "minutesEnd") {
+              let minutes = parseInt(sub.endMinutes);
+              let hours = parseInt(sub.endHours);
+
+              minutes += offset2;
+
+              if (minutes >= 60) {
+                hours = (hours + Math.floor(minutes / 60)) % 24;
+                minutes = minutes % 60;
+              } else if (minutes < 0) {
+                hours = (hours - 1 + 24) % 24;
+                minutes = (minutes + 60) % 60;
+              }
+
+              return {
+                ...sub,
+                endHours: String(hours).padStart(2, "0"),
+                endMinutes: String(minutes).padStart(2, "0"),
+              };
+            }
+          } else {
+            return { ...sub, [field]: value }; // Generic case for other fields
+          }
+        }
+        return sub;
+      })
+    );
+  };
+
+  useEffect(() => {
+    const mainEndDate = new Date(
+      endDate + "T" + endHours + ":" + endMinutes + ":00"
+    );
+
+    setSub((prevSub) =>
+      prevSub.map((sub) => {
+        const subEndDate = new Date(
+          sub.endDate + "T" + sub.endHours + ":" + sub.endMinutes + ":00"
+        );
+
+        if (subEndDate > mainEndDate) {
+          return {
+            ...sub,
+            endDate: endDate,
+            endHours: endHours,
+            endMinutes: endMinutes,
+          };
+        }
+        return sub;
+      })
+    );
+  }, [endDate, endHours, endMinutes]);
+
   const handleTime = (e, type, offset1, offset2) => {
     e.preventDefault();
 
@@ -28,21 +154,19 @@ const Activities = ({ eventType, setEventType }) => {
 
       minutes += offset2;
 
-     
       if (minutes >= 60) {
-        hours = (hours + Math.floor(minutes / 60)) % 24; 
-        minutes = minutes % 60; 
+        hours = (hours + Math.floor(minutes / 60)) % 24;
+        minutes = minutes % 60;
       } else if (minutes < 0) {
-        hours = (hours - 1 + 24) % 24; 
-        minutes = (minutes + 60) % 60; 
+        hours = (hours - 1 + 24) % 24;
+        minutes = (minutes + 60) % 60;
       }
 
       setEndMinutes(String(minutes).padStart(2, "0"));
       setEndHours(String(hours).padStart(2, "0"));
     }
   };
-  
-  
+
   const handleTitleChange = (e) => {
     setTitle(e.target.value);
   };
@@ -57,27 +181,75 @@ const Activities = ({ eventType, setEventType }) => {
   };
 
   const handleUserSelect = (user) => {
-   
     const userExists = selectedUsers.some(
       (selectedUser) => selectedUser._id === user._id
     );
     if (!userExists) {
-     
       setSelectedUsers((prevUsers) => [...prevUsers, user]);
-    } console.log("Selected users:", selectedUsers);
+    }
+    console.log("Selected users:", selectedUsers);
   };
 
-  const handleunselectUser =(user) =>{
+  const handleunselectUser = (user) => {
     setSelectedUsers((prevUsers) =>
       prevUsers.filter((selectedUser) => selectedUser._id !== user._id)
     );
+  };
+
+  function handleSub(e) {
+    e.preventDefault();
+    setSub((prev) => [
+      ...prev,
+      Subactivity("", endDate, false, "00", "00", [], false, false),
+    ]);
+  }
+
+  function delSubAct(e, index) {
+    e.preventDefault();
+    setSub((prevSub) => prevSub.filter((__, i) => i !== index));
   }
 
 
-  
+ 
+
+  const createActivity = useMutation(
+    () => {
+      const formattedEndDate = new Date(
+        `${endDate}T${endHours}:${endMinutes}:00`
+      );
+      const formattedSubActivities = subactivities.map((sub) => {
+        const subEndDate = new Date(
+          `${sub.endDate}T${sub.endHours}:${sub.endMinutes}:00`
+        );
+        return {
+          title: sub.title,
+          endDate: subEndDate,
+          participants: sub.friends.map((friend) => friend._id),
+        };
+      });
+
+      return makeRequest.post("/activities", {
+        title: title,
+        startDate: new Date(),
+        endDate: formattedEndDate,
+        participants: selectedUsers.map((user) => user._id),
+        subActivities: formattedSubActivities,
+      });
+    },
+    {
+      onSuccess: async () => {
+        setPopupEventOpen(false);
+         queryClient.invalidateQueries(["events"]);
+         queryClient.invalidateQueries(["activities"]);
+         queryClient.invalidateQueries(["subactivities"]);
+        eventDaysMutation.mutate();
+        
+      },
+    }
+  );
 
   return (
-    <form className="flex flex-col  absolute w-full h-full px-8 top-[20%]">
+    <form className="flex flex-col  gap-3 absolute w-full h-full px-8 top-[20%]">
       <div className="flex flex-row items-center w-full z-10">
         <input
           className="flex l-0 p-2 rounded-xl border text-white w-[65%] bg-[#4a484d] text-center border-none focus:outline-none"
@@ -203,7 +375,7 @@ const Activities = ({ eventType, setEventType }) => {
               />
               <button
                 className="flex w-7 h-full l-0 bg-violet-600  text-white justify-center items-center rounded-xl "
-                onClick={(e) => handleTime(e, "minutesEnd", 0, 5)}
+                onClick={(e) => handleTime(e, "minutesEnd", 0, -5)}
               >
                 -
               </button>
@@ -223,7 +395,7 @@ const Activities = ({ eventType, setEventType }) => {
           <button
             className={`bg-[#4a484d] min-w-10 p-2 rounded-xl ${
               selectedUsers.length > 0 && showsUsers
-                ? "bg-[#2f2f30]"
+                ? "bg-violet-400"
                 : "bg-[#4a484d]"
             } `}
             onClick={(e) => {
@@ -310,8 +482,257 @@ const Activities = ({ eventType, setEventType }) => {
         </>
       )}
       <div className="flex h-10 w-full  ">
-        {isSearch && <Searchbar handleUserSelect={handleUserSelect} />}
+        {isSearch && (
+          <Searchbar handleUserSelect={handleUserSelect} filter={"friends"} />
+        )}
       </div>
+      <div className="container_of_subactivities flex flex-col   bg-[#1B1B1F] p-4   rounded-xl ">
+        <div className="flex flex-row items-center justify-between">
+          <span className="text-white font-bold">add subactivity</span>
+          <button
+            className="text-white font-bold flex items-center justify-start text-2xl"
+            onClick={(e) => {
+              handleSub(e);
+            }}
+          >
+            +
+          </button>
+        </div>
+        <div className="subactivities  mt-3 ">
+          {subactivities?.map((subAct, index) => (
+            <div className="flex flex-col border-t mb-2  gap-2" key={index}>
+              <div className="flex flex-row justify-between mt-2 items-center">
+                <input
+                  className="flex l-0 p-2 rounded-xl  text-white w-[65%] bg-[#4a484d] text-center border-none focus:outline-none"
+                  type="text"
+                  name="Title"
+                  onChange={(e) =>
+                    handleSubChange(index, "title", e.target.value)
+                  }
+                  value={subAct.title}
+                  placeholder="Title"
+                />
+                <button
+                  className="text-white text-2xl flex items-center justify-center"
+                  onClick={(e) => {
+                    delSubAct(e, index);
+                  }}
+                >
+                  x
+                </button>{" "}
+              </div>
+              <div className="flex flex-row items-center justify-between pl-3">
+                <span className="text-white font-bold">end</span>
+
+                <input
+                  type="Date"
+                  max={endDate}
+                  value={subAct.endDate}
+                  onChange={(e) =>
+                    handleSubChange(index, "endDate", e.target.value)
+                  }
+                  className="  p-2 rounded-md w-[50%] h-[2.5rem] border text-white  bg-[#4a484d] border-none focus:outline-none mr-1 "
+                />
+                <button
+                  className="text-white text-lg flex justify-center items-center p-2 rounded-md w-[30%] h-[2.5rem] border   bg-[#4a484d] border-none focus:outline-none mr-1 "
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleSubChange(index, "istime");
+                  }}
+                >
+                  {subAct.endHours}:{subAct.endMinutes}
+                </button>
+              </div>
+              {subAct.istime && (
+                <>
+                  <div className="bg-[#1B1B1F] h-36 w-full  rounded-b-xl flex flex-row items-center justify-around px-28 ">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <button
+                        className="flex w-7 h-full l-0 bg-violet-600  text-white justify-center items-center rounded-xl  "
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleSubChange(index, "time", null, "hoursEnd", 1);
+                        }}
+                      >
+                        +
+                      </button>
+                      <input
+                        className="bg-[#4a484d] text-center w-7 text-white  border-none focus:outline-none rounded-lg "
+                        type="text"
+                        onChange={(e) => {
+                          const value = e.target.value;
+
+                          if (/^\d{0,2}$/.test(value)) {
+                            handleSubChange(index, "endHours", value);
+                          }
+                        }}
+                        value={subAct.endHours}
+                        onBlur={() => {
+                          handleSubChange(
+                            index,
+                            "endHours",
+                            String(subAct.endHours).padStart(2, "0")
+                          );
+                        }}
+                      />
+                      <button
+                        className="flex w-7 h-full l-0 bg-violet-600  text-white justify-center items-center rounded-xl  "
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleSubChange(index, "time", null, "hoursEnd", -1);
+                        }}
+                      >
+                        -
+                      </button>
+                    </div>
+                    <span className="text-white font-bold text-xl">:</span>
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <button
+                        className="flex w-7 h-full l-0 bg-violet-600  text-white justify-center items-center rounded-xl  "
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleSubChange(
+                            index,
+                            "time",
+                            null,
+                            "minutesEnd",
+                            0,
+                            5
+                          );
+                        }}
+                      >
+                        +
+                      </button>
+                      <input
+                        className="bg-[#4a484d] text-center w-7 text-white  border-none focus:outline-none rounded-lg "
+                        type="text"
+                        onChange={(e) => {
+                          const value = e.target.value;
+
+                          if (/^\d{0,2}$/.test(value)) {
+                            handleSubChange(index, "endMinutes", value);
+                          }
+                        }}
+                        value={subAct.endMinutes}
+                        onBlur={() => {
+                          handleSubChange(
+                            index,
+                            "endMinutes",
+                            String(subAct.endMinutes).padStart(2, "0")
+                          );
+                        }}
+                      />
+                      <button
+                        className="flex w-7 h-full l-0 bg-violet-600  text-white justify-center items-center rounded-xl "
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleSubChange(
+                            index,
+                            "time",
+                            null,
+                            "minutesEnd",
+                            0,
+                            -5
+                          );
+                        }}
+                      >
+                        -
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+              <div className="flex flex-col">
+                <div className="flex flex-row items-center justify-between pl-3">
+                  <span className="text-white font-bold">add friend</span>
+                  <div className="flex flex-row gap-3">
+                    <button
+                      className={`bg-[#4a484d] min-w-10 p-2 rounded-xl text-white font-bold ${
+                        subAct.friends.length > 0 && subAct.isFriendsList
+                          ? "bg-violet-400"
+                          : "bg-[#4a484d]"
+                      } `}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleSubChange(index, "isFriendsList");
+                      }}
+                    >
+                      {subAct.friends.length}
+                    </button>
+                    <button
+                      className="text-white text-2xl flex items-center justify-center"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleSubChange(index, "addFriends");
+                      }}
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+                {subAct.friends.length !== 0 && subAct.isFriendsList && (
+                  <>
+                    <div className="flex flex-wrap gap-2 mt-2 w-full">
+                      {subAct.friends.map((friend) => (
+                        <div
+                          key={friend._id}
+                          className="flex justify-between items-center  bg-[#4a484d] p-2 pr-4 w-full rounded-xl"
+                        >
+                          <div className="flex flex-row gap-2 items-center">
+                            <img
+                              className="w-8 h-8 rounded-full"
+                              src={
+                                friend.profilePic
+                                  ? `http://localhost:8800${friend.profilePic}`
+                                  : "https://cdn-icons-png.flaticon.com/512/10542/10542486.png"
+                              }
+                              alt=""
+                            />
+                            <span className="text-white font-bold">
+                              {friend.name}
+                            </span>
+                            <span className="text-white font-bold">
+                              {friend.surname}
+                            </span>
+                          </div>
+
+                          <button
+                            className="text-white text-xl flex items-center justify-center"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleDelSubFriends(friend._id, index);
+                            }}
+                          >
+                            x
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+                {subAct.addFriends && (
+                  <Searchbar
+                    handleUserSelect={(friend) =>
+                      handleSubFriends(friend, index)
+                    }
+                    filter={"friends"}
+                  />
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <button
+        className="flex items-center justify-center w-full h-11 text-white text-xl font-bold rounded-xl bg-violet-500 "
+        onClick={(e) => {
+          e.preventDefault();
+          createActivity.mutate();
+        }}
+      >
+        {" "}
+        submit{" "}
+      </button>
     </form>
   );
 };

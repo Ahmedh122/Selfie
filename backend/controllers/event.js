@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import Event from "../models/event.js";
 import EventDays from "../models/eventDays.js";
-//import Relationship from "../models/relationship.js";
+import mongoose from "mongoose";
 import Subscription from "../models/friends.js";
 
 export const getEventfromId = async (req, res) => {
@@ -28,8 +28,9 @@ export const getEventfromId = async (req, res) => {
   }
 };
 
+
 export const getEvents = async (req, res) => {
-  const { date } = req.query;
+  const { date, offset } = req.query; // Receive queryDate (ISO) and offset in milliseconds
   const token = req.cookies.accessToken;
 
   if (!token) return res.status(401).json("Not logged in!");
@@ -38,7 +39,12 @@ export const getEvents = async (req, res) => {
     const userInfo = jwt.verify(token, "secretkey");
     const userId = userInfo.id;
 
-    const queryDate = new Date(date);
+    // Parse and reset queryDate to UTC midnight
+    const parsedQueryDate = new Date(date);
+    parsedQueryDate.setUTCHours(0, 0, 0, 0);
+
+     const numericOffset = parseInt(offset, 10);
+     
 
     const events = await Event.find({
       userId: userId,
@@ -48,29 +54,43 @@ export const getEvents = async (req, res) => {
             $lte: [
               {
                 $dateFromParts: {
-                  year: { $year: "$eventStart" },
-                  month: { $month: "$eventStart" },
-                  day: { $dayOfMonth: "$eventStart" },
+                  year: { $year: { $add: ["$eventStart", numericOffset] } },
+                  month: { $month: { $add: ["$eventStart", numericOffset] } },
+                  day: { $dayOfMonth: { $add: ["$eventStart", numericOffset] } },
                 },
               },
-              queryDate,
+              {
+                $dateFromParts: {
+                  year: { $year: parsedQueryDate },
+                  month: { $month: parsedQueryDate },
+                  day: { $dayOfMonth: parsedQueryDate },
+                },
+              },
             ],
           },
           {
             $gte: [
               {
                 $dateFromParts: {
-                  year: { $year: "$eventEnd" },
-                  month: { $month: "$eventEnd" },
-                  day: { $dayOfMonth: "$eventEnd" },
+                  year: { $year: { $add: ["$eventEnd", numericOffset] } },
+                  month: { $month: { $add: ["$eventEnd", numericOffset] } },
+                  day: { $dayOfMonth: { $add: ["$eventEnd", numericOffset] } },
                 },
               },
-              queryDate,
+              {
+                $dateFromParts: {
+                  year: { $year: parsedQueryDate },
+                  month: { $month: parsedQueryDate },
+                  day: { $dayOfMonth: parsedQueryDate },
+                },
+              },
             ],
           },
         ],
       },
     }).sort({ createdAt: -1 });
+
+   
 
     return res.status(200).json(events);
   } catch (error) {
@@ -79,7 +99,15 @@ export const getEvents = async (req, res) => {
   }
 };
 
+
+
+
+
+
+
 // DA RINOMINARE, PRENDE TUTTI GLI EVENTI CHE CI SONO NEL MESE (PER FARE I NUMERI VERDI)
+
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 export const getAllEvents = async (req, res) => {
   const { month, year } = req.params;
   const token = req.cookies.accessToken;
@@ -105,15 +133,15 @@ export const getAllEvents = async (req, res) => {
       return res.json([]);
     }
 
-    // Create the list of event dates in "DD-MM-YYYY" format
+   
     const eventDates = eventDays.days.map((event) => {
       return `${String(event.day).padStart(2, "0")}-${String(month).padStart(
         2,
         "0"
       )}-${String(year)}`;
     });
-    
-    // Send the event dates as a response
+   
+  
     return res.json(eventDates);
   } catch (error) {
     console.error(error);
@@ -121,18 +149,28 @@ export const getAllEvents = async (req, res) => {
   }
 };
 
-async function addEventDays(userId, eventStart, eventEnd) {
-  let currentDate = new Date(eventStart);
-  const endDate = new Date(eventEnd);
+  export async function addEventDays(userId, eventStart, eventEnd) {
+  
+    const normalizeDate = (date) => {
+      const parsedDate = new Date(date); 
+      return new Date(
+        parsedDate.getFullYear(),
+        parsedDate.getMonth(),
+        parsedDate.getDate()
+      );
+    };
 
-  while (currentDate <= endDate) {
-    const currentMonth = currentDate.getMonth();
-    const currentYear = currentDate.getFullYear();
+  
+    let currentDate = normalizeDate(eventStart);
+    const endDate = normalizeDate(eventEnd);
 
-    const daysMatrix = {};
-    while (currentDate.getMonth() === currentMonth && currentDate <= endDate) {
+    while (currentDate <= endDate) {
+      const currentMonth = currentDate.getMonth();
+      const currentYear = currentDate.getFullYear();
+
       const day = currentDate.getDate();
 
+      
       const existingEntry = await EventDays.findOne({
         userId: userId,
         month: currentMonth,
@@ -144,41 +182,33 @@ async function addEventDays(userId, eventStart, eventEnd) {
         ? existingEntry.days.find((d) => d.day === day)?.count || 0
         : 0;
 
-      daysMatrix[day] = eventCount + 1;
-
-      currentDate.setDate(currentDate.getDate() + 1);
-    }
-
-    // Iterate over the daysMatrix to update each day
-    for (const [day, count] of Object.entries(daysMatrix)) {
-      const dayInt = parseInt(day);
-
-      // First, try to update the count if the day exists
+     
       const updateResult = await EventDays.updateOne(
         {
           userId: userId,
           month: currentMonth,
           year: currentYear,
-          "days.day": dayInt,
+          "days.day": day,
         },
-        { $set: { "days.$.count": count } }
+        { $set: { "days.$.count": eventCount + 1 } }
       );
 
-      // If no document was updated, add the new day
+     
       if (updateResult.modifiedCount === 0) {
         await EventDays.updateOne(
           { userId: userId, month: currentMonth, year: currentYear },
           {
             $addToSet: {
-              days: { day: dayInt, count },
+              days: { day, count: eventCount + 1 },
             },
           },
           { upsert: true }
         );
       }
+
+      currentDate.setDate(currentDate.getDate() + 1);
     }
   }
-}
 
 export const addEvent = async (req, res) => {
   const token = req.cookies.accessToken;
@@ -196,8 +226,8 @@ export const addEvent = async (req, res) => {
 
     const frequenza = req.body.frequenza;
     const endFrequenza = req.body.endFrequenza;
-    const eventStart = req.body.selectedDateEventStart;
-    const eventEnd = req.body.selectedDateEventEnd;
+    const eventStart = new Date(req.body.selectedDateEventStart).toISOString();
+    const eventEnd = new Date(req.body.selectedDateEventEnd).toISOString();;
     const events = [];
 
     const personalizedDays = req.body.personalizedDays || [];
@@ -267,7 +297,7 @@ export const addEvent = async (req, res) => {
               addEventDays(userInfo.id, currentStart, currentEnd);
             }
 
-            // Increment to the next week
+        
             currentStart.setDate(currentStart.getDate() + 7);
             currentEnd.setDate(currentEnd.getDate() + 7);
           }
@@ -473,6 +503,7 @@ export const addEvent = async (req, res) => {
 
 export const deleteEvent = async (req, res) => {
   const token = req.cookies.accessToken;
+  const { eventId, offset } = req.params;
 
   try {
     if (!token) return res.status(401).json("Not logged in!");
@@ -480,7 +511,7 @@ export const deleteEvent = async (req, res) => {
     const userInfo = jwt.verify(token, "secretkey");
 
     const eventToDelete = await Event.findOneAndDelete({
-      _id: req.params.id,
+      _id: eventId,
       userId: userInfo.id,
     });
 
@@ -489,10 +520,19 @@ export const deleteEvent = async (req, res) => {
     }
 
     const { eventStart, eventEnd } = eventToDelete;
-    let currentDate = new Date(eventStart);
-    const endDate = new Date(eventEnd);
+    const offsetp= parseInt(offset, 10);
+    let currentDate = new Date(eventStart.getTime() + offsetp);
+   
+    currentDate.setUTCHours(0, 0, 0, 0); 
+    
+    const endDate = new Date(eventEnd.getTime() + offsetp);
+    endDate.setUTCHours(0, 0, 0, 0);
 
-    while (currentDate <= endDate) {
+    
+
+ 
+
+    do {
       const currentMonth = currentDate.getMonth();
       const currentYear = currentDate.getFullYear();
       const day = currentDate.getDate();
@@ -524,7 +564,7 @@ export const deleteEvent = async (req, res) => {
       }
 
       currentDate.setDate(currentDate.getDate() + 1);
-    }
+    } while (currentDate <= endDate);
 
     return res.status(200).json("Post has been deleted.");
   } catch (error) {

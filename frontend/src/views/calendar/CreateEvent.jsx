@@ -7,7 +7,7 @@ function CreateEvent({
   eventType,
   setEventType,
   setPopupEventOpen,
-  displayYear, 
+  displayYear,
   displayMonth,
   selectedDateEventStart,
   selectedDateEventEnd,
@@ -20,7 +20,8 @@ function CreateEvent({
   displayYearEventStart,
   displayYearEventEnd,
   setDisplayYearEventStart,
-  setDisplayYearEventEnd
+  setDisplayYearEventEnd,
+  eventDaysMutation,
 }) {
   const queryClient = useQueryClient();
 
@@ -165,13 +166,12 @@ function CreateEvent({
     setEndEventDateopen(false);
   };
 
-
   const mutation = useMutation(
-    ({startISO, endISO, PomodoroHours, PomodoroMinutes}) => {
+    ({formattedStartDate, formattedEndDate, PomodoroHours, PomodoroMinutes }) => {
       return makeRequest.post("/events", {
         title,
-        selectedDateEventStart: startISO,
-        selectedDateEventEnd: endISO,
+        selectedDateEventStart: formattedStartDate,
+        selectedDateEventEnd: formattedEndDate,
         description,
         eventType,
         frequenza,
@@ -187,11 +187,14 @@ function CreateEvent({
         displayMonth,
         displayYear,
       });
-    }, {
-      onSuccess: async ()=>{
-        queryClient.invalidateQueries(["events"], { refetchActive: true });
-       await queryClient.invalidateQueries(["eventDays"], { refetchActive: true });
-      
+    },
+    {
+      onSuccess: async () => {
+        queryClient.invalidateQueries(["events"]);
+        queryClient.invalidateQueries(["activities"]);
+        queryClient.invalidateQueries(["subactivities"]);
+        eventDaysMutation.mutate();
+
         setEndEventDateopen(false);
         setStartEventDateopen(false);
         setEndEventTimeopen(false);
@@ -206,32 +209,26 @@ function CreateEvent({
         setSelectedDateEventEnd(resetDate);
         setTitle("");
         setDescription("");
-      }
+      },
     }
   );
 
   const SubmitEvent = async (e) => {
     e.preventDefault();
     try {
-    const formattedStartDate = new Date(selectedDateEventStart);
-    const formattedEndDate = new Date(selectedDateEventEnd);
+      const formattedStartDate = new Date(selectedDateEventStart);
+      const formattedEndDate = new Date(selectedDateEventEnd);
+      formattedStartDate.setHours(hoursStart);
+      formattedStartDate.setMinutes(minutesStart);
+      formattedEndDate.setHours(hoursEnd);
+      formattedEndDate.setMinutes(minutesEnd);
 
-   
-    formattedStartDate.setUTCHours(hoursStart);
-    formattedStartDate.setUTCMinutes(minutesStart);
-    formattedEndDate.setUTCHours(hoursEnd);
-    formattedEndDate.setUTCMinutes(minutesEnd);
-
-    const startISO = formattedStartDate.toISOString();
-    const endISO = formattedEndDate.toISOString();
-
-   
-   
       
+
       const PomodoroHours = parseInt(PomTimehrs, 10);
       const PomodoroMinutes = parseInt(PomTimemin, 10);
 
-      mutation.mutate({startISO, endISO, PomodoroHours, PomodoroMinutes});
+      mutation.mutate({ formattedStartDate, formattedEndDate, PomodoroHours, PomodoroMinutes });
     } catch (error) {
       console.error(error);
     }
@@ -313,27 +310,26 @@ function CreateEvent({
     1
   ).getDay();
 
-useEffect(() => {
-  if (!isEventDateStartManuallySet && selectedDate !== null) {
-    if (
-      selectedDate &&
-      selectedDateEventStart?.toISOString() !== selectedDate.toISOString()
-    ) {
-      setSelectedDateEventStart(selectedDate);
-    } else if (
-      !selectedDate &&
-      selectedDateEventStart?.toISOString() !== currentDate.toISOString()
-    ) {
-      setSelectedDateEventStart(currentDate);
+  useEffect(() => {
+    if (!isEventDateStartManuallySet && selectedDate !== null) {
+      if (
+        selectedDate &&
+        selectedDateEventStart?.toISOString() !== selectedDate.toISOString()
+      ) {
+        setSelectedDateEventStart(selectedDate);
+      } else if (
+        !selectedDate &&
+        selectedDateEventStart?.toISOString() !== currentDate.toISOString()
+      ) {
+        setSelectedDateEventStart(currentDate);
+      }
     }
-  }
-}, [
-  selectedDate,
-  currentDate,
-  isEventDateStartManuallySet,
-  selectedDateEventStart,
-]);
-
+  }, [
+    selectedDate,
+    currentDate,
+    isEventDateStartManuallySet,
+    selectedDateEventStart,
+  ]);
 
   const handleDateClickEventStart = (day) => {
     const selectedDateUTC = new Date(
@@ -343,11 +339,11 @@ useEffect(() => {
     setIsEventDateStartManuallySet(true);
   };
 
- useEffect(() => {
-   if (selectedDateEventEnd < selectedDateEventStart) {
-     setSelectedDateEventEnd(selectedDateEventStart);
-   }
- }, [selectedDateEventStart, selectedDateEventEnd]);
+  useEffect(() => {
+    if (selectedDateEventEnd < selectedDateEventStart) {
+      setSelectedDateEventEnd(selectedDateEventStart);
+    }
+  }, [selectedDateEventStart, selectedDateEventEnd]);
 
   useEffect(() => {
     if (
@@ -374,7 +370,7 @@ useEffect(() => {
     selectedDateEventEnd,
     selectedDateEventStart,
     isEventDateStartManuallySet,
-    setSelectedDateEventEnd
+    setSelectedDateEventEnd,
   ]);
 
   const handleDateClickEventEnd = (day) => {
@@ -438,7 +434,6 @@ useEffect(() => {
     maxPomTimemin,
   ]);
 
-
   useEffect(() => {
     const totlalpommin =
       parseInt(PomTimehrs, 10) * 60 + parseInt(PomTimemin, 10);
@@ -448,8 +443,6 @@ useEffect(() => {
       setPomTimemin(String(maxPomTimemin).padStart(2, "0"));
     }
   }, [PomTimehrs, PomTimemin, maxPomTimehrs, maxPomTimemin]);
-
-
 
   return (
     <form className="flex flex-col gap-4 absolute w-full h-full px-8 top-[20%]">
@@ -988,18 +981,51 @@ useEffect(() => {
       <div>
         <div className="flex items-center justify-between mt-4 bg-[#1B1B1F] h-10 p-4 rounded-xl">
           <span className="text-white">Pomodoro</span>
-          <label className="relative inline-block w-12 h-6 cursor-pointer">
+          <label
+            className={`relative inline-block w-12 h-6 cursor-pointer ${
+              new Date(selectedDateEventEnd).setHours(0, 0, 0, 0) <
+              new Date().setHours(0, 0, 0, 0)
+                ? "opacity-50 cursor-not-allowed"
+                : ""
+            }`}
+          >
             <input
               type="checkbox"
               className="hidden peer"
+              disabled={
+                new Date(selectedDateEventEnd).setHours(0, 0, 0, 0) <
+                new Date().setHours(0, 0, 0, 0)
+              }
               onChange={() => {
-                setPomodoro(!Pomodoro);
+                if (
+                  !(
+                    new Date(selectedDateEventEnd).setHours(0, 0, 0, 0) <
+                    new Date().setHours(0, 0, 0, 0)
+                  )
+                ) {
+                  setPomodoro(!Pomodoro);
+                }
               }}
             />
-            <div className="w-12 h-6 bg-[#4a484d] rounded-full peer-checked:bg-violet-500 transition duration-300"></div>
-            <div className="absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow-md transform transition-transform duration-300 peer-checked:translate-x-6"></div>
+            <div
+              className={`w-12 h-6 rounded-full transition duration-300 ${
+                new Date(selectedDateEventEnd).setHours(0, 0, 0, 0) <
+                new Date().setHours(0, 0, 0, 0)
+                  ? "bg-gray-500"
+                  : "bg-[#4a484d] peer-checked:bg-violet-500"
+              }`}
+            ></div>
+            <div
+              className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow-md transform transition-transform duration-300 ${
+                new Date(selectedDateEventEnd).setHours(0, 0, 0, 0) <
+                new Date().setHours(0, 0, 0, 0)
+                  ? "hidden"
+                  : "peer-checked:translate-x-6"
+              }`}
+            ></div>
           </label>
         </div>
+
         {Pomodoro && (
           <div className="flex items-center justify-between -mt-2 bg-[#1B1B1F] h-10 p-4 rounded-b-xl">
             <div className="text-white">Duration</div>

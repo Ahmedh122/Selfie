@@ -20,6 +20,7 @@ import Register from "./views/auth/Register";
 import Notifications from "./components/Notifications";
 import Profiles from "./components/Profiles";
 import { AuthContext } from "./context/authcontext";
+import Background from "./components/Background";
 
 function App() {
   const { currentUser, logout } = useContext(AuthContext);
@@ -28,12 +29,20 @@ function App() {
   const Layout = () => {
     return (
       <QueryClientProvider client={queryClient}>
-        <div className="absolute top-0 left-0 w-screen h-screen flex overflow-hidden flex-col lg:flex-row">
+        <div className="relative top-0 left-0 w-screen h-screen flex overflow-hidden flex-col lg:flex-row">
           <div className="absolute w-screen h-[10%] bottom-0 lg:min-h-screen flex flex-col lg:flex-row l lg:w-[7%]">
             <Navbar />
           </div>
+
           <div className="absolute w-full top-0 h-[90%] bg-[#313338] overflow-hidden lg:w-[93%] lg:right-0 lg:h-screen">
-            <Outlet />
+            <div className="relative w-full h-full">
+              <div className="absolute inset-0 z-1">
+                <Background />
+              </div>
+              <div className="relative w-full h-full z-10">
+                <Outlet />
+              </div>
+            </div>
           </div>
           <div>
             <style>
@@ -48,10 +57,11 @@ function App() {
                 }
               `}
             </style>
-            <div className="absolute flex  top-3 right-14 ">
-              <Notifications/> </div>
+            <div className="absolute flex  top-3 z-20 right-14 ">
+              <Notifications />{" "}
+            </div>
             <button
-              className="rounded-full absolute flex  top-3 right-3 "
+              className="rounded-full absolute flex z-20 top-3 right-3 "
               onClick={logout}
             >
               <svg
@@ -74,7 +84,6 @@ function App() {
                 />
               </svg>
             </button>
-           
           </div>
         </div>
       </QueryClientProvider>

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useQuery } from "react-query";
 import { makeRequest } from "../axios";
 
-const Searchbar = ({ handleUserSelect }) => {
+const Searchbar = ({ handleUserSelect, filter }) => {
   const [search_value, setValue] = useState("");
 
   const { isLoading, data: datasearch = [] } = useQuery(
@@ -12,6 +12,7 @@ const Searchbar = ({ handleUserSelect }) => {
         .get("/search", {
           params: {
             value: search_value,
+            filter: filter, 
           },
         })
         .then((res) => res.data),

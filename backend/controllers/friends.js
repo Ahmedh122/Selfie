@@ -1,5 +1,7 @@
 import jwt from "jsonwebtoken";
 import Friends from "../models/friends.js";
+import Notifications from "../models/notifications.js";
+
 
 export const getFriendship = async (req, res) => {
   const token = req.cookies.accessToken;
@@ -7,12 +9,12 @@ export const getFriendship = async (req, res) => {
   try {
     if (!token) return res.status(401).json("Not logged in!");
     const userInfo = jwt.verify(token, "secretkey");
-    const { friendId } = req.params;
+    const { userId } = req.params;
 
-    if (!friendId) return res.status(200).json("User ID required!");
+    if (!userId) return res.status(200).json("User ID required!");
 
     const friendFound = await Friends.findOne(
-      { userId: userInfo.id, friends: friendId },
+      { userId: userInfo.id, friends: userId },
       { _id: 1 }
     );
 
@@ -34,37 +36,56 @@ export const addFriend = async (req, res) => {
     if (!token) return res.status(401).json("Not logged in!");
 
     const userInfo = jwt.verify(token, "secretkey");
-    const { friendId } = req.body;
+    const { userId } = req.params;
 
-    if (!friendId) return res.status(400).json("Friend ID is required!");
+    if (!userId) return res.status(400).json("Friend ID is required!");
 
-    if (userInfo.id === friendId) {
+    if (userInfo.id === userId) {
       return res.status(400).json("You cannot add yourself as a friend!");
     }
 
-    const session = await mongoose.startSession();
-    session.startTransaction();
+
 
     try {
       await Friends.updateOne(
         { userId: userInfo.id },
-        { $addToSet: { friends: friendId } },
-        { upsert: true, session }
+        { $addToSet: { friends: userId } },
+        { upsert: true }
       );
 
       await Friends.updateOne(
-        { userId: friendId },
+        { userId: userId },
         { $addToSet: { friends: userInfo.id } },
-        { upsert: true, session }
+        { upsert: true }
       );
 
-      await session.commitTransaction();
-      session.endSession();
+      const io = req.app.get("socketio");
+
+    await Notifications.findOneAndDelete({
+      userId : userInfo.id, sender : userId, type: "Friend_req"
+    });
+
+    
+
+    const notif1 = new Notifications({
+      userId: userInfo.id,
+      sender: userId,
+      type: "You_accepted_a_friend_req",
+    });
+
+    const notif2 = new Notifications({
+      userId: userId,
+      sender: userInfo.id,
+      type: "friend_req_accepted",
+    });
+    await notif1.save();
+    await notif2.save();
+    io.to(userInfo.id).emit("notification", { message: "New notification!" });
+    io.to(userId).emit("notification", { message: "New notification!" });
 
       return res.status(200).json("Friend added successfully!");
     } catch (err) {
-      await session.abortTransaction();
-      session.endSession();
+    
       throw err;
     }
   } catch (error) {
